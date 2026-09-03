@@ -1,8 +1,0 @@
-target/
-.mvn/
-Dockerfile
-**/*.log
-node_modules/
-/.idea/
-.git
-.gitignore
