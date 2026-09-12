@@ -17,7 +17,8 @@ jobs:
           distribution: temurin
           java-version: '17'
           cache: maven
-      - run: ./mvnw test
+      # Invoke via bash because Windows-created checkouts may not retain mvnw's executable bit.
+      - run: bash ./mvnw test
 
   frontend:
     runs-on: ubuntu-latest
