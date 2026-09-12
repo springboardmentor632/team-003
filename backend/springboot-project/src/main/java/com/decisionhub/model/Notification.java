@@ -23,6 +23,7 @@ public class Notification {
 
     @ManyToOne
     @JoinColumn(name = "decision_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Decision decision;
 
     @Column(nullable = false, updatable = false)
@@ -42,8 +43,10 @@ public class Notification {
     public void setMessage(String message) { this.message = message; }
     public Decision getDecision() { return decision; }
     public void setDecision(Decision decision) { this.decision = decision; }
+    public Long getDecisionId() { return decision == null ? null : decision.getId(); }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getReadAt() { return readAt; }
     public void setReadAt(LocalDateTime readAt) { this.readAt = readAt; }
+    public boolean isRead() { return readAt != null; }
 }

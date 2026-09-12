@@ -13,10 +13,10 @@ export function AuthProvider({ children }) {
   const persistSession = (authResponse) => {
     localStorage.setItem("decisionhub_token", authResponse.token);
     const userInfo = {
-      id: authResponse.userId,
-      fullName: authResponse.fullName,
+      id: authResponse.userId || authResponse.id,
+      fullName: authResponse.fullName || authResponse.name,
       email: authResponse.email,
-      role: authResponse.role,
+      role: authResponse.role || "USER",
     };
     localStorage.setItem("decisionhub_user", JSON.stringify(userInfo));
     setUser(userInfo);

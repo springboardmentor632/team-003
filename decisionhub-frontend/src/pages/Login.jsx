@@ -24,6 +24,18 @@ export default function Login() {
     }
   };
 
+  const handleDemoAdminLogin = async () => {
+    setError("");
+    setSubmitting(true);
+    const result = await login("admin@decisionhub.local", "admin123");
+    setSubmitting(false);
+    if (result.success) {
+      navigate("/dashboard");
+    } else {
+      setError(result.error);
+    }
+  };
+
   return (
     <div className="auth-shell">
       <div className="auth-side">
@@ -50,9 +62,16 @@ export default function Login() {
             <label>Password</label>
             <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••••" />
           </div>
+          <div className="auth-switch" style={{ marginTop: "-14px", textAlign: "right" }}>
+            <Link to="/reset-password">Forgot password?</Link>
+          </div>
 
           <button className="btn brass full" type="submit" disabled={submitting}>
             {submitting ? "Logging in…" : "Log in"}
+          </button>
+
+          <button type="button" className="btn secondary full" onClick={handleDemoAdminLogin} disabled={submitting}>
+            {submitting ? "Signing in as admin…" : "Log in as admin (demo)"}
           </button>
 
           <div className="auth-switch">

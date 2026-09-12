@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "votes", uniqueConstraints = @UniqueConstraint(name = "uk_vote_decision_user", columnNames = {"decision_id", "voter_id"}))
+@Table(name = "votes", uniqueConstraints = @UniqueConstraint(name = "uk_vote_decision_option_user", columnNames = {"decision_id", "option_id", "voter_id"}))
 public class Vote {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,6 +25,9 @@ public class Vote {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    private Integer rating;
+    private boolean anonymous;
+
     public Vote() {}
     public Vote(Decision decision, Option option, User voter) { this.decision = decision; this.option = option; this.voter = voter; }
     public Long getId() { return id; }
@@ -37,4 +40,8 @@ public class Vote {
     public void setVoter(User voter) { this.voter = voter; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public Integer getRating() { return rating; }
+    public void setRating(Integer rating) { this.rating = rating; }
+    public boolean isAnonymous() { return anonymous; }
+    public void setAnonymous(boolean anonymous) { this.anonymous = anonymous; }
 }

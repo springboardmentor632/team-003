@@ -1,7 +1,7 @@
 import client from "./client";
 
-export function register({ fullName, email, password }) {
-  return client.post("/api/auth/register", { fullName, email, password });
+export function register({ fullName, email, password, role = "USER" }) {
+  return client.post("/api/auth/register", { name: fullName, email, password, role });
 }
 
 export function login({ email, password }) {

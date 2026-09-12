@@ -1,7 +1,7 @@
 import client from "./client";
 
 export function createDecision(payload) {
-  return client.post("/api/decisions", payload);
+  return client.post("/api/decisions/create", payload);
 }
 
 export function listPublicDecisions({ category, page = 0, size = 20 } = {}) {

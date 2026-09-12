@@ -12,6 +12,10 @@ import CreateBoard from "./pages/CreateBoard";
 import BoardDetail from "./pages/BoardDetail";
 import Communities from "./pages/Communities";
 import Analytics from "./pages/Analytics";
+import Demo from "./pages/Demo";
+import Notifications from "./pages/Notifications";
+import Reports from "./pages/Reports";
+import ResetPassword from "./pages/ResetPassword";
 
 /** Sends already-logged-in users straight to the dashboard instead of the landing/login/register pages. */
 function RedirectIfAuthed({ children }) {
@@ -27,6 +31,8 @@ export default function App() {
           <Route path="/" element={<RedirectIfAuthed><Landing /></RedirectIfAuthed>} />
           <Route path="/login" element={<RedirectIfAuthed><Login /></RedirectIfAuthed>} />
           <Route path="/register" element={<RedirectIfAuthed><Register /></RedirectIfAuthed>} />
+          <Route path="/reset-password" element={<RedirectIfAuthed><ResetPassword /></RedirectIfAuthed>} />
+          <Route path="/demo" element={<Demo />} />
 
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
@@ -35,6 +41,8 @@ export default function App() {
             <Route path="/boards/:id" element={<BoardDetail />} />
             <Route path="/communities" element={<Communities />} />
             <Route path="/analytics" element={<Analytics />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/reports" element={<Reports />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

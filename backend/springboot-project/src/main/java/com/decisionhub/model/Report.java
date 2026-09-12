@@ -16,6 +16,7 @@ public class Report {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "decision_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Decision decision;
 
     @ManyToOne

@@ -18,6 +18,10 @@ public class CommunityMembership {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    // Nullable for a safe schema update on existing installations; null means MEMBER.
+    @Column(length = 20)
+    private String role = "MEMBER";
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime joinedAt = LocalDateTime.now();
 
@@ -29,6 +33,8 @@ public class CommunityMembership {
     public void setCommunity(Community community) { this.community = community; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
     public LocalDateTime getJoinedAt() { return joinedAt; }
     public void setJoinedAt(LocalDateTime joinedAt) { this.joinedAt = joinedAt; }
 }

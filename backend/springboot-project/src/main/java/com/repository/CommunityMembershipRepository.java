@@ -10,4 +10,6 @@ public interface CommunityMembershipRepository extends JpaRepository<CommunityMe
     List<CommunityMembership> findByCommunityId(Long communityId);
     List<CommunityMembership> findByUserId(Long userId);
     boolean existsByCommunityIdAndUserId(Long communityId, Long userId);
+    long countByCommunityId(Long communityId);
+    void deleteByCommunityIdAndUserId(Long communityId, Long userId);
 }

@@ -23,6 +23,12 @@ public class Community {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Transient
+    private long memberCount;
+
+    @Transient
+    private boolean joined;
+
     public Community() {}
     public Community(String name, String description, User owner) { this.name = name; this.description = description; this.owner = owner; }
     public Long getId() { return id; }
@@ -35,4 +41,8 @@ public class Community {
     public void setOwner(User owner) { this.owner = owner; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public long getMemberCount() { return memberCount; }
+    public void setMemberCount(long memberCount) { this.memberCount = memberCount; }
+    public boolean isJoined() { return joined; }
+    public void setJoined(boolean joined) { this.joined = joined; }
 }

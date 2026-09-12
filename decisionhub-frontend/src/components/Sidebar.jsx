@@ -23,6 +23,8 @@ export default function Sidebar() {
         <NavLink to="/boards" className={({ isActive }) => isActive ? "active" : ""}>◈ &nbsp;Decision Boards</NavLink>
         <NavLink to="/analytics" className={({ isActive }) => isActive ? "active" : ""}>▤ &nbsp;Analytics</NavLink>
         <NavLink to="/communities" className={({ isActive }) => isActive ? "active" : ""}>◎ &nbsp;Communities</NavLink>
+        <NavLink to="/notifications" className={({ isActive }) => isActive ? "active" : ""}>◌ &nbsp;Notifications</NavLink>
+        {user?.role === "ADMIN" && <NavLink to="/reports" className={({ isActive }) => isActive ? "active" : ""}>⚑ &nbsp;Moderation</NavLink>}
         <div className="nav-label">Account</div>
         <NavLink to="/boards/new" className={({ isActive }) => isActive ? "active" : ""}>+ &nbsp;New Board</NavLink>
       </nav>

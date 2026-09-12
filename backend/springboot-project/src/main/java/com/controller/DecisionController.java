@@ -2,96 +2,92 @@ package com.decisionhub.controller;
 
 import com.decisionhub.dto.DecisionRequest;
 import com.decisionhub.dto.OptionRequest;
+import com.decisionhub.dto.VoteRequest;
 import com.decisionhub.model.Decision;
 import com.decisionhub.model.Option;
+import com.decisionhub.model.User;
+import com.decisionhub.repository.UserRepository;
 import com.decisionhub.service.DecisionService;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/decisions")
 @CrossOrigin(origins = "*")
 public class DecisionController {
+    private final DecisionService decisions;
+    private final UserRepository users;
 
-    private final DecisionService decisionService;
-
-    public DecisionController(DecisionService decisionService) {
-        this.decisionService = decisionService;
+    public DecisionController(DecisionService decisions, UserRepository users) {
+        this.decisions = decisions;
+        this.users = users;
     }
 
-    // CREATE
-    @PostMapping
-    public ResponseEntity<Decision> createDecision(
-            @RequestBody DecisionRequest request) {
-
-        return ResponseEntity.ok(
-                decisionService.createDecision(request)
-        );
+    @GetMapping("/public")
+    public Page<Decision> publicBoards(@RequestParam(required = false) String category,
+                                       @RequestParam(defaultValue = "0") int page,
+                                       @RequestParam(defaultValue = "20") int size) {
+        return decisions.publicDecisions(category, page(page, size));
     }
 
-    // GET ALL
+    @GetMapping("/mine")
+    public Page<Decision> myBoards(@RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "20") int size) {
+        return decisions.myDecisions(currentUser(), page(page, size));
+    }
+
+    @PostMapping({"", "/create"})
+    public ResponseEntity<Decision> create(@RequestBody DecisionRequest request) {
+        // The current user is resolved before delegation so board ownership is never client-controlled.
+        return ResponseEntity.ok(decisions.createDecision(request, currentUser()));
+    }
+
     @GetMapping
-    public ResponseEntity<List<Decision>> getAllDecisions() {
+    public ResponseEntity<List<Decision>> all() { return ResponseEntity.ok(decisions.getAllDecisions()); }
 
-        return ResponseEntity.ok(
-                decisionService.getAllDecisions()
-        );
-    }
-
-    // GET BY ID
     @GetMapping("/{id}")
-    public ResponseEntity<Decision> getDecisionById(
-            @PathVariable Long id) {
+    public ResponseEntity<Decision> get(@PathVariable Long id) { return ResponseEntity.ok(decisions.getDecisionById(id)); }
 
-        return ResponseEntity.ok(
-                decisionService.getDecisionById(id)
-        );
-    }
-
-    // UPDATE
     @PutMapping("/{id}")
-    public ResponseEntity<Decision> updateDecision(
-            @PathVariable Long id,
-            @RequestBody DecisionRequest request) {
-
-        return ResponseEntity.ok(
-                decisionService.updateDecision(id, request)
-        );
+    public ResponseEntity<Decision> update(@PathVariable Long id, @RequestBody DecisionRequest request) {
+        return ResponseEntity.ok(decisions.updateDecision(id, request, currentUser()));
     }
 
-    // DELETE
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteDecision(
-            @PathVariable Long id) {
-
-        decisionService.deleteDecision(id);
-
-        return ResponseEntity.ok(
-                "Decision deleted successfully"
-        );
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        decisions.deleteDecision(id, currentUser());
+        return ResponseEntity.noContent().build();
     }
 
-    // ADD OPTION
     @PostMapping("/{id}/options")
-    public ResponseEntity<Option> addOption(
-            @PathVariable Long id,
-            @RequestBody OptionRequest request) {
-
-        return ResponseEntity.ok(
-                decisionService.addOption(id, request)
-        );
+    public ResponseEntity<Option> addOption(@PathVariable Long id, @RequestBody OptionRequest request) {
+        return ResponseEntity.ok(decisions.addOption(id, request, currentUser()));
     }
 
-    // GET OPTIONS
     @GetMapping("/{id}/options")
-    public ResponseEntity<List<Option>> getOptions(
-            @PathVariable Long id) {
+    public ResponseEntity<List<Option>> options(@PathVariable Long id) { return ResponseEntity.ok(decisions.getOptions(id)); }
 
-        return ResponseEntity.ok(
-                decisionService.getOptions(id)
-        );
+    @PostMapping("/{id}/votes")
+    public ResponseEntity<Decision> vote(@PathVariable Long id, @RequestBody VoteRequest request) {
+        return ResponseEntity.ok(decisions.castVote(id, request, currentUser()));
+    }
+
+    @DeleteMapping("/{id}/votes/{optionId}")
+    public ResponseEntity<Decision> retract(@PathVariable Long id, @PathVariable Long optionId) {
+        return ResponseEntity.ok(decisions.retractVote(id, optionId, currentUser()));
+    }
+
+    @GetMapping("/{id}/votes/results")
+    public ResponseEntity<Decision> results(@PathVariable Long id) { return ResponseEntity.ok(decisions.results(id)); }
+
+    private PageRequest page(int page, int size) { return PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100), Sort.by("createdAt").descending()); }
+    private User currentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return users.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 }

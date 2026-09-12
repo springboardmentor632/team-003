@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getDecision, castVote, retractVote } from "../api/decisions";
+import { reportDecision } from "../api/collaboration";
 import { extractErrorMessage } from "../api/client";
+import Discussion from "../components/Discussion";
 
 const FACTORS = [
   { key: "costScore", label: "Cost" },
@@ -27,6 +29,8 @@ export default function BoardDetail() {
   const [error, setError] = useState("");
   const [votedOptionIds, setVotedOptionIds] = useState([]); // session-local: options this user has voted for
   const [votingId, setVotingId] = useState(null);
+  const [reporting, setReporting] = useState(false);
+  const [reportReason, setReportReason] = useState("");
 
   const load = () => {
     setLoading(true);
@@ -69,6 +73,14 @@ export default function BoardDetail() {
     }
   };
 
+  const submitReport = async (event) => {
+    event.preventDefault();
+    try {
+      await reportDecision(id, { reason: reportReason });
+      setReportReason(""); setReporting(false);
+    } catch (err) { setError(extractErrorMessage(err, "Couldn't submit report")); }
+  };
+
   if (loading) return <div className="state-block">Loading board…</div>;
   if (error && !decision) return <div className="error-banner">{error}</div>;
   if (!decision) return null;
@@ -79,23 +91,33 @@ export default function BoardDetail() {
   return (
     <div>
       <div className="breadcrumb">
-        <Link to="/boards" style={{ color: "inherit", textDecoration: "none" }}>Decision boards</Link> / {decision.category} / <b>{decision.title}</b>
+        <Link to="/dashboard" style={{ color: "inherit", textDecoration: "none" }}>Dashboard</Link>
+        <span> / </span>
+        <Link to="/boards" style={{ color: "inherit", textDecoration: "none" }}>Decision boards</Link>
+        <span> / </span>
+        <b>{decision.title}</b>
       </div>
 
       <div className="detail-head">
         <div>
           <h1 className="display">{decision.title}</h1>
+          {decision.description && <p className="detail-description">{decision.description}</p>}
           <div className="tag-row">
             <span className="tag">{decision.visibility === "PUBLIC" ? "Public board" : "Private board"}</span>
             <span className="tag">{decision.totalVotes} votes</span>
-            <span className="tag">{decision.pollType.replace("_", " ").toLowerCase()}</span>
+            <span className="tag">{decision.pollType?.replace("_", " ").toLowerCase()}</span>
             {decision.closed && <span className="tag">Closed</span>}
           </div>
         </div>
-        <button className="btn ghost" onClick={() => navigator.clipboard?.writeText(window.location.href)}>Share board</button>
+        <div className="detail-actions">
+          <a className="btn ghost" href="#discussion">Discussion</a>
+          <button className="btn ghost" onClick={() => navigator.clipboard?.writeText(window.location.href)}>Share board</button>
+          <button className="btn ghost" onClick={() => setReporting((value) => !value)}>Report</button>
+        </div>
       </div>
 
       {error && <div className="error-banner">{error}</div>}
+      {reporting && <form className="form-card" onSubmit={submitReport} style={{ marginBottom: 20 }}><div className="field"><label>Why are you reporting this board?</label><input value={reportReason} required onChange={(event) => setReportReason(event.target.value)} placeholder="Describe the issue" /></div><div className="detail-actions"><button className="btn brass" type="submit">Submit report</button><button className="btn ghost" type="button" onClick={() => setReporting(false)}>Cancel</button></div></form>}
 
       <div className="detail-body">
         <div>
@@ -184,12 +206,7 @@ export default function BoardDetail() {
             </>
           )}
 
-          <div className="section-head"><h2>Discussion</h2></div>
-          <div className="discussion">
-            <div className="empty-note">
-              Comments and community discussion for this board are coming in a future update.
-            </div>
-          </div>
+          <Discussion boardId={id} />
         </div>
 
         <aside className="rail">
@@ -198,7 +215,7 @@ export default function BoardDetail() {
             <div className="rail-meta"><span className="k">Created by</span><span>{decision.createdByName}</span></div>
             <div className="rail-meta"><span className="k">Category</span><span>{decision.category}</span></div>
             <div className="rail-meta"><span className="k">Visibility</span><span>{decision.visibility === "PUBLIC" ? "Public" : "Private"}</span></div>
-            <div className="rail-meta"><span className="k">Poll type</span><span>{decision.pollType.replace("_", " ").toLowerCase()}</span></div>
+            <div className="rail-meta"><span className="k">Poll type</span><span>{decision.pollType?.replace("_", " ").toLowerCase()}</span></div>
             <div className="rail-meta"><span className="k">Anonymous voting</span><span>{decision.allowAnonymousVoting ? "Allowed" : "Not allowed"}</span></div>
           </div>
 
