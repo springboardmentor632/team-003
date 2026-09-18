@@ -50,6 +50,11 @@ public class DecisionController {
     @GetMapping
     public ResponseEntity<List<Decision>> all() { return ResponseEntity.ok(decisions.getAllDecisions()); }
 
+    @GetMapping("/community/{communityId}")
+    public ResponseEntity<List<Decision>> communityBoards(@PathVariable Long communityId) {
+        return ResponseEntity.ok(decisions.communityDecisions(communityId));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Decision> get(@PathVariable Long id) { return ResponseEntity.ok(decisions.getDecisionById(id)); }
 

@@ -26,6 +26,10 @@ public class AuthorizationService {
 
     public boolean canModerate(Decision decision, User user) { return canModerate(decision.getCommunity(), user); }
 
+    public boolean isCommunityMember(Community community, User user) {
+        return community != null && user != null && memberships.existsByCommunityIdAndUserId(community.getId(), user.getId());
+    }
+
     public void requireCommunityModerator(Community community, User user) {
         if (!canModerate(community, user)) throw new SecurityException("A community moderator or admin is required");
     }

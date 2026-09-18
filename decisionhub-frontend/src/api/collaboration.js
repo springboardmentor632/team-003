@@ -6,6 +6,7 @@ export const reactToComment = (decisionId, commentId) => client.post(`/api/decis
 export const deleteComment = (decisionId, commentId) => client.delete(`/api/decisions/${decisionId}/comments/${commentId}`);
 
 export const listCommunities = () => client.get("/api/communities");
+export const getCommunity = (id) => client.get(`/api/communities/${id}`);
 export const createCommunity = (payload) => client.post("/api/communities", payload);
 export const joinCommunity = (id) => client.post(`/api/communities/${id}/members`);
 export const leaveCommunity = (id) => client.delete(`/api/communities/${id}/members/me`);

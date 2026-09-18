@@ -43,7 +43,12 @@ public class DecisionService {
 
     @Transactional
     public Decision createDecision(DecisionRequest request, User creator) {
-        if (request.getCommunityId() != null) authorization.requireCommunityModerator(communities.findById(request.getCommunityId()).orElseThrow(() -> new IllegalArgumentException("Community not found")), creator);
+        if (request.getCommunityId() != null) {
+            Community community = communities.findById(request.getCommunityId()).orElseThrow(() -> new IllegalArgumentException("Community not found"));
+            if (!authorization.isAdmin(creator) && !authorization.isCommunityMember(community, creator)) {
+                throw new SecurityException("Join this community before creating a decision board");
+            }
+        }
         Decision decision = new Decision();
         apply(decision, request);
         decision.setCreatedBy(creator == null ? request.getCreatedBy() : creator.getName());
@@ -74,6 +79,14 @@ public class DecisionService {
         List<Decision> all = decisions.findAll();
         all.forEach(this::hydrate);
         return all;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Decision> communityDecisions(Long communityId) {
+        if (!communities.existsById(communityId)) throw new IllegalArgumentException("Community not found");
+        List<Decision> boards = decisions.findByCommunity_IdOrderByCreatedAtDesc(communityId);
+        boards.forEach(this::hydrate);
+        return boards;
     }
 
     @Transactional(readOnly = true)

@@ -8,6 +8,7 @@ import com.decisionhub.repository.OptionRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ import java.util.List;
 public class SeedDecisionsConfig {
 
     @Bean
+    @Order(2)
     CommandLineRunner seedDecisions(DecisionRepository decisionRepository, OptionRepository optionRepository) {
         return args -> {
             if (decisionRepository.count() > 0) {

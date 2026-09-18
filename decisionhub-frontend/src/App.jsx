@@ -11,6 +11,7 @@ import Boards from "./pages/Boards";
 import CreateBoard from "./pages/CreateBoard";
 import BoardDetail from "./pages/BoardDetail";
 import Communities from "./pages/Communities";
+import CommunityDetail from "./pages/CommunityDetail";
 import Analytics from "./pages/Analytics";
 import Demo from "./pages/Demo";
 import Notifications from "./pages/Notifications";
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/boards/new" element={<CreateBoard />} />
             <Route path="/boards/:id" element={<BoardDetail />} />
             <Route path="/communities" element={<Communities />} />
+            <Route path="/communities/:id" element={<CommunityDetail />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/reports" element={<Reports />} />

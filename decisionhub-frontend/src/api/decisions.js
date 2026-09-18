@@ -12,6 +12,10 @@ export function listMyDecisions({ page = 0, size = 20 } = {}) {
   return client.get("/api/decisions/mine", { params: { page, size } });
 }
 
+export function listCommunityDecisions(communityId) {
+  return client.get(`/api/decisions/community/${communityId}`);
+}
+
 export function getDecision(id) {
   return client.get(`/api/decisions/${id}`);
 }

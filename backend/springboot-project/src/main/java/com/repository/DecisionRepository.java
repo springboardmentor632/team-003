@@ -12,4 +12,5 @@ public interface DecisionRepository extends JpaRepository<Decision, Long> {
     Page<Decision> findByCreatedBy(String createdBy, Pageable pageable);
     Page<Decision> findByVisibility(String visibility, Pageable pageable);
     Page<Decision> findByVisibilityAndCategoryIgnoreCase(String visibility, String category, Pageable pageable);
+    List<Decision> findByCommunity_IdOrderByCreatedAtDesc(Long communityId);
 }

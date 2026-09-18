@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import TopBar from "../components/TopBar";
 import { createDecision } from "../api/decisions";
 import { extractErrorMessage } from "../api/client";
@@ -12,6 +12,9 @@ function emptyOption() {
 
 export default function CreateBoard() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const communityId = searchParams.get("communityId");
+  const communityName = searchParams.get("communityName");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Career");
@@ -51,6 +54,7 @@ export default function CreateBoard() {
       visibility,
       pollType,
       allowAnonymousVoting,
+      communityId: communityId ? Number(communityId) : undefined,
       options: options.map((o) => ({
         title: o.title,
         description: o.description || undefined,
@@ -76,7 +80,7 @@ export default function CreateBoard() {
 
   return (
     <div>
-      <TopBar eyebrow="New board" title="Create a decision board" subtitle="Frame your choice, add at least two options, and open it up for votes." />
+      <TopBar eyebrow={communityName ? "Community board" : "New board"} title="Create a decision board" subtitle={communityName ? `Create a shared decision for ${communityName}. Every member can view and vote.` : "Frame your choice, add at least two options, and open it up for votes."} />
 
       {error && <div className="error-banner">{error}</div>}
 
