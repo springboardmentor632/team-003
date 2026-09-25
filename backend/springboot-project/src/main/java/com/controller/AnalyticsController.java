@@ -26,18 +26,26 @@ public class AnalyticsController {
         long totalVotes = visible.stream().mapToLong(Decision::getTotalVotes).sum();
         Map<String, Long> categoryVotes = new LinkedHashMap<>();
         Map<String, Long> pollTypes = new LinkedHashMap<>();
+        Map<String, Long> optionPopularity = new LinkedHashMap<>();
+        Map<String, Long> communityActivity = new LinkedHashMap<>();
+        Map<String, Long> decisionTrends = new LinkedHashMap<>();
         for (Decision decision : visible) {
             categoryVotes.merge(decision.getCategory(), decision.getTotalVotes(), Long::sum);
             pollTypes.merge(decision.getPollType(), 1L, Long::sum);
+            decision.getOptions().forEach(option -> optionPopularity.merge(option.getTitle(), option.getVoteCount(), Long::sum));
+            communityActivity.merge(decision.getCommunity() == null ? "Independent boards" : decision.getCommunity().getName(), decision.getTotalVotes(), Long::sum);
+            decisionTrends.merge(decision.getCreatedAt() == null ? "Unknown" : decision.getCreatedAt().toLocalDate().toString(), 1L, Long::sum);
         }
-        return Map.of(
-            "totalBoards", visible.size(),
-            "totalVotes", totalVotes,
-            "boardsWithVotes", visible.stream().filter(d -> d.getTotalVotes() > 0).count(),
-            "closedBoards", visible.stream().filter(Decision::isClosed).count(),
-            "categoryVotes", categoryVotes,
-            "pollTypes", pollTypes,
-            "mostActive", visible.stream().sorted(Comparator.comparingLong(Decision::getTotalVotes).reversed()).limit(5).toList());
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("totalBoards", visible.size()); result.put("totalVotes", totalVotes);
+        result.put("boardsWithVotes", visible.stream().filter(d -> d.getTotalVotes() > 0).count());
+        result.put("closedBoards", visible.stream().filter(Decision::isClosed).count());
+        result.put("categoryVotes", categoryVotes); result.put("pollTypes", pollTypes);
+        result.put("optionPopularity", optionPopularity); result.put("communityActivity", communityActivity);
+        result.put("decisionTrends", decisionTrends);
+        result.put("outcomes", Map.of("open", visible.stream().filter(d -> !d.isClosed()).count(), "closed", visible.stream().filter(Decision::isClosed).count()));
+        result.put("mostActive", visible.stream().sorted(Comparator.comparingLong(Decision::getTotalVotes).reversed()).limit(5).toList());
+        return result;
     }
     private User current() { return users.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new IllegalArgumentException("User not found")); }
 }

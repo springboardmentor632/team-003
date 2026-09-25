@@ -6,6 +6,9 @@ import com.decisionhub.model.CommunityMembership;
 import com.decisionhub.model.User;
 import com.decisionhub.repository.CommunityMembershipRepository;
 import com.decisionhub.repository.CommunityRepository;
+import com.decisionhub.repository.UserRepository;
+import com.decisionhub.repository.CommunityInvitationRepository;
+import com.decisionhub.model.CommunityInvitation;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +18,10 @@ public class CommunityService {
     private final CommunityRepository communities;
     private final CommunityMembershipRepository memberships;
     private final AuthorizationService authorization;
-    public CommunityService(CommunityRepository communities, CommunityMembershipRepository memberships, AuthorizationService authorization) { this.communities = communities; this.memberships = memberships; this.authorization = authorization; }
+    private final UserRepository users;
+    private final NotificationService notifications;
+    private final CommunityInvitationRepository invitations;
+    public CommunityService(CommunityRepository communities, CommunityMembershipRepository memberships, AuthorizationService authorization, UserRepository users, NotificationService notifications, CommunityInvitationRepository invitations) { this.communities = communities; this.memberships = memberships; this.authorization = authorization; this.users = users; this.notifications = notifications; this.invitations = invitations; }
     @Transactional
     public Community create(CommunityRequest request, User owner) {
         if (request.getName() == null || request.getName().isBlank()) throw new IllegalArgumentException("Community name is required");
@@ -65,10 +71,28 @@ public class CommunityService {
         memberships.save(membership);
         return decorate(community, actor);
     }
+    @Transactional
+    public void invite(Long communityId, String email, User actor) {
+        Community community = raw(communityId); authorization.requireCommunityModerator(community, actor);
+        User invitee = users.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if (!memberships.existsByCommunityIdAndUserId(communityId, invitee.getId())) {
+            invitations.save(new CommunityInvitation(community, invitee, actor));
+            notifications.notify(invitee, com.decisionhub.model.NotificationType.COMMUNITY_INVITATION, actor.getName() + " invited you to " + community.getName(), null);
+        }
+    }
+    @Transactional public List<CommunityInvitation> invitations(User user) { return invitations.findByInviteeIdAndStatus(user.getId(), "PENDING"); }
+    @Transactional public Community acceptInvitation(Long invitationId, User user) {
+        CommunityInvitation invitation = invitations.findById(invitationId).orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
+        if (!invitation.getInvitee().getId().equals(user.getId()) || !"PENDING".equals(invitation.getStatus())) throw new SecurityException("Invitation cannot be accepted");
+        invitation.setStatus("ACCEPTED"); invitations.save(invitation); if (!memberships.existsByCommunityIdAndUserId(invitation.getCommunity().getId(), user.getId())) memberships.save(new CommunityMembership(invitation.getCommunity(), user)); return decorate(invitation.getCommunity(), user);
+    }
+    @Transactional public void declineInvitation(Long invitationId, User user) { CommunityInvitation invitation = invitations.findById(invitationId).orElseThrow(() -> new IllegalArgumentException("Invitation not found")); if (!invitation.getInvitee().getId().equals(user.getId()) || !"PENDING".equals(invitation.getStatus())) throw new SecurityException("Invitation cannot be declined"); invitation.setStatus("DECLINED"); invitations.save(invitation); }
     private Community raw(Long id) { return communities.findById(id).orElseThrow(() -> new IllegalArgumentException("Community not found")); }
     private Community decorate(Community community, User viewer) {
         community.setMemberCount(memberships.countByCommunityId(community.getId()));
-        community.setJoined(viewer != null && memberships.existsByCommunityIdAndUserId(community.getId(), viewer.getId()));
+        CommunityMembership membership = viewer == null ? null : memberships.findByCommunityIdAndUserId(community.getId(), viewer.getId()).orElse(null);
+        community.setJoined(membership != null);
+        community.setMemberRole(membership == null ? null : membership.getRole());
         return community;
     }
 }

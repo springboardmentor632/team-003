@@ -1,23 +1,28 @@
-package com.controller;
+package com.decisionhub.controller;
 
 import com.decisionhub.model.Discussion;
 import com.decisionhub.model.User;
+import com.decisionhub.repository.UserRepository;
 import com.decisionhub.service.DiscussionService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/discussions")
+@CrossOrigin(origins = "*")
 public class DiscussionController {
 
     private final DiscussionService discussionService;
+    private final UserRepository users;
 
-    public DiscussionController(DiscussionService discussionService) {
+    public DiscussionController(DiscussionService discussionService, UserRepository users) {
         this.discussionService = discussionService;
+        this.users = users;
     }
 
     // Get all discussions
@@ -43,7 +48,7 @@ public class DiscussionController {
     public ResponseEntity<List<Discussion>> getMyDiscussions(
             Authentication authentication) {
 
-        User user = (User) authentication.getPrincipal();
+        User user = resolveUser(authentication);
 
         return ResponseEntity.ok(
                 discussionService.getMyDiscussions(user)
@@ -57,7 +62,7 @@ public class DiscussionController {
             @RequestParam String content,
             Authentication authentication) {
 
-        User user = (User) authentication.getPrincipal();
+        User user = resolveUser(authentication);
 
         Discussion discussion =
                 discussionService.createDiscussion(
@@ -75,10 +80,20 @@ public class DiscussionController {
             @PathVariable Long id,
             Authentication authentication) {
 
-        User user = (User) authentication.getPrincipal();
+        User user = resolveUser(authentication);
 
         discussionService.deleteDiscussion(id, user);
 
         return ResponseEntity.noContent().build();
+    }
+
+    private User resolveUser(Authentication authentication) {
+        Authentication auth = authentication != null ? authentication : SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof User user) {
+            return user;
+        }
+        String email = auth != null ? auth.getName() : null;
+        return users.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 }

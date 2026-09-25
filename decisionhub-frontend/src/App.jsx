@@ -17,6 +17,7 @@ import Demo from "./pages/Demo";
 import Notifications from "./pages/Notifications";
 import Reports from "./pages/Reports";
 import ResetPassword from "./pages/ResetPassword";
+import Feedback from "./pages/Feedback";
 
 /** Sends already-logged-in users straight to the dashboard instead of the landing/login/register pages. */
 function RedirectIfAuthed({ children }) {
@@ -44,6 +45,7 @@ export default function App() {
             <Route path="/communities/:id" element={<CommunityDetail />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/notifications" element={<Notifications />} />
+            <Route path="/feedback" element={<Feedback />} />
             <Route path="/reports" element={<Reports />} />
           </Route>
 

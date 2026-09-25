@@ -29,6 +29,9 @@ public class Community {
     @Transient
     private boolean joined;
 
+    @Transient
+    private String memberRole;
+
     public Community() {}
     public Community(String name, String description, User owner) { this.name = name; this.description = description; this.owner = owner; }
     public Long getId() { return id; }
@@ -45,4 +48,6 @@ public class Community {
     public void setMemberCount(long memberCount) { this.memberCount = memberCount; }
     public boolean isJoined() { return joined; }
     public void setJoined(boolean joined) { this.joined = joined; }
+    public String getMemberRole() { return memberRole; }
+    public void setMemberRole(String memberRole) { this.memberRole = memberRole; }
 }

@@ -23,13 +23,24 @@ public class CommentService {
         this.comments = comments; this.decisions = decisions; this.users = users; this.notifications = notifications; this.authorization = authorization;
     }
     @Transactional(readOnly = true)
-    public List<Comment> list(Long decisionId) { return comments.findByDecisionIdOrderByCreatedAtAsc(decisionId); }
+    public List<Comment> list(Long decisionId, User viewer) {
+        Decision decision = decisions.findById(decisionId).orElseThrow(() -> new IllegalArgumentException("Decision not found"));
+        boolean canViewHidden = authorization.canModerate(decision.getCommunity(), viewer);
+        return comments.findByDecisionIdOrderByCreatedAtAsc(decisionId).stream()
+                .filter(comment -> !comment.isHidden() || canViewHidden)
+                .toList();
+    }
     @Transactional
     public Comment create(Long decisionId, CommentRequest request, User author) {
         if (request.getContent() == null || request.getContent().isBlank()) throw new IllegalArgumentException("Comment text is required");
         Decision decision = decisions.findById(decisionId).orElseThrow(() -> new IllegalArgumentException("Decision not found"));
         Comment comment = new Comment(request.getContent().trim(), decision, author);
-        if (request.getParentCommentId() != null) comment.setParentComment(comments.findById(request.getParentCommentId()).orElseThrow(() -> new IllegalArgumentException("Parent comment not found")));
+        comment.setCommunity(decision.getCommunity());
+        if (request.getParentCommentId() != null) {
+            Comment parent = comments.findById(request.getParentCommentId()).orElseThrow(() -> new IllegalArgumentException("Parent comment not found"));
+            if (!parent.getDecision().getId().equals(decisionId)) throw new IllegalArgumentException("Parent comment belongs to another decision");
+            comment.setParentComment(parent);
+        }
         Comment saved = comments.save(comment);
         users.findFirstByName(decision.getCreatedBy()).filter(owner -> !owner.getId().equals(author.getId()))
             .ifPresent(owner -> notifications.notify(owner, NotificationType.COMMENT, author.getName() + " commented on " + decision.getTitle(), decision));
@@ -42,9 +53,23 @@ public class CommentService {
         return comments.save(comment);
     }
     @Transactional
+    public Comment update(Long id, CommentRequest request, User user) {
+        if (request.getContent() == null || request.getContent().isBlank()) throw new IllegalArgumentException("Comment text is required");
+        Comment comment = comments.findById(id).orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+        if (!comment.getAuthor().getId().equals(user.getId())) throw new SecurityException("Only the comment author can edit this comment");
+        comment.setContent(request.getContent().trim());
+        return comments.save(comment);
+    }
+    @Transactional
     public void delete(Long id, User user) {
         Comment comment = comments.findById(id).orElseThrow(() -> new IllegalArgumentException("Comment not found"));
         if (!comment.getAuthor().getId().equals(user.getId()) && !authorization.canModerate(comment.getDecision(), user)) throw new SecurityException("Only the author, a community moderator, or an admin can delete this comment");
         comments.delete(comment);
+    }
+    @Transactional
+    public Comment setHidden(Long id, boolean hidden, User user) {
+        Comment comment = comments.findById(id).orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+        if (!authorization.canModerate(comment.getDecision(), user)) throw new SecurityException("A community moderator or admin is required");
+        comment.setHidden(hidden); return comments.save(comment);
     }
 }
