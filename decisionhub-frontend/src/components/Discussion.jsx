@@ -1,10 +1,21 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { createComment, listComments, reactToComment } from "../api/collaboration";
+import { createComment, deleteComment, listComments, reactToComment, updateComment } from "../api/collaboration";
 import { extractErrorMessage } from "../api/client";
 import { timeAgo } from "../utils/decisionHelpers";
 
 function initials(name = "?") { return name.split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase(); }
+
+function CommentNode({ comment, children, onReply, onReact, onEdit, onDelete, canManage, canEdit, depth = 0 }) {
+  return <article className={`comment ${depth ? "comment-reply" : ""}`} key={comment.id}>
+    <div className="avatar comment-avatar">{initials(comment.authorName)}</div>
+    <div className="comment-body"><div className="comment-meta"><span className="who">{comment.authorName}</span><span>{timeAgo(comment.createdAt)}</span>{comment.hidden && <span className="hidden-comment-label">Hidden from members</span>}</div>
+      {depth > 0 && <div className="comment-reply-label">Reply</div>}<p>{comment.body}</p>
+      <div className="comment-actions"><button type="button" onClick={() => onReact(comment.id)}>♡ {comment.reactionCount || 0}</button><button type="button" onClick={() => onReply(comment)}>Reply</button>{canEdit(comment) && <button type="button" onClick={() => onEdit(comment)}>Edit</button>}{canManage(comment) && <button type="button" onClick={() => onDelete(comment)}>Delete</button>}</div>
+      {children?.length > 0 && <div className="comment-children">{children.map((child) => <CommentNode key={child.id} comment={child} children={child.children} onReply={onReply} onReact={onReact} onEdit={onEdit} onDelete={onDelete} canManage={canManage} canEdit={canEdit} depth={depth + 1} />)}</div>}
+    </div>
+  </article>;
+}
 
 export default function Discussion({ boardId }) {
   const { user } = useAuth();
@@ -21,6 +32,15 @@ export default function Discussion({ boardId }) {
   };
   useEffect(() => { setDraft(""); setReplyTo(null); setError(""); load(); }, [boardId]);
   const count = useMemo(() => `${comments.length} ${comments.length === 1 ? "comment" : "comments"}`, [comments]);
+  const threadRoots = useMemo(() => {
+    const byId = new Map(comments.map((comment) => [comment.id, { ...comment, children: [] }]));
+    const roots = [];
+    byId.forEach((comment) => {
+      const parent = comment.parentCommentId && byId.get(comment.parentCommentId);
+      if (parent) parent.children.push(comment); else roots.push(comment);
+    });
+    return roots;
+  }, [comments]);
 
   const submit = async (event) => {
     event.preventDefault();
@@ -38,6 +58,8 @@ export default function Discussion({ boardId }) {
     } catch (err) { setError(extractErrorMessage(err, "Couldn't add your reaction")); }
   };
   const startReply = (comment) => { setReplyTo(comment); setDraft(`@${comment.authorName.split(" ")[0]} `); requestAnimationFrame(() => composerRef.current?.focus()); };
+  const edit = async (comment) => { const content = window.prompt("Edit comment", comment.body); if (!content?.trim()) return; try { const { data } = await updateComment(boardId, comment.id, { content }); setComments((all) => all.map((item) => item.id === data.id ? data : item)); } catch (err) { setError(extractErrorMessage(err, "Couldn't edit comment")); } };
+  const remove = async (comment) => { if (!window.confirm("Delete this comment?")) return; try { await deleteComment(boardId, comment.id); setComments((all) => all.filter((item) => item.id !== comment.id)); } catch (err) { setError(extractErrorMessage(err, "Couldn't delete comment")); } };
 
   return (
     <section className="discussion" id="discussion">
@@ -52,15 +74,7 @@ export default function Discussion({ boardId }) {
         </div>
       </form>
       <div className="comment-list">
-        {loading ? <div className="empty-note">Loading conversation…</div> : comments.length === 0 ? <div className="empty-note">Start the conversation.</div> : comments.map((comment) => (
-          <article className="comment" key={comment.id}>
-            <div className="avatar comment-avatar">{initials(comment.authorName)}</div>
-            <div className="comment-body"><div className="comment-meta"><span className="who">{comment.authorName}</span><span>{timeAgo(comment.createdAt)}</span></div>
-              {comment.parentCommentId && <div className="comment-reply-label">Reply</div>}<p>{comment.body}</p>
-              <div className="comment-actions"><button type="button" onClick={() => react(comment.id)}>♡ {comment.reactionCount || 0}</button><button type="button" onClick={() => startReply(comment)}>Reply</button></div>
-            </div>
-          </article>
-        ))}
+        {loading ? <div className="empty-note">Loading conversation…</div> : comments.length === 0 ? <div className="empty-note">Start the conversation.</div> : threadRoots.map((comment) => <CommentNode key={comment.id} comment={comment} children={comment.children} onReply={startReply} onReact={react} onEdit={edit} onDelete={remove} canManage={(item) => item.authorName === user?.fullName || user?.role === "ADMIN"} canEdit={(item) => item.authorName === user?.fullName} />)}
       </div>
     </section>
   );

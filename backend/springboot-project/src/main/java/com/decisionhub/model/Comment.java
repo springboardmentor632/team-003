@@ -18,6 +18,11 @@ public class Comment {
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Decision decision;
 
+    @ManyToOne
+    @JoinColumn(name = "community_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private Community community;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
@@ -32,6 +37,8 @@ public class Comment {
 
     @Column(nullable = false)
     private long reactionCount;
+    @Column(nullable = false)
+    private boolean hidden;
 
     public Comment() {}
     public Comment(String content, Decision decision, User author) { this.content = content; this.decision = decision; this.author = author; }
@@ -42,6 +49,8 @@ public class Comment {
     public String getBody() { return content; }
     public Decision getDecision() { return decision; }
     public void setDecision(Decision decision) { this.decision = decision; }
+    public Community getCommunity() { return community; } public void setCommunity(Community community) { this.community = community; }
+    public Long getCommunityId() { return community == null ? null : community.getId(); }
     public User getAuthor() { return author; }
     public void setAuthor(User author) { this.author = author; }
     public String getAuthorName() { return author == null ? "" : author.getName(); }
@@ -52,4 +61,6 @@ public class Comment {
     public Long getParentCommentId() { return parentComment == null ? null : parentComment.getId(); }
     public long getReactionCount() { return reactionCount; }
     public void setReactionCount(long reactionCount) { this.reactionCount = reactionCount; }
+    public boolean isHidden() { return hidden; }
+    public void setHidden(boolean hidden) { this.hidden = hidden; }
 }

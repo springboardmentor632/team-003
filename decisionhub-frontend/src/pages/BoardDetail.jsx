@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getDecision, castVote, retractVote } from "../api/decisions";
+import { reportDecision } from "../api/collaboration";
 import { extractErrorMessage } from "../api/client";
 import Discussion from "../components/Discussion";
-import ReportModal from "../components/ReportModal";
+import Suggestions from "../components/Suggestions";
 
 const FACTORS = [
   { key: "costScore", label: "Cost" },
@@ -15,79 +16,46 @@ const FACTORS = [
 
 function DotRow({ score }) {
   const filled = score ? Math.round(score / 2) : 0;
-
   return (
     <div className="dot-row">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <div
-          key={i}
-          className={`dot ${i <= filled ? "fill" : ""}`}
-        />
-      ))}
+      {[1, 2, 3, 4, 5].map((i) => <div key={i} className={`dot ${i <= filled ? "fill" : ""}`} />)}
     </div>
   );
 }
 
 export default function BoardDetail() {
   const { id } = useParams();
-
   const [decision, setDecision] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const [votedOptionIds, setVotedOptionIds] = useState([]);
+  const [votedOptionIds, setVotedOptionIds] = useState([]); // session-local: options this user has voted for
   const [votingId, setVotingId] = useState(null);
-
   const [reporting, setReporting] = useState(false);
+  const [reportReason, setReportReason] = useState("");
 
   const load = () => {
     setLoading(true);
-    setError("");
-
     getDecision(id)
       .then(({ data }) => setDecision(data))
-      .catch((err) =>
-        setError(
-          extractErrorMessage(
-            err,
-            "Couldn't load this decision board"
-          )
-        )
-      )
+      .catch((err) => setError(extractErrorMessage(err, "Couldn't load this decision board")))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line
-  }, [id]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
 
   const handleVote = async (optionId, rating) => {
     setVotingId(optionId);
     setError("");
-
     try {
-      const { data } = await castVote(id, {
-        optionId,
-        rating,
-      });
-
+      const { data } = await castVote(id, { optionId, rating });
       setDecision(data);
-
       if (decision?.pollType === "SINGLE_CHOICE") {
         setVotedOptionIds([optionId]);
       } else {
-        setVotedOptionIds((prev) => [
-          ...new Set([...prev, optionId]),
-        ]);
+        setVotedOptionIds((prev) => [...new Set([...prev, optionId])]);
       }
     } catch (err) {
-      setError(
-        extractErrorMessage(
-          err,
-          "Couldn't record your vote"
-        )
-      );
+      setError(extractErrorMessage(err, "Couldn't record your vote"));
     } finally {
       setVotingId(null);
     }
@@ -95,248 +63,95 @@ export default function BoardDetail() {
 
   const handleRetract = async (optionId) => {
     setVotingId(optionId);
-
     try {
       const { data } = await retractVote(id, optionId);
-
       setDecision(data);
-
-      setVotedOptionIds((prev) =>
-        prev.filter((oid) => oid !== optionId)
-      );
+      setVotedOptionIds((prev) => prev.filter((oid) => oid !== optionId));
     } catch (err) {
-      setError(
-        extractErrorMessage(
-          err,
-          "Couldn't remove your vote"
-        )
-      );
+      setError(extractErrorMessage(err, "Couldn't remove your vote"));
     } finally {
       setVotingId(null);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="state-block">
-        Loading board…
-      </div>
-    );
-  }
+  const submitReport = async (event) => {
+    event.preventDefault();
+    try {
+      await reportDecision(id, { reason: reportReason });
+      setReportReason(""); setReporting(false);
+    } catch (err) { setError(extractErrorMessage(err, "Couldn't submit report")); }
+  };
 
-  if (error && !decision) {
-    return (
-      <div className="error-banner">
-        {error}
-      </div>
-    );
-  }
-
-  if (!decision) {
-    return null;
-  }
+  if (loading) return <div className="state-block">Loading board…</div>;
+  if (error && !decision) return <div className="error-banner">{error}</div>;
+  if (!decision) return null;
 
   const options = decision.options || [];
-
-  const leadingId =
-    decision.totalVotes > 0
-      ? options.find((o) => o.rank === 1)?.id
-      : null;
+  const leadingId = decision.totalVotes > 0 ? options.find((o) => o.rank === 1)?.id : null;
 
   return (
     <div>
       <div className="breadcrumb">
-        <Link
-          to="/dashboard"
-          style={{
-            color: "inherit",
-            textDecoration: "none",
-          }}
-        >
-          Dashboard
-        </Link>
-
+        <Link to="/dashboard" style={{ color: "inherit", textDecoration: "none" }}>Dashboard</Link>
         <span> / </span>
-
-        <Link
-          to="/boards"
-          style={{
-            color: "inherit",
-            textDecoration: "none",
-          }}
-        >
-          Decision boards
-        </Link>
-
+        <Link to="/boards" style={{ color: "inherit", textDecoration: "none" }}>Decision boards</Link>
         <span> / </span>
-
         <b>{decision.title}</b>
       </div>
 
       <div className="detail-head">
         <div>
-          <h1 className="display">
-            {decision.title}
-          </h1>
-
-          {decision.description && (
-            <p className="detail-description">
-              {decision.description}
-            </p>
-          )}
-
+          <h1 className="display">{decision.title}</h1>
+          {decision.description && <p className="detail-description">{decision.description}</p>}
           <div className="tag-row">
-            <span className="tag">
-              {decision.visibility === "PUBLIC"
-                ? "Public board"
-                : "Private board"}
-            </span>
-
-            <span className="tag">
-              {decision.totalVotes} votes
-            </span>
-
-            <span className="tag">
-              {decision.pollType
-                ?.replace("_", " ")
-                .toLowerCase()}
-            </span>
-
-            {decision.closed && (
-              <span className="tag">
-                Closed
-              </span>
-            )}
+            <span className="tag">{decision.visibility === "PUBLIC" ? "Public board" : "Private board"}</span>
+            <span className="tag">{decision.totalVotes} votes</span>
+            <span className="tag">{decision.pollType?.replace("_", " ").toLowerCase()}</span>
+            {decision.closed && <span className="tag">Closed</span>}
           </div>
         </div>
-
         <div className="detail-actions">
-          <a
-            className="btn ghost"
-            href="#discussion"
-          >
-            Discussion
-          </a>
-
-          <button
-            className="btn ghost"
-            onClick={() =>
-              navigator.clipboard?.writeText(
-                window.location.href
-              )
-            }
-          >
-            Share board
-          </button>
-
-          <button
-            className="btn ghost"
-            onClick={() => setReporting(true)}
-          >
-            Report
-          </button>
+          <a className="btn ghost" href="#discussion">Discussion</a>
+          <button className="btn ghost" onClick={() => navigator.clipboard?.writeText(window.location.href)}>Share board</button>
+          <button className="btn ghost" onClick={() => setReporting((value) => !value)}>Report</button>
         </div>
       </div>
 
-      {error && (
-        <div className="error-banner">
-          {error}
-        </div>
-      )}
-
-      {reporting && (
-        <ReportModal
-          onClose={() => setReporting(false)}
-        />
-      )}
+      {error && <div className="error-banner">{error}</div>}
+      {reporting && <form className="form-card" onSubmit={submitReport} style={{ marginBottom: 20 }}><div className="field"><label>Why are you reporting this board?</label><input value={reportReason} required onChange={(event) => setReportReason(event.target.value)} placeholder="Describe the issue" /></div><div className="detail-actions"><button className="btn brass" type="submit">Submit report</button><button className="btn ghost" type="button" onClick={() => setReporting(false)}>Cancel</button></div></form>}
 
       <div className="detail-body">
         <div>
           <div className="compare-grid">
             {options.map((opt) => {
-              const isLeading =
-                opt.id === leadingId;
-
-              const hasVoted =
-                votedOptionIds.includes(opt.id);
-
-              const isBusy =
-                votingId === opt.id;
+              const isLeading = opt.id === leadingId;
+              const hasVoted = votedOptionIds.includes(opt.id);
+              const isBusy = votingId === opt.id;
 
               return (
-                <div
-                  className={`opt-card ${
-                    isLeading ? "leading" : ""
-                  }`}
-                  key={opt.id}
-                >
+                <div className={`opt-card ${isLeading ? "leading" : ""}`} key={opt.id}>
                   <div className="opt-card-head">
                     <h3>{opt.title}</h3>
-
-                    {isLeading && (
-                      <span className="lead-badge">
-                        Leading
-                      </span>
-                    )}
+                    {isLeading && <span className="lead-badge">Leading</span>}
                   </div>
 
                   <div className="opt-score mono">
-                    {opt.averageScore != null
-                      ? `Weighted score — ${opt.averageScore.toFixed(
-                          1
-                        )} / 10`
-                      : "No comparison scores yet"}
-
-                    {decision.pollType === "RATING" &&
-                      opt.averageRating != null &&
-                      ` · Avg. rating ${opt.averageRating.toFixed(
-                        1
-                      )} / 5`}
+                    {opt.averageScore != null ? `Weighted score — ${opt.averageScore.toFixed(1)} / 10` : "No comparison scores yet"}
+                    {decision.pollType === "RATING" && opt.averageRating != null && ` · Avg. rating ${opt.averageRating.toFixed(1)} / 5`}
                   </div>
 
-                  {opt.pros && (
-                    <div className="pc-row">
-                      <span className="pc-label pros">
-                        + Pro
-                      </span>
-
-                      <span>{opt.pros}</span>
-                    </div>
-                  )}
-
-                  {opt.cons && (
-                    <div className="pc-row">
-                      <span className="pc-label cons">
-                        − Con
-                      </span>
-
-                      <span>{opt.cons}</span>
-                    </div>
-                  )}
+                  {opt.pros && <div className="pc-row"><span className="pc-label pros">+ Pro</span><span>{opt.pros}</span></div>}
+                  {opt.cons && <div className="pc-row"><span className="pc-label cons">− Con</span><span>{opt.cons}</span></div>}
 
                   {decision.pollType === "RATING" ? (
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: 6,
-                        marginTop: 16,
-                      }}
-                    >
+                    <div style={{ display: "flex", gap: 6, marginTop: 16 }}>
                       {[1, 2, 3, 4, 5].map((n) => (
                         <button
                           key={n}
                           className="btn ghost"
-                          style={{
-                            flex: 1,
-                            padding: "9px 0",
-                          }}
-                          disabled={
-                            isBusy ||
-                            decision.closed
-                          }
-                          onClick={() =>
-                            handleVote(opt.id, n)
-                          }
+                          style={{ flex: 1, padding: "9px 0" }}
+                          disabled={isBusy || decision.closed}
+                          onClick={() => handleVote(opt.id, n)}
                         >
                           {n}
                         </button>
@@ -345,40 +160,22 @@ export default function BoardDetail() {
                   ) : (
                     <>
                       <button
-                        className={`vote-btn ${
-                          hasVoted ? "voted" : ""
-                        }`}
-                        disabled={
-                          isBusy ||
-                          decision.closed
-                        }
-                        onClick={() =>
-                          handleVote(opt.id)
-                        }
+                        className={`vote-btn ${hasVoted ? "voted" : ""}`}
+                        disabled={isBusy || decision.closed}
+                        onClick={() => handleVote(opt.id)}
                       >
-                        {isBusy
-                          ? "Voting…"
-                          : hasVoted
-                          ? "✓ You voted for this"
-                          : "Vote for this option"}
+                        {isBusy ? "Voting…" : hasVoted ? "✓ You voted for this" : "Vote for this option"}
                       </button>
-
-                      {hasVoted &&
-                        decision.pollType ===
-                          "MULTIPLE_CHOICE" && (
-                          <button
-                            type="button"
-                            className="remove-link"
-                            style={{
-                              marginTop: 8,
-                            }}
-                            onClick={() =>
-                              handleRetract(opt.id)
-                            }
-                          >
-                            Remove your vote
-                          </button>
-                        )}
+                      {hasVoted && decision.pollType === "MULTIPLE_CHOICE" && (
+                        <button
+                          type="button"
+                          className="remove-link"
+                          style={{ marginTop: 8 }}
+                          onClick={() => handleRetract(opt.id)}
+                        >
+                          Remove your vote
+                        </button>
+                      )}
                     </>
                   )}
                 </div>
@@ -386,46 +183,22 @@ export default function BoardDetail() {
             })}
           </div>
 
-          {options.some(
-            (o) =>
-              o.costScore != null ||
-              o.benefitsScore != null ||
-              o.riskScore != null
-          ) && (
+          {options.some((o) => o.costScore != null || o.benefitsScore != null || o.riskScore != null) && (
             <>
-              <div className="section-head">
-                <h2>
-                  Comparison by criteria
-                </h2>
-              </div>
-
+              <div className="section-head"><h2>Comparison by criteria</h2></div>
               <table className="criteria-table">
                 <thead>
                   <tr>
                     <th>Criteria</th>
-
-                    {options.map((opt) => (
-                      <th key={opt.id}>
-                        {opt.title}
-                      </th>
-                    ))}
+                    {options.map((opt) => <th key={opt.id}>{opt.title}</th>)}
                   </tr>
                 </thead>
-
                 <tbody>
                   {FACTORS.map((f) => (
                     <tr key={f.key}>
                       <td>{f.label}</td>
-
                       {options.map((opt) => (
-                        <td
-                          className="score"
-                          key={opt.id}
-                        >
-                          <DotRow
-                            score={opt[f.key]}
-                          />
-                        </td>
+                        <td className="score" key={opt.id}><DotRow score={opt[f.key]} /></td>
                       ))}
                     </tr>
                   ))}
@@ -434,104 +207,28 @@ export default function BoardDetail() {
             </>
           )}
 
-          <div id="discussion">
-            <Discussion boardId={id} />
-          </div>
+          <Discussion boardId={id} />
+          <Suggestions boardId={id} />
         </div>
 
         <aside className="rail">
           <div className="rail-panel">
             <h4>Board info</h4>
-
-            <div className="rail-meta">
-              <span className="k">
-                Created by
-              </span>
-
-              <span>
-                {decision.createdByName}
-              </span>
-            </div>
-
-            <div className="rail-meta">
-              <span className="k">
-                Category
-              </span>
-
-              <span>
-                {decision.category}
-              </span>
-            </div>
-
-            <div className="rail-meta">
-              <span className="k">
-                Visibility
-              </span>
-
-              <span>
-                {decision.visibility ===
-                "PUBLIC"
-                  ? "Public"
-                  : "Private"}
-              </span>
-            </div>
-
-            <div className="rail-meta">
-              <span className="k">
-                Poll type
-              </span>
-
-              <span>
-                {decision.pollType
-                  ?.replace("_", " ")
-                  .toLowerCase()}
-              </span>
-            </div>
-
-            <div className="rail-meta">
-              <span className="k">
-                Anonymous voting
-              </span>
-
-              <span>
-                {decision.allowAnonymousVoting
-                  ? "Allowed"
-                  : "Not allowed"}
-              </span>
-            </div>
+            <div className="rail-meta"><span className="k">Created by</span><span>{decision.createdByName}</span></div>
+            <div className="rail-meta"><span className="k">Category</span><span>{decision.category}</span></div>
+            <div className="rail-meta"><span className="k">Visibility</span><span>{decision.visibility === "PUBLIC" ? "Public" : "Private"}</span></div>
+            <div className="rail-meta"><span className="k">Poll type</span><span>{decision.pollType?.replace("_", " ").toLowerCase()}</span></div>
+            <div className="rail-meta"><span className="k">Anonymous voting</span><span>{decision.allowAnonymousVoting ? "Allowed" : "Not allowed"}</span></div>
           </div>
 
           <div className="rail-panel">
             <h4>Vote breakdown</h4>
-
             {options.map((opt) => {
-              const pct =
-                decision.totalVotes > 0
-                  ? Math.round(
-                      (opt.voteCount /
-                        decision.totalVotes) *
-                        100
-                    )
-                  : 0;
-
+              const pct = decision.totalVotes > 0 ? Math.round((opt.voteCount / decision.totalVotes) * 100) : 0;
               return (
-                <div
-                  className="voter-row"
-                  key={opt.id}
-                >
-                  <span className="who">
-                    {opt.title}
-                  </span>
-
-                  <span
-                    className={`pick ${
-                      opt.id === leadingId
-                        ? "a"
-                        : "b"
-                    }`}
-                  >
-                    {pct}% · {opt.voteCount}
-                  </span>
+                <div className="voter-row" key={opt.id}>
+                  <span className="who">{opt.title}</span>
+                  <span className={`pick ${opt.id === leadingId ? "a" : "b"}`}>{pct}% · {opt.voteCount}</span>
                 </div>
               );
             })}

@@ -37,3 +37,30 @@ export function timeAgo(dateString) {
   }
   return "just now";
 }
+
+export function getInitials(name = "") {
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
+
+export function notificationInitials(item) {
+  if (!item) return "DH";
+  if (item.actorName || item.senderName) {
+    return getInitials(item.actorName || item.senderName);
+  }
+  const msg = String(item.message || "").trim();
+  const actorMatch = msg.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:and\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\s+)?(?:invited|commented|shared|added|voted|replied|created|updated)/);
+  if (actorMatch) {
+    return getInitials(actorMatch[1]);
+  }
+  const typeMap = {
+    VOTE: "VT",
+    COMMENT: "CM",
+    COMMUNITY_INVITATION: "CI",
+    SYSTEM: "SY",
+    GENERAL: "DH",
+  };
+  return typeMap[item.type] || getInitials(msg);
+}

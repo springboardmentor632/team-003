@@ -103,8 +103,14 @@ public class DecisionService {
     public Decision updateDecision(Long id, DecisionRequest request, User user) {
         Decision decision = raw(id);
         requireOwnerOrAdmin(decision, user);
+        boolean wasClosed = decision.isClosed();
         apply(decision, request);
-        return hydrate(decisions.save(decision));
+        Decision saved = decisions.save(decision);
+        users.findFirstByName(saved.getCreatedBy()).filter(owner -> !owner.getId().equals(user.getId())).ifPresent(owner ->
+            notifications.notify(owner, NotificationType.DECISION_UPDATED, user.getName() + " updated " + saved.getTitle(), saved));
+        if (!wasClosed && saved.isClosed()) users.findFirstByName(saved.getCreatedBy()).ifPresent(owner ->
+            notifications.notify(owner, NotificationType.POLL_COMPLETED, saved.getTitle() + " has been closed", saved));
+        return hydrate(saved);
     }
 
     @Transactional

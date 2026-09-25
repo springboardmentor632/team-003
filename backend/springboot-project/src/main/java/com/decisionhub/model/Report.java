@@ -40,8 +40,11 @@ public class Report {
     public User getReporter() { return reporter; }
     public void setReporter(User reporter) { this.reporter = reporter; }
     public Decision getDecision() { return decision; }
+    public Long getDecisionId() { return decision == null ? null : decision.getId(); }
+    public String getDecisionTitle() { return decision == null ? "Decision report" : decision.getTitle(); }
     public void setDecision(Decision decision) { this.decision = decision; }
     public Comment getComment() { return comment; }
+    public String getCommentBody() { return comment == null ? null : comment.getBody(); }
     public void setComment(Comment comment) { this.comment = comment; }
     public String getReason() { return reason; }
     public void setReason(String reason) { this.reason = reason; }

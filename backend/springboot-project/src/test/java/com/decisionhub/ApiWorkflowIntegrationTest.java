@@ -88,10 +88,26 @@ class ApiWorkflowIntegrationTest {
                 .header("Authorization", bearer(owner)))
             .andExpect(status().isOk()).andReturn();
         assertEquals(1, json(comments).size());
+        long commentId = json(comments).get(0).path("id").asLong();
+        mockMvc.perform(put("/api/decisions/{id}/comments/{commentId}", boardId, commentId)
+                .header("Authorization", bearer(participant)).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"content\":\"An edited comment\"}"))
+            .andExpect(status().isOk());
+        mockMvc.perform(post("/api/decisions/{id}/suggestions", boardId)
+                .header("Authorization", bearer(participant)).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"content\":\"Choose Option A for its lower risk\"}"))
+            .andExpect(status().isOk());
+        mockMvc.perform(get("/api/decisions/{id}/suggestions", boardId).header("Authorization", bearer(owner)))
+            .andExpect(status().isOk());
 
         MvcResult notifications = mockMvc.perform(get("/api/notifications").header("Authorization", bearer(owner)))
             .andExpect(status().isOk()).andReturn();
         assertEquals(2, json(notifications).size());
+        mockMvc.perform(post("/api/notifications/read-all").header("Authorization", bearer(owner)))
+            .andExpect(status().isOk());
+        MvcResult notificationSummary = mockMvc.perform(get("/api/notifications/summary").header("Authorization", bearer(owner)))
+            .andExpect(status().isOk()).andReturn();
+        assertEquals(0, json(notificationSummary).path("unread").asInt());
 
         MvcResult community = mockMvc.perform(post("/api/communities")
                 .header("Authorization", bearer(owner)).contentType(MediaType.APPLICATION_JSON)
@@ -124,6 +140,17 @@ class ApiWorkflowIntegrationTest {
         MvcResult analytics = mockMvc.perform(get("/api/analytics/summary").header("Authorization", bearer(owner)))
             .andExpect(status().isOk()).andReturn();
         assertTrue(json(analytics).path("totalBoards").asInt() > 0);
+        assertTrue(json(analytics).has("optionPopularity"));
+        assertTrue(json(analytics).has("communityActivity"));
+
+        mockMvc.perform(post("/api/feedback").header("Authorization", bearer(participant)).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"message\":\"Helpful discussion flow\",\"decisionId\":" + boardId + "}"))
+            .andExpect(status().isOk());
+        MvcResult feedback = mockMvc.perform(get("/api/feedback/all").header("Authorization", bearer(admin)))
+            .andExpect(status().isOk()).andReturn();
+        long feedbackId = json(feedback).get(0).path("id").asLong();
+        mockMvc.perform(put("/api/feedback/{id}/status", feedbackId).header("Authorization", bearer(admin)).param("status", "REVIEWED"))
+            .andExpect(status().isOk());
 
         mockMvc.perform(get("/api/users/me").header("Authorization", bearer(owner)))
             .andExpect(status().isOk());
