@@ -9,9 +9,27 @@ const client = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+function isTokenExpired(token) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+    return payload.exp ? payload.exp * 1000 <= Date.now() : false;
+  } catch {
+    return false;
+  }
+}
+
 client.interceptors.request.use((config) => {
+  const isAuthEndpoint = config.url && config.url.startsWith("/api/auth/");
   const token = localStorage.getItem("decisionhub_token");
-  if (token) {
+  if (token && isTokenExpired(token)) {
+    localStorage.removeItem("decisionhub_token");
+    localStorage.removeItem("decisionhub_user");
+    if (!isAuthEndpoint && !window.location.pathname.startsWith("/login")) {
+      window.location.href = "/login";
+    }
+    return config;
+  }
+  if (token && !isAuthEndpoint) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -20,7 +38,10 @@ client.interceptors.request.use((config) => {
 client.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    const status = error?.response?.status;
+    const isAuthEndpoint = error?.config?.url?.startsWith("/api/auth/");
+    const hasErrorBody = Boolean(error?.response?.data?.error);
+    if (status === 401 || (status === 403 && !isAuthEndpoint && !hasErrorBody)) {
       localStorage.removeItem("decisionhub_token");
       localStorage.removeItem("decisionhub_user");
       if (!window.location.pathname.startsWith("/login")) {

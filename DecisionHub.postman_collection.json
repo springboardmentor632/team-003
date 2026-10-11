@@ -1,0 +1,596 @@
+{
+  "info": {
+    "name": "DecisionHub Complete API Collection",
+    "_postman_id": "d8c74a19-4f88-4e20-b6f4-99f320260928",
+    "description": "Complete Postman v2.1 API collection for DecisionHub (Authentication, Decisions & Voting, Communities & Invitations, Board Comments, Discussion Forum, Suggestions, Notifications, Analytics, Feedback, and Moderation Reports). Run any Login request first to automatically save the {{token}} variable.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:8080", "type": "string" },
+    { "key": "token", "value": "", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{token}}", "type": "string" }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Authentication & Users",
+      "item": [
+        {
+          "name": "Login (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) pm.collectionVariables.set('token', json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@decisionhub.local\",\n  \"password\": \"demo123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Login (Moderator - Arjun)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) pm.collectionVariables.set('token', json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"arjun@decisionhub.local\",\n  \"password\": \"demo123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Login (Owner - Maya)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) pm.collectionVariables.set('token', json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"maya@decisionhub.local\",\n  \"password\": \"demo123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Login (Member - Harish)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) pm.collectionVariables.set('token', json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"harish@decisionhub.local\",\n  \"password\": \"demo123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Register New User",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alex Rivera\",\n  \"email\": \"alex@decisionhub.local\",\n  \"password\": \"demo12345\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/register"
+          }
+        },
+        {
+          "name": "Get Current User (/api/users/me)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/users/me"
+          }
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"harish@decisionhub.local\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/password-reset/request"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Decisions, Options & Voting",
+      "item": [
+        {
+          "name": "Get Public Decisions (Paginated)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/decisions/public?page=0&size=20"
+          }
+        },
+        {
+          "name": "Get My Decisions (Paginated)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/decisions/mine?page=0&size=20"
+          }
+        },
+        {
+          "name": "Get All Decisions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/decisions"
+          }
+        },
+        {
+          "name": "Get Decision by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/decisions/1"
+          }
+        },
+        {
+          "name": "Get Community Decisions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/decisions/community/1"
+          }
+        },
+        {
+          "name": "Create Decision Board",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Database caching strategy\",\n  \"description\": \"Compare Redis Cluster vs Hazelcast for session and query caching.\",\n  \"category\": \"Technology\",\n  \"visibility\": \"PUBLIC\",\n  \"pollType\": \"SINGLE_CHOICE\",\n  \"allowAnonymousVoting\": false,\n  \"options\": [\n    {\n      \"title\": \"Redis Cluster\",\n      \"description\": \"Managed Redis with sub-millisecond reads\",\n      \"pros\": \"Fast, widely adopted\",\n      \"cons\": \"Memory cost\",\n      \"costScore\": 7,\n      \"benefitsScore\": 9,\n      \"riskScore\": 8,\n      \"timeScore\": 9,\n      \"convenienceScore\": 9\n    },\n    {\n      \"title\": \"PostgreSQL Read Replicas\",\n      \"description\": \"Scale reads without a separate cache layer\",\n      \"pros\": \"No cache invalidation\",\n      \"cons\": \"Higher latency than in-memory\",\n      \"costScore\": 8,\n      \"benefitsScore\": 7,\n      \"riskScore\": 9,\n      \"timeScore\": 8,\n      \"convenienceScore\": 8\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/decisions"
+          }
+        },
+        {
+          "name": "Update Decision Board",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Admin: Cloud migration\",\n  \"description\": \"Choose the best path for the next platform infrastructure move.\",\n  \"category\": \"Technology\",\n  \"visibility\": \"PUBLIC\",\n  \"pollType\": \"SINGLE_CHOICE\",\n  \"closed\": false\n}"
+            },
+            "url": "{{baseUrl}}/api/decisions/1"
+          }
+        },
+        {
+          "name": "Get Options for Decision",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/decisions/1/options"
+          }
+        },
+        {
+          "name": "Add Option to Decision",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Hybrid Multi-Cloud\",\n  \"description\": \"Split workloads across Azure and AWS\",\n  \"pros\": \"No vendor lock-in\",\n  \"cons\": \"Higher operational complexity\",\n  \"costScore\": 5,\n  \"benefitsScore\": 8,\n  \"riskScore\": 7,\n  \"timeScore\": 6,\n  \"convenienceScore\": 6\n}"
+            },
+            "url": "{{baseUrl}}/api/decisions/1/options"
+          }
+        },
+        {
+          "name": "Cast Vote on Decision",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"optionId\": 1,\n  \"rating\": 5\n}"
+            },
+            "url": "{{baseUrl}}/api/decisions/1/votes"
+          }
+        },
+        {
+          "name": "Get Vote Results for Decision",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/decisions/1/votes/results"
+          }
+        },
+        {
+          "name": "Retract Vote on Decision",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/decisions/1/votes/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Communities & Invitations",
+      "item": [
+        {
+          "name": "List All Communities",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/communities"
+          }
+        },
+        {
+          "name": "Get Community by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/communities/1"
+          }
+        },
+        {
+          "name": "Create Community",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Design Systems Guild\",\n  \"description\": \"Collaborate on component standards, tokens, and accessibility decisions.\"\n}"
+            },
+            "url": "{{baseUrl}}/api/communities"
+          }
+        },
+        {
+          "name": "Join Community",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/communities/1/members"
+          }
+        },
+        {
+          "name": "Leave Community",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/communities/1/members/me"
+          }
+        },
+        {
+          "name": "Update Member Role (Owner/Admin)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/communities/1/members/4/role?role=MODERATOR"
+          }
+        },
+        {
+          "name": "Invite User to Community by Email",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/communities/1/invitations?email=rohan@decisionhub.local"
+          }
+        },
+        {
+          "name": "List My Pending Community Invitations",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/communities/invitations"
+          }
+        },
+        {
+          "name": "Accept Community Invitation",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/communities/invitations/1/accept"
+          }
+        },
+        {
+          "name": "Decline Community Invitation",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/communities/invitations/1/decline"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Decision Board Comments & Reactions",
+      "item": [
+        {
+          "name": "List Comments on Decision",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/decisions/1/comments"
+          }
+        },
+        {
+          "name": "Add Comment or Reply on Decision",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Managed containers give us a great balance of speed and flexibility.\",\n  \"parentId\": null\n}"
+            },
+            "url": "{{baseUrl}}/api/decisions/1/comments"
+          }
+        },
+        {
+          "name": "Edit Comment on Decision",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Updated perspective: Azure Container Apps scales down to zero cleanly.\"\n}"
+            },
+            "url": "{{baseUrl}}/api/decisions/1/comments/1"
+          }
+        },
+        {
+          "name": "Toggle Like/Reaction on Comment",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/decisions/1/comments/1/reactions"
+          }
+        },
+        {
+          "name": "Hide/Unhide Comment (Moderator/Admin)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/decisions/1/comments/1/hidden?value=true"
+          }
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/decisions/1/comments/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Discussion Forum & Replies",
+      "item": [
+        {
+          "name": "Get All Discussions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/discussions"
+          }
+        },
+        {
+          "name": "Get My Discussions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/discussions/mine"
+          }
+        },
+        {
+          "name": "Create Discussion Thread",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/discussions?title=Architecture%20Review%20Q4&content=Share%20your%20proposals%20for%20our%20Q4%20platform%20priorities."
+          }
+        },
+        {
+          "name": "Get Discussion by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/discussions/1"
+          }
+        },
+        {
+          "name": "Get Discussion Comments",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/discussions/1/comments"
+          }
+        },
+        {
+          "name": "Add Comment/Reply to Discussion",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/discussions/1/comments?content=Agreed%20on%20prioritizing%20observability%20first."
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Suggestions",
+      "item": [
+        {
+          "name": "List Suggestions for Decision",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/decisions/1/suggestions"
+          }
+        },
+        {
+          "name": "Create Suggestion for Decision",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"suggestionText\": \"Consider running a 2-week staging benchmark before full cutover.\"\n}"
+            },
+            "url": "{{baseUrl}}/api/decisions/1/suggestions"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Notifications",
+      "item": [
+        {
+          "name": "List My Notifications",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/notifications"
+          }
+        },
+        {
+          "name": "Get Unread Notification Count (/summary)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/notifications/summary"
+          }
+        },
+        {
+          "name": "Mark Single Notification as Read",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/notifications/1/read"
+          }
+        },
+        {
+          "name": "Mark All Notifications as Read",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/notifications/read-all"
+          }
+        },
+        {
+          "name": "Send System Notification (Admin Only)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/notifications/system?email=harish@decisionhub.local&message=Scheduled%20maintenance%20window%20tonight."
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Analytics",
+      "item": [
+        {
+          "name": "Get Analytics Summary",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/analytics/summary"
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Feedback Workflow",
+      "item": [
+        {
+          "name": "Submit Feedback",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"The 5-factor criteria comparison table makes trade-offs much clearer!\",\n  \"decisionId\": 1\n}"
+            },
+            "url": "{{baseUrl}}/api/feedback"
+          }
+        },
+        {
+          "name": "Get My Submitted Feedback",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/feedback"
+          }
+        },
+        {
+          "name": "Get All Feedback (Admin/Moderator)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/feedback/all"
+          }
+        },
+        {
+          "name": "Update Feedback Status (OPEN / REVIEWED / RESOLVED)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/feedback/1/status?status=REVIEWED"
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Moderation & Reports",
+      "item": [
+        {
+          "name": "Create Content Report on Decision/Comment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Off-topic promotional link in discussion\",\n  \"commentId\": 1\n}"
+            },
+            "url": "{{baseUrl}}/api/decisions/1/reports"
+          }
+        },
+        {
+          "name": "List Moderation Reports (Admin/Moderator)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/reports"
+          }
+        },
+        {
+          "name": "Resolve or Dismiss Report (RESOLVED / DISMISSED)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/reports/1?status=RESOLVED"
+          }
+        }
+      ]
+    }
+  ]
+}
