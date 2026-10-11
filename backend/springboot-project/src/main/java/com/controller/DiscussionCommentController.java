@@ -1,25 +1,31 @@
-package com.controller;
+package com.decisionhub.controller;
 
 import com.decisionhub.model.DiscussionComment;
 import com.decisionhub.model.User;
+import com.decisionhub.repository.UserRepository;
 import com.decisionhub.service.DiscussionCommentService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/discussions/{discussionId}/comments")
+@CrossOrigin(origins = "*")
 public class DiscussionCommentController {
 
     private final DiscussionCommentService commentService;
+    private final UserRepository users;
 
     public DiscussionCommentController(
-            DiscussionCommentService commentService) {
+            DiscussionCommentService commentService,
+            UserRepository users) {
 
         this.commentService = commentService;
+        this.users = users;
     }
 
     // Get all comments and replies
@@ -40,7 +46,7 @@ public class DiscussionCommentController {
             @RequestParam(required = false) Long parentCommentId,
             Authentication authentication) {
 
-        User user = (User) authentication.getPrincipal();
+        User user = resolveUser(authentication);
 
         DiscussionComment comment =
                 commentService.addComment(
@@ -60,10 +66,20 @@ public class DiscussionCommentController {
             @PathVariable Long commentId,
             Authentication authentication) {
 
-        User user = (User) authentication.getPrincipal();
+        User user = resolveUser(authentication);
 
         commentService.deleteComment(commentId, user);
 
         return ResponseEntity.noContent().build();
+    }
+
+    private User resolveUser(Authentication authentication) {
+        Authentication auth = authentication != null ? authentication : SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof User user) {
+            return user;
+        }
+        String email = auth != null ? auth.getName() : null;
+        return users.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 }

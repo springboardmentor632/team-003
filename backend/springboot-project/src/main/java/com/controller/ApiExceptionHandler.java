@@ -8,10 +8,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
-    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> badRequest(RuntimeException error) { return Map.of("error", error.getMessage()); }
     @ExceptionHandler(SecurityException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public Map<String, String> forbidden(SecurityException error) { return Map.of("error", error.getMessage()); }
+
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class, RuntimeException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> badRequest(RuntimeException error) {
+        return Map.of("error", error.getMessage() != null ? error.getMessage() : "Bad request");
+    }
 }

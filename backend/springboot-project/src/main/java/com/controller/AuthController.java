@@ -31,7 +31,7 @@ public class AuthController {
     public ResponseEntity<LoginResponse> demoAdmin() {
         LoginRequest request = new LoginRequest();
         request.setEmail("admin@decisionhub.local");
-        request.setPassword("admin123");
+        request.setPassword("demo123");
         return ResponseEntity.ok(auth.loginUser(request));
     }
 

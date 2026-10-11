@@ -4,6 +4,7 @@ import { getDecision, castVote, retractVote } from "../api/decisions";
 import { reportDecision } from "../api/collaboration";
 import { extractErrorMessage } from "../api/client";
 import Discussion from "../components/Discussion";
+import Suggestions from "../components/Suggestions";
 
 const FACTORS = [
   { key: "costScore", label: "Cost" },
@@ -207,6 +208,7 @@ export default function BoardDetail() {
           )}
 
           <Discussion boardId={id} />
+          <Suggestions boardId={id} />
         </div>
 
         <aside className="rail">

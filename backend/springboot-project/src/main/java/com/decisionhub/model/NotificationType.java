@@ -5,5 +5,9 @@ public enum NotificationType {
     DECISION,
     VOTE,
     COMMENT,
-    SYSTEM
+    SYSTEM,
+    VOTING_REMINDER,
+    POLL_COMPLETED,
+    COMMUNITY_INVITATION,
+    DECISION_UPDATED
 }

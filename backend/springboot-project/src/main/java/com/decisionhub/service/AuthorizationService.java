@@ -33,4 +33,15 @@ public class AuthorizationService {
     public void requireCommunityModerator(Community community, User user) {
         if (!canModerate(community, user)) throw new SecurityException("A community moderator or admin is required");
     }
+
+    public boolean canModerateAny(User user) {
+        if (isAdmin(user)) return true;
+        if (user == null || user.getId() == null) return false;
+        return memberships.findByUserId(user.getId()).stream()
+                .anyMatch(m -> "OWNER".equalsIgnoreCase(m.getRole()) || "MODERATOR".equalsIgnoreCase(m.getRole()));
+    }
+
+    public void requireAnyModerator(User user) {
+        if (!canModerateAny(user)) throw new SecurityException("A community moderator or admin is required");
+    }
 }

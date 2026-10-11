@@ -1,71 +1,245 @@
 import React, { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import BrandMark from "../components/BrandMark";
 import Discussion from "../components/Discussion";
 import TopBar from "../components/TopBar";
 
-const BOARDS = [
-  {
-    id: "strategy",
-    title: "Which customer segment should we prioritize next?",
-    category: "Strategy",
-    createdByName: "Maya Chen",
-    createdAt: "2026-09-12T08:30:00.000Z",
-    totalVotes: 24,
-    visibility: "PUBLIC",
-    pollType: "SINGLE_CHOICE",
-    description: "We have capacity for one focused go-to-market motion next quarter. Help us choose the segment with the strongest fit.",
-    options: [
-      { id: "mid-market", title: "Mid-market teams", pros: "Clear need and shorter deal cycles", cons: "Competitive segment", voteCount: 14, costScore: 7, benefitsScore: 9, riskScore: 7, timeScore: 8, convenienceScore: 8 },
-      { id: "enterprise", title: "Enterprise accounts", pros: "Higher contract value", cons: "Longer evaluation process", voteCount: 10, costScore: 5, benefitsScore: 8, riskScore: 5, timeScore: 4, convenienceScore: 5 },
+const ROLE_PROFILES = {
+  ADMIN: {
+    id: "ADMIN",
+    name: "System Admin",
+    badge: "Global Admin",
+    subtitle: "Organization-wide governance, platform infrastructure, and cross-community moderation.",
+    communities: [
+      { id: "gov", name: "Platform Governance & Security", role: "OWNER", members: 14, description: "Organization-wide security standards, cloud governance, and vendor compliance." },
+      { id: "workplace", name: "Workplace & Culture", role: "ADMIN OVERRIDE", members: 28, description: "Collaborative decisions about how the team works best together." },
+      { id: "sustain", name: "Sustainable Choices", role: "ADMIN OVERRIDE", members: 19, description: "Practical ideas for lower-impact operations and everyday choices." },
+    ],
+    boards: [
+      {
+        id: "admin-cloud",
+        title: "Admin: Cloud migration",
+        category: "Technology",
+        createdByName: "System Admin",
+        createdAt: "2026-09-20T08:30:00.000Z",
+        totalVotes: 32,
+        visibility: "PUBLIC",
+        pollType: "SINGLE_CHOICE",
+        description: "Choose the best path for the next platform infrastructure move.",
+        options: [
+          { id: "app-service", title: "Move to Azure App Service", pros: "Lower ops load", cons: "Less control", voteCount: 20, costScore: 7, benefitsScore: 9, riskScore: 8, timeScore: 9, convenienceScore: 8 },
+          { id: "container-apps", title: "Use Azure Container Apps", pros: "Better scaling", cons: "More configuration", voteCount: 12, costScore: 6, benefitsScore: 9, riskScore: 7, timeScore: 7, convenienceScore: 7 },
+        ],
+      },
+      {
+        id: "admin-onboarding",
+        title: "Admin: Team onboarding",
+        category: "Education",
+        createdByName: "System Admin",
+        createdAt: "2026-09-18T10:15:00.000Z",
+        totalVotes: 25,
+        visibility: "PUBLIC",
+        pollType: "MULTIPLE_CHOICE",
+        description: "Pick the most effective onboarding program for the next quarter.",
+        options: [
+          { id: "buddy", title: "Buddy program", pros: "Easy mentoring", cons: "Needs senior staff time", voteCount: 16, costScore: 8, benefitsScore: 9, riskScore: 8, timeScore: 6, convenienceScore: 8 },
+          { id: "hybrid", title: "Hybrid rollout", pros: "Good visibility", cons: "More coordination", voteCount: 9, costScore: 7, benefitsScore: 9, riskScore: 8, timeScore: 7, convenienceScore: 7 },
+        ],
+      },
+      {
+        id: "admin-vendor",
+        title: "Admin: Vendor shortlist",
+        category: "Finance",
+        createdByName: "System Admin",
+        createdAt: "2026-09-10T14:00:00.000Z",
+        totalVotes: 41,
+        closed: true,
+        visibility: "PUBLIC",
+        pollType: "RATING",
+        description: "Choose the best security & compliance vendor partner for the upcoming rollout.",
+        options: [
+          { id: "vendor-a", title: "Vendor A", pros: "Good pricing & support", cons: "Less customization", voteCount: 27, costScore: 8, benefitsScore: 8, riskScore: 9, timeScore: 8, convenienceScore: 8 },
+          { id: "vendor-b", title: "Vendor B", pros: "Great roadmap", cons: "Higher cost", voteCount: 14, costScore: 5, benefitsScore: 9, riskScore: 8, timeScore: 7, convenienceScore: 7 },
+        ],
+      },
     ],
   },
-  {
-    id: "offsite",
-    title: "Where should we hold the team offsite?",
-    category: "Culture",
-    createdByName: "Jordan Lee",
-    createdAt: "2026-09-11T12:10:00.000Z",
-    totalVotes: 18,
-    visibility: "PUBLIC",
-    pollType: "SINGLE_CHOICE",
-    description: "Choose a setting that gives the team enough room to plan, reset, and spend time together.",
-    options: [
-      { id: "goa", title: "Goa", pros: "Easy to reach and relaxed", cons: "Peak-season availability", voteCount: 11, costScore: 7, benefitsScore: 8, riskScore: 8, timeScore: 8, convenienceScore: 9 },
-      { id: "coorg", title: "Coorg", pros: "Quiet, focused setting", cons: "Longer transfers", voteCount: 7, costScore: 8, benefitsScore: 7, riskScore: 8, timeScore: 6, convenienceScore: 6 },
+  MODERATOR: {
+    id: "MODERATOR",
+    name: "Arjun Mehta",
+    badge: "Community Moderator",
+    subtitle: "Lead engineering architecture discussions and moderate technical communities.",
+    communities: [
+      { id: "eng", name: "Engineering Circle", role: "OWNER", members: 22, description: "Share technical trade-offs, architecture ideas, and engineering standards." },
+      { id: "ai-guild", name: "AI & Architecture Guild", role: "OWNER", members: 16, description: "Evaluate LLM tooling, inference costs, and distributed service architecture." },
+      { id: "prod", name: "Product Builders", role: "MODERATOR", members: 31, description: "A working group for roadmap, feature, and customer-experience decisions." },
+    ],
+    boards: [
+      {
+        id: "arjun-gateway",
+        title: "Arjun: API gateway & service mesh",
+        category: "Technology",
+        createdByName: "Arjun Mehta",
+        createdAt: "2026-09-21T09:00:00.000Z",
+        totalVotes: 29,
+        visibility: "PUBLIC",
+        pollType: "SINGLE_CHOICE",
+        description: "Select the standard ingress and service-to-service communication layer for microservices.",
+        options: [
+          { id: "kong", title: "Kong Gateway", pros: "Fast setup for REST & gRPC", cons: "Enterprise plugins cost extra", voteCount: 18, costScore: 7, benefitsScore: 8, riskScore: 8, timeScore: 8, convenienceScore: 8 },
+          { id: "istio", title: "Envoy + Istio", pros: "Battle-tested observability", cons: "Steeper learning curve", voteCount: 11, costScore: 6, benefitsScore: 9, riskScore: 8, timeScore: 5, convenienceScore: 6 },
+        ],
+      },
+      {
+        id: "arjun-monorepo",
+        title: "Arjun: Frontend monorepo tooling",
+        category: "Technology",
+        createdByName: "Arjun Mehta",
+        createdAt: "2026-09-19T16:45:00.000Z",
+        totalVotes: 34,
+        visibility: "PUBLIC",
+        pollType: "RATING",
+        description: "Rate the build orchestration tools for our shared UI packages and web apps.",
+        options: [
+          { id: "turborepo", title: "Turborepo", pros: "Minimal config with npm workspaces", cons: "Fewer code-gen plugins", voteCount: 23, costScore: 9, benefitsScore: 9, riskScore: 8, timeScore: 9, convenienceScore: 9 },
+          { id: "nx", title: "Nx Workspace", pros: "Powerful generators & graph", cons: "Heavier configuration", voteCount: 11, costScore: 7, benefitsScore: 9, riskScore: 7, timeScore: 6, convenienceScore: 7 },
+        ],
+      },
+      {
+        id: "arjun-oncall",
+        title: "Arjun: On-call rotation cadence",
+        category: "Lifestyle",
+        createdByName: "Arjun Mehta",
+        createdAt: "2026-09-12T11:20:00.000Z",
+        totalVotes: 19,
+        closed: true,
+        visibility: "PUBLIC",
+        pollType: "MULTIPLE_CHOICE",
+        description: "Decide on the fairest incident response rotation model for backend engineers.",
+        options: [
+          { id: "follow-sun", title: "Weekly follow-the-sun", pros: "Clear weekly handoff", cons: "Requires cross-region sync", voteCount: 13, costScore: 8, benefitsScore: 9, riskScore: 9, timeScore: 8, convenienceScore: 8 },
+          { id: "split-shift", title: "Split weekday / weekend shifts", pros: "Predictable weekends", cons: "More frequent handoffs", voteCount: 6, costScore: 8, benefitsScore: 7, riskScore: 7, timeScore: 7, convenienceScore: 7 },
+        ],
+      },
     ],
   },
-  {
-    id: "stack",
-    title: "Should we move the design system to Storybook?",
-    category: "Technology",
-    createdByName: "Aarav Patel",
-    createdAt: "2026-09-10T16:45:00.000Z",
-    totalVotes: 31,
-    visibility: "PUBLIC",
-    pollType: "RATING",
-    description: "A shared component workspace could improve consistency, but we need to agree on the migration effort.",
-    options: [
-      { id: "storybook", title: "Adopt Storybook", pros: "Faster reviews and shared documentation", cons: "Migration time", voteCount: 22, costScore: 6, benefitsScore: 9, riskScore: 7, timeScore: 6, convenienceScore: 8 },
-      { id: "current", title: "Keep the current approach", pros: "No transition cost", cons: "Harder to discover components", voteCount: 9, costScore: 9, benefitsScore: 5, riskScore: 8, timeScore: 9, convenienceScore: 6 },
+  OWNER: {
+    id: "OWNER",
+    name: "Maya Patel",
+    badge: "Community Owner",
+    subtitle: "Drive product roadmap prioritization and organize team retreats with your communities.",
+    communities: [
+      { id: "prod-owner", name: "Product Builders", role: "OWNER", members: 31, description: "A working group for roadmap, feature, and customer-experience decisions." },
+      { id: "travel-owner", name: "Weekend Explorers", role: "OWNER", members: 24, description: "Plan memorable trips, events, and local experiences together." },
+    ],
+    boards: [
+      {
+        id: "maya-roadmap",
+        title: "Maya: Q4 product roadmap focus",
+        category: "Career",
+        createdByName: "Maya Patel",
+        createdAt: "2026-09-22T08:30:00.000Z",
+        totalVotes: 38,
+        visibility: "PUBLIC",
+        pollType: "SINGLE_CHOICE",
+        description: "We have capacity for one flagship initiative in Q4. Which bet delivers the highest customer impact?",
+        options: [
+          { id: "copilot", title: "AI decision copilot", pros: "Strong market differentiation", cons: "Inference cost & tuning", voteCount: 24, costScore: 6, benefitsScore: 10, riskScore: 6, timeScore: 6, convenienceScore: 8 },
+          { id: "slack-voting", title: "Slack & Teams live voting", pros: "Immediate viral adoption", cons: "Multi-platform maintenance", voteCount: 14, costScore: 8, benefitsScore: 9, riskScore: 8, timeScore: 8, convenienceScore: 9 },
+        ],
+      },
+      {
+        id: "maya-pricing",
+        title: "Maya: Design system pricing tier",
+        category: "Finance",
+        createdByName: "Maya Patel",
+        createdAt: "2026-09-17T15:00:00.000Z",
+        totalVotes: 21,
+        visibility: "PUBLIC",
+        pollType: "RATING",
+        description: "Evaluate how we package collaborative analytics and community moderation for growing teams.",
+        options: [
+          { id: "usage", title: "Usage-based per active board", pros: "Scales naturally with value", cons: "Variable monthly billing", voteCount: 13, costScore: 8, benefitsScore: 9, riskScore: 7, timeScore: 8, convenienceScore: 8 },
+          { id: "seat-bundle", title: "Flat community seat bundle", pros: "Predictable ARR", cons: "Higher upfront friction", voteCount: 8, costScore: 7, benefitsScore: 8, riskScore: 8, timeScore: 9, convenienceScore: 7 },
+        ],
+      },
+      {
+        id: "maya-retreat",
+        title: "Maya: Annual team retreat destination",
+        category: "Travel",
+        createdByName: "Maya Patel",
+        createdAt: "2026-09-09T12:10:00.000Z",
+        totalVotes: 44,
+        closed: true,
+        visibility: "PUBLIC",
+        pollType: "SINGLE_CHOICE",
+        description: "Pick the destination for our 4-day product and design strategy offsite.",
+        options: [
+          { id: "coorg", title: "Coorg eco-resort", pros: "Great for deep workshops", cons: "3-hour drive from airport", voteCount: 28, costScore: 8, benefitsScore: 9, riskScore: 8, timeScore: 7, convenienceScore: 7 },
+          { id: "goa", title: "Goa beachfront villa", pros: "High team energy & direct flights", cons: "Peak season rates", voteCount: 16, costScore: 6, benefitsScore: 8, riskScore: 8, timeScore: 9, convenienceScore: 9 },
+        ],
+      },
     ],
   },
-  {
-    id: "launch",
-    title: "Which launch message resonated best?",
-    category: "Marketing",
-    createdByName: "Maya Chen",
-    createdAt: "2026-09-08T10:00:00.000Z",
-    totalVotes: 42,
-    closed: true,
-    visibility: "PUBLIC",
-    pollType: "SINGLE_CHOICE",
-    description: "The launch poll has closed. This record keeps the evidence behind the campaign direction.",
-    options: [
-      { id: "outcome", title: "Lead with outcomes", pros: "Clear customer value", cons: "Less feature detail", voteCount: 29, costScore: 8, benefitsScore: 9, riskScore: 8, timeScore: 9, convenienceScore: 9 },
-      { id: "features", title: "Lead with features", pros: "Specific product proof", cons: "More technical", voteCount: 13, costScore: 8, benefitsScore: 7, riskScore: 7, timeScore: 8, convenienceScore: 7 },
+  USER: {
+    id: "USER",
+    name: "Harish",
+    badge: "Community Member",
+    subtitle: "Compare personal career, travel, and budget options and vote in joined communities.",
+    communities: [
+      { id: "member-travel", name: "Weekend Explorers", role: "MEMBER", members: 24, description: "Plan memorable trips, events, and local experiences together." },
+      { id: "member-workplace", name: "Workplace & Culture", role: "MEMBER", members: 28, description: "Collaborative decisions about how the team works best together." },
+    ],
+    boards: [
+      {
+        id: "harish-career",
+        title: "Harish: Career switch",
+        category: "Career",
+        createdByName: "Harish",
+        createdAt: "2026-09-23T08:30:00.000Z",
+        totalVotes: 27,
+        visibility: "PUBLIC",
+        pollType: "SINGLE_CHOICE",
+        description: "Decide which opportunity fits Harish's next move best.",
+        options: [
+          { id: "product-lead", title: "Product lead role", pros: "Leadership growth & broader impact", cons: "Less hands-on coding", voteCount: 17, costScore: 8, benefitsScore: 9, riskScore: 7, timeScore: 7, convenienceScore: 8 },
+          { id: "senior-dev", title: "Senior developer role", pros: "Strong technical growth & salary", cons: "Longer commute", voteCount: 10, costScore: 8, benefitsScore: 8, riskScore: 8, timeScore: 7, convenienceScore: 7 },
+        ],
+      },
+      {
+        id: "harish-travel",
+        title: "Harish: Travel plan",
+        category: "Travel",
+        createdByName: "Harish",
+        createdAt: "2026-09-20T12:10:00.000Z",
+        totalVotes: 19,
+        visibility: "PUBLIC",
+        pollType: "MULTIPLE_CHOICE",
+        description: "Pick the preferred destination for the next break.",
+        options: [
+          { id: "bali", title: "Bali", pros: "Relaxing & great food", cons: "Long flight", voteCount: 12, costScore: 7, benefitsScore: 9, riskScore: 8, timeScore: 6, convenienceScore: 8 },
+          { id: "paris", title: "Paris", pros: "Cultural experience", cons: "Expensive", voteCount: 7, costScore: 4, benefitsScore: 9, riskScore: 8, timeScore: 6, convenienceScore: 7 },
+        ],
+      },
+      {
+        id: "harish-budget",
+        title: "Harish: Budget priority",
+        category: "Finance",
+        createdByName: "Harish",
+        createdAt: "2026-09-14T10:00:00.000Z",
+        totalVotes: 22,
+        closed: true,
+        visibility: "PUBLIC",
+        pollType: "RATING",
+        description: "Select the best way to spend the next quarterly budget.",
+        options: [
+          { id: "learning", title: "Learning budget", pros: "Strong career ROI", cons: "Longer payback", voteCount: 15, costScore: 8, benefitsScore: 9, riskScore: 9, timeScore: 7, convenienceScore: 8 },
+          { id: "home-setup", title: "Upgrade home setup", pros: "Immediate daily focus", cons: "No direct career credential", voteCount: 7, costScore: 6, benefitsScore: 8, riskScore: 9, timeScore: 9, convenienceScore: 9 },
+        ],
+      },
     ],
   },
-];
+};
 
 const FACTORS = [
   ["costScore", "Cost"],
@@ -99,74 +273,133 @@ function DemoCard({ board, onOpen }) {
   );
 }
 
-function DemoNav({ active, setView }) {
+function DemoNav({ active, setView, roleKey, onSelectRole }) {
   return (
     <aside className="sidebar demo-sidebar">
       <div className="brand"><BrandMark /><div className="brand-name">DecisionHub</div></div>
-      <div className="demo-label">Interactive preview</div>
+      <div className="demo-label">Interactive preview · {ROLE_PROFILES[roleKey].badge}</div>
       <nav className="nav">
+        <div className="nav-label">Switch Role Persona</div>
+        {Object.values(ROLE_PROFILES).map((r) => (
+          <button key={r.id} className={roleKey === r.id ? "active" : ""} onClick={() => onSelectRole(r.id)}>
+            ● <span>{r.badge} ({r.name.split(" ")[0]})</span>
+          </button>
+        ))}
         <div className="nav-label">Workspace</div>
         <button className={active === "dashboard" ? "active" : ""} onClick={() => setView("dashboard")}>⌂ <span>Dashboard</span></button>
         <button className={active === "boards" ? "active" : ""} onClick={() => setView("boards")}>◈ <span>Decision boards</span></button>
+        <button className={active === "communities" ? "active" : ""} onClick={() => setView("communities")}>◎ <span>Communities</span></button>
         <button className={active === "detail" ? "active" : ""} onClick={() => setView("detail")}>◌ <span>Board details</span></button>
       </nav>
-      <div className="demo-side-note">Sample workspace<br />No account required</div>
+      <div className="demo-side-note">
+        Viewing as <b>{ROLE_PROFILES[roleKey].name}</b><br />
+        <Link to="/login" style={{ color: "var(--brass)" }}>Sign in to live account →</Link>
+      </div>
     </aside>
   );
 }
 
-function DashboardDemo({ openBoard, setView }) {
-  const active = BOARDS.filter((board) => !board.closed);
-  const totalVotes = BOARDS.reduce((sum, board) => sum + board.totalVotes, 0);
+function DashboardDemo({ profile, openBoard, setView }) {
+  const boards = profile.boards;
+  const active = boards.filter((board) => !board.closed);
+  const resolved = boards.filter((board) => board.closed);
+  const totalVotes = boards.reduce((sum, board) => sum + board.totalVotes, 0);
 
   return (
     <div>
-      <TopBar eyebrow="Workspace overview · Sep 12" title="Good to see you, Harish." subtitle="Keep momentum on the decisions that need your attention, then see what your workspace is deciding next." action={<button className="btn brass" onClick={() => setView("boards")}>Explore decision boards</button>} />
-      <div className="demo-banner"><span>Demo mode</span> Explore the new dashboard, board directory, and discussion UI with sample workspace data.</div>
+      <TopBar
+        eyebrow={`Role preview · ${profile.badge}`}
+        title={`Good to see you, ${profile.name}.`}
+        subtitle={profile.subtitle}
+        action={<button className="btn brass" onClick={() => setView("communities")}>View {profile.name.split(" ")[0]}'s communities</button>}
+      />
+      <div className="demo-banner">
+        <span>{profile.badge}</span> Showing distinct decision boards and communities tailored to <b>{profile.name}</b>. Use the sidebar to switch roles.
+      </div>
       <div className="stats dashboard-stats">
-        <div className="stat"><div className="num display">3</div><div className="lbl">Open decisions</div></div>
-        <div className="stat"><div className="num display">115</div><div className="lbl">Votes recorded</div></div>
-        <div className="stat"><div className="num display">1</div><div className="lbl">Decisions reached</div></div>
-        <div className="stat"><div className="num display">{BOARDS.length}</div><div className="lbl">Boards created</div></div>
+        <div className="stat"><div className="num display">{active.length}</div><div className="lbl">Open decisions</div></div>
+        <div className="stat"><div className="num display">{totalVotes}</div><div className="lbl">Votes recorded</div></div>
+        <div className="stat"><div className="num display">{resolved.length}</div><div className="lbl">Decisions reached</div></div>
+        <div className="stat"><div className="num display">{profile.communities.length}</div><div className="lbl">Role communities</div></div>
       </div>
       <section className="dashboard-section">
-        <div className="section-head dashboard-section-head"><div><span className="eyebrow">Needs attention</span><h2>Active decisions</h2></div><button className="section-link demo-link" onClick={() => setView("boards")}>Explore all boards <span>→</span></button></div>
+        <div className="section-head dashboard-section-head">
+          <div><span className="eyebrow">{profile.badge} workspace</span><h2>{profile.name}'s active decisions</h2></div>
+          <button className="section-link demo-link" onClick={() => setView("boards")}>Explore role boards <span>→</span></button>
+        </div>
         <div className="card-grid dashboard-card-grid">{active.map((board) => <DemoCard key={board.id} board={board} onOpen={openBoard} />)}</div>
       </section>
-      <section className="dashboard-section recent-section">
-        <div className="section-head dashboard-section-head"><div><span className="eyebrow">Latest in your workspace</span><h2>Recently created</h2></div></div>
-        <div className="recent-boards">
-          {BOARDS.map((board) => <button className="recent-board-row demo-recent-row" type="button" onClick={() => openBoard(board)} key={board.id}><span className={`recent-status ${board.closed ? "closed" : "open"}`} /><span className="recent-main"><h3>{board.title}</h3><p>{board.category} <span>·</span> {board.createdByName}</p></span><span className="recent-meta"><span>{board.totalVotes} votes</span><time>{board.closed ? "4 days ago" : "Today"}</time></span><span className="recent-arrow">→</span></button>)}
+      <section className="dashboard-section">
+        <div className="section-head dashboard-section-head">
+          <div><span className="eyebrow">Role-specific access</span><h2>{profile.name}'s communities</h2></div>
+          <button className="section-link demo-link" onClick={() => setView("communities")}>All communities <span>→</span></button>
+        </div>
+        <div className="card-grid">
+          {profile.communities.map((c) => (
+            <article className="card" key={c.id}>
+              <div className="card-top"><span className="cat">{c.role}</span><span>{c.members} members</span></div>
+              <h3>{c.name}</h3>
+              <p>{c.description}</p>
+            </article>
+          ))}
         </div>
       </section>
     </div>
   );
 }
 
-function BoardsDemo({ openBoard, setView }) {
+function CommunitiesDemo({ profile, openBoard }) {
+  return (
+    <div>
+      <TopBar
+        eyebrow={`Communities · ${profile.badge}`}
+        title={`${profile.name}'s Communities`}
+        subtitle="Each role owns, moderates, or participates in a distinct set of communities."
+      />
+      <div className="card-grid">
+        {profile.communities.map((community) => (
+          <article className="card" key={community.id}>
+            <div className="card-top">
+              <span className="cat">{community.role}</span>
+              <span>{community.members} members</span>
+            </div>
+            <h3>{community.name}</h3>
+            <p>{community.description}</p>
+            <div className="card-foot">
+              <span>Role: {community.role}</span>
+              <button className="btn ghost" onClick={() => openBoard(profile.boards[0])}>View decisions →</button>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BoardsDemo({ profile, openBoard, setView }) {
+  const boards = profile.boards;
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
   const [status, setStatus] = useState("All");
-  const categories = ["All", ...new Set(BOARDS.map((board) => board.category))];
-  const filtered = useMemo(() => BOARDS.filter((board) => {
+  const categories = ["All", ...new Set(boards.map((board) => board.category))];
+  const filtered = useMemo(() => boards.filter((board) => {
     const text = `${board.title} ${board.category} ${board.createdByName}`.toLowerCase();
     return (!query || text.includes(query.toLowerCase())) && (category === "All" || board.category === category) && (status === "All" || (status === "Open" ? !board.closed : board.closed));
-  }), [category, query, status]);
+  }), [boards, category, query, status]);
 
   return (
     <div>
-      <div className="breadcrumb boards-breadcrumb"><button onClick={() => setView("dashboard")}>Dashboard</button><span>/</span><b>Decision boards</b></div>
-      <TopBar eyebrow="Browse and compare" title="Decision boards" subtitle="Find the choices your workspace is weighing and add your perspective." action={<button className="btn brass" onClick={() => openBoard(BOARDS[0])}>Open sample board</button>} />
+      <div className="breadcrumb boards-breadcrumb"><button onClick={() => setView("dashboard")}>Dashboard</button><span>/</span><b>Decision boards ({profile.name})</b></div>
+      <TopBar eyebrow={`Browse · ${profile.badge}`} title={`${profile.name}'s Decision Boards`} subtitle={profile.subtitle} action={<button className="btn brass" onClick={() => openBoard(boards[0])}>Open top board</button>} />
       <section className="boards-controls">
-        <div className="board-tabs"><button className="active">Explore boards</button><button>My boards</button></div>
+        <div className="board-tabs"><button className="active">{profile.name}'s boards</button></div>
         <div className="board-search-wrap"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by title, category, or creator" /><button type="button" onClick={() => setQuery("")}>×</button></div>
-        <label className="sort-select"><span>Sort</span><select defaultValue="activity"><option value="activity">Most active</option><option value="new">Recently created</option></select></label>
       </section>
       <div className="filter-groups">
         <div className="filter-set"><span className="filter-label">Category</span><div className="filter-row">{categories.map((item) => <button key={item} className={`chip ${category === item ? "on" : ""}`} onClick={() => setCategory(item)}>{item}</button>)}</div></div>
         <div className="filter-set"><span className="filter-label">Status</span><div className="filter-row">{["All", "Open", "Closed"].map((item) => <button key={item} className={`chip ${status === item ? "on" : ""}`} onClick={() => setStatus(item)}>{item}</button>)}</div></div>
       </div>
-      <div className="board-results-head"><span>{filtered.length} {filtered.length === 1 ? "board" : "boards"} found</span>{(query || category !== "All" || status !== "All") && <button className="text-button" onClick={() => { setQuery(""); setCategory("All"); setStatus("All"); }}>Clear filters</button>}</div>
+      <div className="board-results-head"><span>{filtered.length} {filtered.length === 1 ? "board" : "boards"} found</span></div>
       <div className="card-grid board-card-grid">{filtered.map((board) => <DemoCard key={board.id} board={board} onOpen={openBoard} />)}</div>
     </div>
   );
@@ -195,17 +428,27 @@ function DetailDemo({ board, setView }) {
 }
 
 export default function Demo() {
+  const [roleKey, setRoleKey] = useState("ADMIN");
   const [view, setView] = useState("dashboard");
-  const [selected, setSelected] = useState(BOARDS[0]);
+  const profile = ROLE_PROFILES[roleKey];
+  const [selected, setSelected] = useState(profile.boards[0]);
+
+  const handleSelectRole = (nextRole) => {
+    setRoleKey(nextRole);
+    setSelected(ROLE_PROFILES[nextRole].boards[0]);
+    if (view === "detail") setView("dashboard");
+  };
+
   const openBoard = (board) => { setSelected(board); setView("detail"); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
   return (
     <div className="shell demo-shell">
-      <DemoNav active={view} setView={setView} />
+      <DemoNav active={view} setView={setView} roleKey={roleKey} onSelectRole={handleSelectRole} />
       <main className="demo-main">
-        {view === "dashboard" && <DashboardDemo openBoard={openBoard} setView={setView} />}
-        {view === "boards" && <BoardsDemo openBoard={openBoard} setView={setView} />}
-        {view === "detail" && <DetailDemo board={selected} setView={setView} />}
+        {view === "dashboard" && <DashboardDemo profile={profile} openBoard={openBoard} setView={setView} />}
+        {view === "boards" && <BoardsDemo profile={profile} openBoard={openBoard} setView={setView} />}
+        {view === "communities" && <CommunitiesDemo profile={profile} openBoard={openBoard} />}
+        {view === "detail" && <DetailDemo key={selected.id} board={selected} setView={setView} />}
       </main>
     </div>
   );

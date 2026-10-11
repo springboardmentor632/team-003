@@ -60,20 +60,73 @@ public class AnalyticsController {
                     Long::sum);
         }
 
-        return Map.of(
-                "totalBoards", visible.size(),
-                "totalVotes", totalVotes,
+        Map<String, Long> optionPopularity = new LinkedHashMap<>();
+        Map<String, Long> communityActivity = new LinkedHashMap<>();
+        Map<String, Long> decisionTrends = new LinkedHashMap<>();
+
+        for (Decision decision : visible) {
+            decision.getOptions().forEach(option ->
+                    optionPopularity.merge(
+                            option.getTitle(),
+                            option.getVoteCount(),
+                            Long::sum));
+
+            communityActivity.merge(
+                    decision.getCommunity() == null
+                            ? "Independent boards"
+                            : decision.getCommunity().getName(),
+                    decision.getTotalVotes(),
+                    Long::sum);
+
+            decisionTrends.merge(
+                    decision.getCreatedAt() == null
+                            ? "Unknown"
+                            : decision.getCreatedAt().toLocalDate().toString(),
+                    1L,
+                    Long::sum);
+        }
+
+        Map<String, Object> result = new LinkedHashMap<>();
+
+        result.put("totalBoards", visible.size());
+        result.put("totalVotes", totalVotes);
+        result.put(
                 "boardsWithVotes",
-                visible.stream().filter(d -> d.getTotalVotes() > 0).count(),
+                visible.stream()
+                        .filter(d -> d.getTotalVotes() > 0)
+                        .count());
+        result.put(
                 "closedBoards",
-                visible.stream().filter(Decision::isClosed).count(),
-                "categoryVotes", categoryVotes,
-                "pollTypes", pollTypes,
+                visible.stream()
+                        .filter(Decision::isClosed)
+                        .count());
+        result.put("categoryVotes", categoryVotes);
+        result.put("pollTypes", pollTypes);
+        result.put("optionPopularity", optionPopularity);
+        result.put("communityActivity", communityActivity);
+        result.put("decisionTrends", decisionTrends);
+        result.put(
+                "outcomes",
+                Map.of(
+                        "open",
+                        visible.stream()
+                                .filter(d -> !d.isClosed())
+                                .count(),
+                        "closed",
+                        visible.stream()
+                                .filter(Decision::isClosed)
+                                .count()));
+        result.put(
                 "mostActive",
                 visible.stream()
-                        .sorted(Comparator.comparingLong(Decision::getTotalVotes).reversed())
+                        .sorted(
+                                Comparator.comparingLong(
+                                        Decision::getTotalVotes)
+                                        .reversed())
                         .limit(5)
                         .toList());
+
+        return result;
     }
 
     @GetMapping("/vote-distribution")
@@ -81,23 +134,32 @@ public class AnalyticsController {
         List<Map<String, Object>> result = new ArrayList<>();
 
         for (Decision decision : visibleDecisions()) {
-            List<Vote> decisionVotes = votes.findByDecisionId(decision.getId());
+            List<Vote> decisionVotes =
+                    votes.findByDecisionId(decision.getId());
 
             Map<Long, Long> counts = new LinkedHashMap<>();
 
             for (Vote vote : decisionVotes) {
-                if (vote.getOption() != null && vote.getOption().getId() != null) {
-                    counts.merge(vote.getOption().getId(), 1L, Long::sum);
+                if (vote.getOption() != null
+                        && vote.getOption().getId() != null) {
+                    counts.merge(
+                            vote.getOption().getId(),
+                            1L,
+                            Long::sum);
                 }
             }
 
             long total = decisionVotes.size();
 
             for (Option option : decision.getOptions()) {
-                long count = counts.getOrDefault(option.getId(), 0L);
+                long count =
+                        counts.getOrDefault(option.getId(), 0L);
+
                 double percentage = total == 0
                         ? 0.0
-                        : Math.round((count * 10000.0) / total) / 100.0;
+                        : Math.round(
+                                (count * 10000.0) / total)
+                                / 100.0;
 
                 Map<String, Object> row = new LinkedHashMap<>();
                 row.put("decisionId", decision.getId());
@@ -119,13 +181,18 @@ public class AnalyticsController {
         List<Map<String, Object>> result = new ArrayList<>();
 
         for (Decision decision : visibleDecisions()) {
-            List<Vote> decisionVotes = votes.findByDecisionId(decision.getId());
+            List<Vote> decisionVotes =
+                    votes.findByDecisionId(decision.getId());
 
             Map<Long, Long> counts = new LinkedHashMap<>();
 
             for (Vote vote : decisionVotes) {
-                if (vote.getOption() != null && vote.getOption().getId() != null) {
-                    counts.merge(vote.getOption().getId(), 1L, Long::sum);
+                if (vote.getOption() != null
+                        && vote.getOption().getId() != null) {
+                    counts.merge(
+                            vote.getOption().getId(),
+                            1L,
+                            Long::sum);
                 }
             }
 
@@ -135,7 +202,9 @@ public class AnalyticsController {
                 row.put("decisionTitle", decision.getTitle());
                 row.put("optionId", option.getId());
                 row.put("optionName", option.getName());
-                row.put("voteCount", counts.getOrDefault(option.getId(), 0L));
+                row.put(
+                        "voteCount",
+                        counts.getOrDefault(option.getId(), 0L));
 
                 result.add(row);
             }
@@ -143,7 +212,9 @@ public class AnalyticsController {
 
         result.sort(
                 Comparator.comparingLong(
-                        row -> -((Number) row.get("voteCount")).longValue()));
+                        (Map<String, Object> row) ->
+                                -((Number) row.get("voteCount"))
+                                        .longValue()));
 
         return result;
     }
@@ -163,20 +234,27 @@ public class AnalyticsController {
 
             double participationPercentage = totalVotes == 0
                     ? 0.0
-                    : Math.round((decisionVotes * 10000.0) / totalVotes) / 100.0;
+                    : Math.round(
+                            (decisionVotes * 10000.0)
+                                    / totalVotes)
+                            / 100.0;
 
             Map<String, Object> row = new LinkedHashMap<>();
             row.put("decisionId", decision.getId());
             row.put("decisionTitle", decision.getTitle());
             row.put("totalVotes", decisionVotes);
-            row.put("participationPercentage", participationPercentage);
+            row.put(
+                    "participationPercentage",
+                    participationPercentage);
 
             result.add(row);
         }
 
         result.sort(
                 Comparator.comparingLong(
-                        row -> -((Number) row.get("totalVotes")).longValue()));
+                        (Map<String, Object> row) ->
+                                -((Number) row.get("totalVotes"))
+                                        .longValue()));
 
         return result;
     }
@@ -190,8 +268,13 @@ public class AnalyticsController {
                 continue;
             }
 
-            LocalDate date = decision.getCreatedAt().toLocalDate();
-            trendMap.merge(date, 1L, Long::sum);
+            LocalDate date =
+                    decision.getCreatedAt().toLocalDate();
+
+            trendMap.merge(
+                    date,
+                    1L,
+                    Long::sum);
         }
 
         List<Map<String, Object>> result = new ArrayList<>();
@@ -200,9 +283,17 @@ public class AnalyticsController {
                 .stream()
                 .sorted(Map.Entry.comparingByKey())
                 .forEach(entry -> {
-                    Map<String, Object> row = new LinkedHashMap<>();
-                    row.put("date", entry.getKey().toString());
-                    row.put("decisionsCreated", entry.getValue());
+                    Map<String, Object> row =
+                            new LinkedHashMap<>();
+
+                    row.put(
+                            "date",
+                            entry.getKey().toString());
+
+                    row.put(
+                            "decisionsCreated",
+                            entry.getValue());
+
                     result.add(row);
                 });
 
@@ -211,34 +302,62 @@ public class AnalyticsController {
 
     @GetMapping("/community-activity")
     public List<Map<String, Object>> communityActivity() {
-        Map<Long, Long> decisionCounts = new LinkedHashMap<>();
-        Map<Long, Long> voteCounts = new LinkedHashMap<>();
+        Map<Long, Long> decisionCounts =
+                new LinkedHashMap<>();
+
+        Map<Long, Long> voteCounts =
+                new LinkedHashMap<>();
 
         for (Decision decision : visibleDecisions()) {
-            Long communityId = decision.getCommunityId();
+            Long communityId =
+                    decision.getCommunityId();
 
             if (communityId == null) {
                 communityId = 0L;
             }
 
-            decisionCounts.merge(communityId, 1L, Long::sum);
-            voteCounts.merge(communityId, decision.getTotalVotes(), Long::sum);
+            decisionCounts.merge(
+                    communityId,
+                    1L,
+                    Long::sum);
+
+            voteCounts.merge(
+                    communityId,
+                    decision.getTotalVotes(),
+                    Long::sum);
         }
 
-        List<Map<String, Object>> result = new ArrayList<>();
+        List<Map<String, Object>> result =
+                new ArrayList<>();
 
         for (Long communityId : decisionCounts.keySet()) {
-            Map<String, Object> row = new LinkedHashMap<>();
-            row.put("communityId", communityId);
-            row.put("decisionCount", decisionCounts.getOrDefault(communityId, 0L));
-            row.put("voteCount", voteCounts.getOrDefault(communityId, 0L));
+            Map<String, Object> row =
+                    new LinkedHashMap<>();
+
+            row.put(
+                    "communityId",
+                    communityId);
+
+            row.put(
+                    "decisionCount",
+                    decisionCounts.getOrDefault(
+                            communityId,
+                            0L));
+
+            row.put(
+                    "voteCount",
+                    voteCounts.getOrDefault(
+                            communityId,
+                            0L));
 
             result.add(row);
         }
 
         result.sort(
                 Comparator.comparingLong(
-                        row -> -((Number) row.get("voteCount")).longValue()));
+                        (Map<String, Object> row) ->
+                                -((Number) row.get("voteCount"))
+                                        .longValue()));
 
         return result;
     }
@@ -252,10 +371,16 @@ public class AnalyticsController {
                 SecurityContextHolder.getContext()
                         .getAuthentication()
                         .getName()
-        ).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        ).orElseThrow(
+                () -> new IllegalArgumentException(
+                        "User not found"));
     }
 
-    private String safe(String value, String fallback) {
-        return value == null || value.isBlank() ? fallback : value;
+    private String safe(
+            String value,
+            String fallback) {
+        return value == null || value.isBlank()
+                ? fallback
+                : value;
     }
 }

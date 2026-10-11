@@ -1,4 +1,5 @@
 import React from "react";
+import NotificationBell from "./NotificationBell";
 
 export default function TopBar({ eyebrow, title, subtitle, action }) {
   return (
@@ -8,7 +9,10 @@ export default function TopBar({ eyebrow, title, subtitle, action }) {
         <h1>{title}</h1>
         {subtitle && <p className="sub">{subtitle}</p>}
       </div>
-      {action}
+      <div className="topbar-actions">
+        <NotificationBell />
+        {action}
+      </div>
     </div>
   );
 }
