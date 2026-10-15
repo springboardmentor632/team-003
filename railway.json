@@ -1,0 +1,15 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "backend/springboot-project/Dockerfile.cloud"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "startCommand": "java $JAVA_OPTS -jar /app/app.jar",
+    "healthcheckPath": "/actuator/health",
+    "healthcheckTimeout": 15,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}

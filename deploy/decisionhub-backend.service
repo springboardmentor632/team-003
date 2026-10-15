@@ -1,0 +1,22 @@
+[Unit]
+Description=DecisionHub Backend Service
+After=syslog.target network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=decisionhub
+Group=decisionhub
+WorkingDirectory=/opt/decisionhub/backend
+EnvironmentFile=/opt/decisionhub/.env
+ExecStart=/usr/bin/java -Xms512m -Xmx1536m -XX:+UseG1GC -Dspring.profiles.active=prod -jar /opt/decisionhub/backend/springboot-project.jar
+SuccessExitStatus=143
+StandardOutput=journal
+StandardError=journal
+Restart=always
+RestartSec=10
+TimeoutStopSec=30
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
