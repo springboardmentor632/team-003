@@ -13,6 +13,11 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
+vi.mock("../api/user", () => ({
+  saveDecision: vi.fn().mockResolvedValue({ data: { status: "SUCCESS", saved: true } }),
+  unsaveDecision: vi.fn().mockResolvedValue({ data: { status: "SUCCESS", saved: false } }),
+}));
+
 describe("DecisionCard Component", () => {
   afterEach(() => {
     cleanup();
@@ -67,5 +72,20 @@ describe("DecisionCard Component", () => {
     );
 
     expect(screen.getByText("Decision reached")).toBeTruthy();
+  });
+
+  it("toggles bookmark state on star click without navigating", async () => {
+    const onToggleSave = vi.fn();
+    render(
+      <BrowserRouter>
+        <DecisionCard decision={sampleDecision} onToggleSave={onToggleSave} />
+      </BrowserRouter>
+    );
+
+    const bookmarkBtn = screen.getByRole("button", { name: "Save decision" });
+    expect(bookmarkBtn).toBeTruthy();
+    fireEvent.click(bookmarkBtn);
+
+    expect(mockedNavigate).not.toHaveBeenCalled();
   });
 });

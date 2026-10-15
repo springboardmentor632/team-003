@@ -4,6 +4,7 @@ import { getDecision, castVote, retractVote } from "../api/decisions";
 import { reportDecision } from "../api/collaboration";
 import { extractErrorMessage } from "../api/client";
 import { resolveFileUrl } from "../api/files";
+import { saveDecision, unsaveDecision, getSavedDecisionIds } from "../api/user";
 import { useAuth } from "../context/AuthContext";
 import Discussion from "../components/Discussion";
 import Suggestions from "../components/Suggestions";
@@ -36,6 +37,36 @@ export default function BoardDetail() {
   const [votingId, setVotingId] = useState(null);
   const [reporting, setReporting] = useState(false);
   const [reportReason, setReportReason] = useState("");
+  const [isSaved, setIsSaved] = useState(false);
+  const [bookmarkBusy, setBookmarkBusy] = useState(false);
+
+  useEffect(() => {
+    getSavedDecisionIds()
+      .then(({ data }) => {
+        if (Array.isArray(data)) {
+          setIsSaved(data.includes(Number(id)));
+        }
+      })
+      .catch(() => {});
+  }, [id]);
+
+  const toggleBookmark = async () => {
+    if (bookmarkBusy) return;
+    setBookmarkBusy(true);
+    const nextSaved = !isSaved;
+    setIsSaved(nextSaved);
+    try {
+      if (nextSaved) {
+        await saveDecision(id);
+      } else {
+        await unsaveDecision(id);
+      }
+    } catch {
+      setIsSaved(!nextSaved);
+    } finally {
+      setBookmarkBusy(false);
+    }
+  };
 
   const load = () => {
     setLoading(true);
@@ -126,6 +157,15 @@ export default function BoardDetail() {
           </div>
         </div>
         <div className="detail-actions">
+          <button
+            type="button"
+            className={`btn ${isSaved ? "brass" : "ghost"}`}
+            onClick={toggleBookmark}
+            disabled={bookmarkBusy}
+            title={isSaved ? "Remove from saved boards" : "Save this board"}
+          >
+            {isSaved ? "★ Saved" : "☆ Save for later"}
+          </button>
           <a className="btn ghost" href="#attachments">Attachments</a>
           <a className="btn ghost" href="#discussion">Discussion</a>
           <button className="btn ghost" onClick={() => navigator.clipboard?.writeText(window.location.href)}>Share board</button>

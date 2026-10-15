@@ -58,10 +58,4 @@ public class AuthController {
         auth.confirmPasswordReset(request.getToken(), request.getNewPassword());
         return Map.of("message", "Password updated");
     }
-
-    @GetMapping("/users/me")
-    public User me() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return users.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
-    }
 }

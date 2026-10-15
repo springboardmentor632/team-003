@@ -86,6 +86,20 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  const updateUserProfile = useCallback((patch) => {
+    setUser((prev) => {
+      const updated = { ...prev, ...patch };
+      try {
+        if (typeof window !== "undefined" && window.localStorage) {
+          window.localStorage.setItem("decisionhub_user", JSON.stringify(updated));
+        }
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -96,6 +110,7 @@ export function AuthProvider({ children }) {
         loginWithToken,
         loginWithOAuthGoogle,
         loginWithDemoGoogle,
+        updateUserProfile,
         isAuthenticated: !!user,
       }}
     >

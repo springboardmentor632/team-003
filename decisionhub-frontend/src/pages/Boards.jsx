@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import TopBar from "../components/TopBar";
 import DecisionCard from "../components/DecisionCard";
 import { listPublicDecisions, listMyDecisions } from "../api/decisions";
+import { listSavedDecisions } from "../api/user";
 import { extractErrorMessage } from "../api/client";
 
 const CATEGORIES = ["All", "Career", "Technology", "Travel", "Finance", "Lifestyle", "Education"];
@@ -27,10 +28,19 @@ export default function Boards() {
   useEffect(() => {
     setLoading(true);
     setError("");
-    const fetcher = tab === "public" ? listPublicDecisions({ category: category === "All" ? undefined : category, page, size: 12 }) : listMyDecisions({ page, size: 12 });
+    const fetcher =
+      tab === "public"
+        ? listPublicDecisions({ category: category === "All" ? undefined : category, page, size: 12 })
+        : tab === "saved"
+        ? listSavedDecisions()
+        : listMyDecisions({ page, size: 12 });
 
     fetcher
-      .then(({ data }) => { setDecisions(data.content || data || []); setPageInfo({ totalPages: data.totalPages || 1, totalElements: data.totalElements ?? (data.content || data || []).length }); })
+      .then(({ data }) => {
+        const list = Array.isArray(data) ? data : data.content || [];
+        setDecisions(list);
+        setPageInfo({ totalPages: data.totalPages || 1, totalElements: data.totalElements ?? list.length });
+      })
       .catch((err) => setError(extractErrorMessage(err, "Couldn't load decision boards")))
       .finally(() => setLoading(false));
   }, [tab, category, page]);
@@ -78,6 +88,7 @@ export default function Boards() {
         <div className="board-tabs" role="tablist" aria-label="Board source">
           <button className={tab === "public" ? "active" : ""} onClick={() => selectTab("public")} role="tab" aria-selected={tab === "public"}>Explore boards</button>
           <button className={tab === "mine" ? "active" : ""} onClick={() => selectTab("mine")} role="tab" aria-selected={tab === "mine"}>My boards</button>
+          <button className={tab === "saved" ? "active" : ""} onClick={() => selectTab("saved")} role="tab" aria-selected={tab === "saved"}>★ Saved boards</button>
         </div>
         <div className="board-search-wrap">
           <span aria-hidden="true">⌕</span>

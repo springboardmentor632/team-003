@@ -255,4 +255,30 @@ CREATE TABLE IF NOT EXISTS fcm_tokens (
 CREATE INDEX IF NOT EXISTS idx_fcm_tokens_user ON fcm_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_fcm_tokens_token ON fcm_tokens(token);
 
+-- Ensure bio and avatar_url columns exist on users
+ALTER TABLE users ADD COLUMN IF NOT EXISTS bio VARCHAR(1000);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500);
+
+-- 18. User Interests Table (Module 2: User Category Preferences)
+CREATE TABLE IF NOT EXISTS user_interests (
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    category VARCHAR(100) NOT NULL,
+    PRIMARY KEY (user_id, category)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_interests_user ON user_interests(user_id);
+
+-- 19. Saved Decisions Table (Module 2: Bookmarks)
+CREATE TABLE IF NOT EXISTS saved_decisions (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    decision_id BIGINT NOT NULL REFERENCES decisions(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_user_saved_decision UNIQUE (user_id, decision_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_saved_decisions_user ON saved_decisions(user_id);
+CREATE INDEX IF NOT EXISTS idx_saved_decisions_decision ON saved_decisions(decision_id);
+
+
 

@@ -35,6 +35,8 @@ export default function Sidebar() {
         <NavLink to="/notifications" className={({ isActive }) => isActive ? "active" : ""}> <span className="notification-nav-icon" aria-hidden="true">♢{unread > 0 && <b>{unread > 99 ? "99+" : unread}</b>}</span>Notifications</NavLink>
         {canModerate && <NavLink to="/reports" className={({ isActive }) => isActive ? "active" : ""}>⚑ &nbsp;Moderation</NavLink>}
         <div className="nav-label">Account</div>
+        <NavLink to="/voting-history" className={({ isActive }) => isActive ? "active" : ""}>✓ &nbsp;Voting History</NavLink>
+        <NavLink to="/settings" className={({ isActive }) => isActive ? "active" : ""}>⚙ &nbsp;Settings & Profile</NavLink>
         <NavLink to="/boards/new" className={({ isActive }) => isActive ? "active" : ""}>+ &nbsp;New Board</NavLink>
         <NavLink to="/feedback" className={({ isActive }) => isActive ? "active" : ""}>✎ &nbsp;Feedback</NavLink>
       </nav>

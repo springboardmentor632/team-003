@@ -22,6 +22,17 @@ public class User {
 
     private String role;
 
+    @Column(length = 1000)
+    private String bio;
+
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_interests", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "category")
+    private java.util.Set<String> interests = new java.util.HashSet<>();
+
     public User() {
     }
 
@@ -71,4 +82,29 @@ public class User {
     public void setRole(String role) {
         this.role = role;
     }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
+
+    public java.util.Set<String> getInterests() {
+        return interests;
+    }
+
+    public void setInterests(java.util.Set<String> interests) {
+        this.interests = interests != null ? interests : new java.util.HashSet<>();
+    }
 }
+

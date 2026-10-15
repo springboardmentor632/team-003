@@ -19,6 +19,8 @@ import Reports from "./pages/Reports";
 import ResetPassword from "./pages/ResetPassword";
 import Feedback from "./pages/Feedback";
 import OAuth2Callback from "./pages/OAuth2Callback";
+import Settings from "./pages/Settings";
+import VotingHistory from "./pages/VotingHistory";
 
 /** Sends already-logged-in users straight to the dashboard instead of the landing/login/register pages. */
 function RedirectIfAuthed({ children }) {
@@ -49,6 +51,8 @@ export default function App() {
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/voting-history" element={<VotingHistory />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
