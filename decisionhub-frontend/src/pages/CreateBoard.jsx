@@ -168,7 +168,7 @@ export default function CreateBoard() {
 
       {error && <div className="error-banner">{error}</div>}
 
-      <form className="form-card" onSubmit={handleSubmit}>
+      <form className="form-card create-board-form full-scale" onSubmit={handleSubmit}>
         <div className="field">
           <label>Title</label>
           <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. MBA vs. Staying in my Job" />
@@ -221,7 +221,7 @@ export default function CreateBoard() {
           )}
         </div>
 
-        <div className="form-row">
+        <div className="form-row config-row">
           <div className="field">
             <label>Category</label>
             <select value={category} onChange={(e) => setCategory(e.target.value)}>
@@ -235,9 +235,6 @@ export default function CreateBoard() {
               <option value="PRIVATE">Private — only you and admins</option>
             </select>
           </div>
-        </div>
-
-        <div className="form-row">
           <div className="field">
             <label>Poll type</label>
             <select value={pollType} onChange={(e) => setPollType(e.target.value)}>
@@ -387,15 +384,33 @@ export default function CreateBoard() {
               <div className="field"><label>Cons</label><input value={opt.cons} onChange={(e) => updateOption(i, "cons", e.target.value)} placeholder="Expensive, 2 years unpaid" /></div>
             </div>
 
-            <div className="form-row">
-              <div className="field"><label>Cost (1–10)</label><input type="number" min="1" max="10" value={opt.costScore} onChange={(e) => updateOption(i, "costScore", e.target.value)} /></div>
-              <div className="field"><label>Benefits (1–10)</label><input type="number" min="1" max="10" value={opt.benefitsScore} onChange={(e) => updateOption(i, "benefitsScore", e.target.value)} /></div>
+            <div style={{ marginTop: 12, marginBottom: 6 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--ink-soft)", display: "block" }}>
+                Standard Evaluation Factors (1–10)
+              </label>
             </div>
-            <div className="form-row">
-              <div className="field"><label>Risk (1–10)</label><input type="number" min="1" max="10" value={opt.riskScore} onChange={(e) => updateOption(i, "riskScore", e.target.value)} /></div>
-              <div className="field"><label>Time (1–10)</label><input type="number" min="1" max="10" value={opt.timeScore} onChange={(e) => updateOption(i, "timeScore", e.target.value)} /></div>
+            <div className="standard-scores-grid">
+              <div className="score-factor-item">
+                <label>Cost</label>
+                <input type="number" min="1" max="10" value={opt.costScore} onChange={(e) => updateOption(i, "costScore", e.target.value)} />
+              </div>
+              <div className="score-factor-item">
+                <label>Benefits</label>
+                <input type="number" min="1" max="10" value={opt.benefitsScore} onChange={(e) => updateOption(i, "benefitsScore", e.target.value)} />
+              </div>
+              <div className="score-factor-item">
+                <label>Risk</label>
+                <input type="number" min="1" max="10" value={opt.riskScore} onChange={(e) => updateOption(i, "riskScore", e.target.value)} />
+              </div>
+              <div className="score-factor-item">
+                <label>Time</label>
+                <input type="number" min="1" max="10" value={opt.timeScore} onChange={(e) => updateOption(i, "timeScore", e.target.value)} />
+              </div>
+              <div className="score-factor-item">
+                <label>Convenience</label>
+                <input type="number" min="1" max="10" value={opt.convenienceScore} onChange={(e) => updateOption(i, "convenienceScore", e.target.value)} />
+              </div>
             </div>
-            <div className="field"><label>Convenience (1–10)</label><input type="number" min="1" max="10" value={opt.convenienceScore} onChange={(e) => updateOption(i, "convenienceScore", e.target.value)} /></div>
 
             {customCriteria.length > 0 && (
               <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px dashed var(--line)" }}>

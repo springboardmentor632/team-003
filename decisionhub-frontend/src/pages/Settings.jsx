@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import TopBar from "../components/TopBar";
-import { getProfile, updateProfile, changePassword, getUserInterests, updateUserInterests } from "../api/user";
+import { getProfile, updateProfile, changePassword, updateUserInterests } from "../api/user";
 import { extractErrorMessage } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { getInitials } from "../utils/decisionHelpers";
@@ -17,6 +17,19 @@ const AVAILABLE_CATEGORIES = [
   "Community",
   "General",
 ];
+
+const CATEGORY_ICONS = {
+  Technology: "💻",
+  Finance: "💰",
+  Healthcare: "🩺",
+  Education: "🎓",
+  Career: "🚀",
+  Travel: "✈️",
+  Lifestyle: "🌿",
+  Product: "📦",
+  Community: "👥",
+  General: "🌐",
+};
 
 export default function Settings() {
   const { user, updateUserProfile } = useAuth();
@@ -41,9 +54,54 @@ export default function Settings() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [passwordError, setPasswordError] = useState("");
+
+  // Password Strength Evaluation
+  const strength = useMemo(() => {
+    const hasMinLength = newPassword.length >= 8;
+    const hasUpperLower = /[A-Z]/.test(newPassword) && /[a-z]/.test(newPassword);
+    const hasNumberOrSymbol = /[0-9!@#$%^&*(),.?":{}|<>]/.test(newPassword);
+    const matchesConfirm = Boolean(newPassword && confirmPassword && newPassword === confirmPassword);
+
+    let score = 0;
+    if (hasMinLength) score++;
+    if (hasUpperLower) score++;
+    if (hasNumberOrSymbol) score++;
+    if (newPassword.length >= 12 || (score === 3 && matchesConfirm)) score++;
+
+    let label = "Enter password";
+    let badgeClass = "weak";
+    if (newPassword.length > 0) {
+      if (score <= 1) {
+        label = "Weak";
+        badgeClass = "weak";
+      } else if (score === 2) {
+        label = "Fair";
+        badgeClass = "fair";
+      } else if (score === 3) {
+        label = "Good";
+        badgeClass = "good";
+      } else {
+        label = "Strong";
+        badgeClass = "strong";
+      }
+    }
+
+    return {
+      score,
+      label,
+      badgeClass,
+      hasMinLength,
+      hasUpperLower,
+      hasNumberOrSymbol,
+      matchesConfirm,
+    };
+  }, [newPassword, confirmPassword]);
 
   useEffect(() => {
     let active = true;
@@ -102,6 +160,14 @@ export default function Settings() {
     );
   };
 
+  const handleSelectAllInterests = () => {
+    setSelectedInterests([...AVAILABLE_CATEGORIES]);
+  };
+
+  const handleClearInterests = () => {
+    setSelectedInterests([]);
+  };
+
   const handleSaveInterests = async () => {
     setInterestsSaving(true);
     setInterestsSuccess("");
@@ -149,6 +215,9 @@ export default function Settings() {
     }
   };
 
+  const userDisplayName = name || user?.fullName || "Decision Maker";
+  const userInitials = getInitials(userDisplayName);
+
   return (
     <div>
       <TopBar
@@ -157,237 +226,451 @@ export default function Settings() {
         subtitle="Manage your personal profile, topic interests, and account security credentials."
       />
 
-      <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
-        {/* Profile Card */}
-        <div className="panel" style={{ padding: 24 }}>
-          <h2 style={{ fontSize: 18, marginBottom: 4 }}>Public Profile</h2>
-          <p style={{ color: "var(--ink-soft)", fontSize: 13, marginBottom: 20 }}>
-            This information is shown to fellow decision makers and community members.
-          </p>
-
-          {profileSuccess && (
-            <div className="success-banner" style={{ marginBottom: 16, padding: "10px 14px", background: "var(--teal-dim)", color: "var(--teal)", borderRadius: "var(--radius)" }}>
-              {profileSuccess}
-            </div>
-          )}
-          {profileError && (
-            <div className="error-banner" style={{ marginBottom: 16 }}>
-              {profileError}
-            </div>
-          )}
-
-          {profileLoading ? (
-            <div>Loading profile details…</div>
-          ) : (
-            <form onSubmit={handleProfileSubmit}>
-              <div style={{ display: "flex", gap: 20, alignItems: "center", marginBottom: 20 }}>
-                <div
-                  className="avatar"
-                  style={{
-                    width: 64,
-                    height: 64,
-                    fontSize: 22,
-                    borderRadius: "50%",
-                    overflow: "hidden",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: "var(--brass-soft)",
-                    color: "var(--brass)",
-                    fontWeight: 600,
-                  }}
-                >
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  ) : (
-                    getInitials(name || user?.fullName || "?")
-                  )}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label htmlFor="avatarUrl" style={{ display: "block", fontSize: 12.5, fontWeight: 500, marginBottom: 4 }}>Avatar Image URL</label>
-                  <input
-                    id="avatarUrl"
-                    type="url"
-                    className="input"
-                    placeholder="https://example.com/avatar.png"
-                    value={avatarUrl}
-                    onChange={(e) => setAvatarUrl(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
-                <div>
-                  <label htmlFor="name" style={{ display: "block", fontSize: 12.5, fontWeight: 500, marginBottom: 4 }}>Full Name</label>
-                  <input
-                    id="name"
-                    type="text"
-                    required
-                    className="input"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="email" style={{ display: "block", fontSize: 12.5, fontWeight: 500, marginBottom: 4 }}>Email Address</label>
-                  <input
-                    id="email"
-                    type="email"
-                    disabled
-                    className="input"
-                    value={email}
-                    style={{ opacity: 0.7, cursor: "not-allowed" }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ marginBottom: 20 }}>
-                <label htmlFor="bio" style={{ display: "block", fontSize: 12.5, fontWeight: 500, marginBottom: 4 }}>Bio / About</label>
-                <textarea
-                  id="bio"
-                  className="input"
-                  rows={3}
-                  placeholder="Share a short summary about your role, background, or decision domains…"
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
+      <div className="settings-container">
+        {/* Profile Hero Overview */}
+        <div className="settings-profile-hero">
+          <div className="settings-profile-hero-left">
+            <div className="settings-hero-avatar">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={userDisplayName}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
                 />
+              ) : (
+                userInitials
+              )}
+            </div>
+            <div className="settings-hero-details">
+              <h2>{userDisplayName}</h2>
+              <p>{email || user?.email || "Signed-in Member"}</p>
+              <div className="settings-hero-badges">
+                <span className="settings-pill-badge active-dot">Active Account</span>
+                <span className="settings-pill-badge">✨ {selectedInterests.length} Topics Followed</span>
               </div>
+            </div>
+          </div>
+          <div style={{ fontSize: 12, opacity: 0.8, textAlign: "right" }}>
+            <span>DecisionHub Member</span>
+            <div style={{ marginTop: 4, fontFamily: "monospace", fontSize: 11 }}>Encrypted & Secured</div>
+          </div>
+        </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <button type="submit" disabled={profileSaving} className="btn brass">
-                  {profileSaving ? "Saving…" : "Save Profile"}
-                </button>
+        {/* Public Profile Card */}
+        <div className="settings-card">
+          <div className="settings-card-head">
+            <div className="settings-card-head-left">
+              <div className="settings-card-icon">👤</div>
+              <div>
+                <h2>Public Profile</h2>
+                <p>This information is shown to fellow decision makers and community members.</p>
               </div>
-            </form>
-          )}
+            </div>
+            <span style={{ fontSize: 11.5, color: "var(--ink-soft)", fontWeight: 500 }}>
+              Module 2 • User Profile
+            </span>
+          </div>
+
+          <div className="settings-card-body">
+            {profileSuccess && (
+              <div
+                className="success-banner"
+                style={{
+                  marginBottom: 18,
+                  padding: "10px 14px",
+                  background: "var(--teal-dim)",
+                  color: "var(--teal)",
+                  borderRadius: "var(--radius)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <span>✓</span> {profileSuccess}
+              </div>
+            )}
+            {profileError && (
+              <div className="error-banner" style={{ marginBottom: 18 }}>
+                {profileError}
+              </div>
+            )}
+
+            {profileLoading ? (
+              <div className="state-block" style={{ padding: "30px 20px" }}>Loading profile details…</div>
+            ) : (
+              <form onSubmit={handleProfileSubmit}>
+                <div style={{ display: "flex", gap: 20, alignItems: "center", marginBottom: 20 }}>
+                  <div
+                    className="avatar"
+                    style={{
+                      width: 68,
+                      height: 68,
+                      fontSize: 22,
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "var(--brass-dim)",
+                      color: "#72531C",
+                      fontWeight: 600,
+                      border: "2px solid var(--line)",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt="Avatar"
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        onError={(e) => { e.currentTarget.style.display = "none"; }}
+                      />
+                    ) : (
+                      userInitials
+                    )}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label htmlFor="avatarUrl" style={{ display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 6, color: "var(--ink)" }}>
+                      Avatar Image URL
+                    </label>
+                    <input
+                      id="avatarUrl"
+                      type="url"
+                      className="input"
+                      placeholder="https://example.com/avatar.png"
+                      value={avatarUrl}
+                      onChange={(e) => setAvatarUrl(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 18 }}>
+                  <div>
+                    <label htmlFor="name" style={{ display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 6, color: "var(--ink)" }}>
+                      Full Name
+                    </label>
+                    <input
+                      id="name"
+                      type="text"
+                      required
+                      className="input"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" style={{ display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 6, color: "var(--ink)" }}>
+                      Email Address <span style={{ fontSize: 11, color: "var(--ink-soft)", fontWeight: 400 }}>(Verified)</span>
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      disabled
+                      className="input"
+                      value={email}
+                      style={{ opacity: 0.75, cursor: "not-allowed", background: "var(--paper)" }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: 22 }}>
+                  <label htmlFor="bio" style={{ display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 6, color: "var(--ink)" }}>
+                    Bio / About
+                  </label>
+                  <textarea
+                    id="bio"
+                    className="input"
+                    rows={3}
+                    placeholder="Share a short summary about your role, background, or decision domains…"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                  />
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <button type="submit" disabled={profileSaving} className="btn brass">
+                    {profileSaving ? "Saving…" : "Save Profile"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         </div>
 
         {/* User Interests Card */}
-        <div className="panel" style={{ padding: 24 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-            <h2 style={{ fontSize: 18 }}>Category Interests & Preferences</h2>
-            <span style={{ fontSize: 12, color: "var(--ink-soft)" }}>
-              {selectedInterests.length} selected
-            </span>
+        <div className="settings-card">
+          <div className="settings-card-head">
+            <div className="settings-card-head-left">
+              <div className="settings-card-icon brass-icon">🎯</div>
+              <div>
+                <h2>Category Interests & Preferences</h2>
+                <p>Select the categories you care about to personalize your decision discovery feed.</p>
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--teal)", background: "var(--teal-dim)", padding: "3px 10px", borderRadius: 12 }}>
+                {selectedInterests.length} selected
+              </span>
+            </div>
           </div>
-          <p style={{ color: "var(--ink-soft)", fontSize: 13, marginBottom: 16 }}>
-            Select the categories you care about to personalize your decision discovery feed.
-          </p>
 
-          {interestsSuccess && (
-            <div className="success-banner" style={{ marginBottom: 16, padding: "10px 14px", background: "var(--teal-dim)", color: "var(--teal)", borderRadius: "var(--radius)" }}>
-              {interestsSuccess}
-            </div>
-          )}
-          {interestsError && (
-            <div className="error-banner" style={{ marginBottom: 16 }}>
-              {interestsError}
-            </div>
-          )}
+          <div className="settings-card-body">
+            {interestsSuccess && (
+              <div
+                className="success-banner"
+                style={{
+                  marginBottom: 18,
+                  padding: "10px 14px",
+                  background: "var(--teal-dim)",
+                  color: "var(--teal)",
+                  borderRadius: "var(--radius)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <span>✓</span> {interestsSuccess}
+              </div>
+            )}
+            {interestsError && (
+              <div className="error-banner" style={{ marginBottom: 18 }}>
+                {interestsError}
+              </div>
+            )}
 
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 20 }}>
-            {AVAILABLE_CATEGORIES.map((cat) => {
-              const selected = selectedInterests.includes(cat);
-              return (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+              <span style={{ fontSize: 12, color: "var(--ink-soft)" }}>
+                Click a tag to toggle it on or off:
+              </span>
+              <div style={{ display: "flex", gap: 8 }}>
                 <button
-                  key={cat}
                   type="button"
-                  onClick={() => toggleInterest(cat)}
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: 20,
-                    fontSize: 13,
-                    cursor: "pointer",
-                    border: selected ? "1px solid var(--brass)" : "1px solid var(--border)",
-                    background: selected ? "var(--brass-soft)" : "transparent",
-                    color: selected ? "var(--brass)" : "var(--ink)",
-                    fontWeight: selected ? 600 : 400,
-                    transition: "all 0.15s ease",
-                  }}
+                  onClick={handleSelectAllInterests}
+                  className="btn ghost"
+                  style={{ fontSize: 11.5, padding: "4px 10px", margin: 0 }}
                 >
-                  {selected ? `✓ ${cat}` : `+ ${cat}`}
+                  Select All
                 </button>
-              );
-            })}
-          </div>
+                <button
+                  type="button"
+                  onClick={handleClearInterests}
+                  className="btn ghost"
+                  style={{ fontSize: 11.5, padding: "4px 10px", margin: 0 }}
+                >
+                  Clear All
+                </button>
+              </div>
+            </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <button
-              type="button"
-              disabled={interestsSaving}
-              onClick={handleSaveInterests}
-              className="btn brass"
-            >
-              {interestsSaving ? "Saving Interests…" : "Update Interests"}
-            </button>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 24 }}>
+              {AVAILABLE_CATEGORIES.map((cat) => {
+                const selected = selectedInterests.includes(cat);
+                const icon = CATEGORY_ICONS[cat] || "🏷️";
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => toggleInterest(cat)}
+                    className={`interest-chip ${selected ? "selected" : ""}`}
+                    aria-pressed={selected}
+                  >
+                    <span>{icon}</span>
+                    <span>{selected ? `✓ ${cat}` : `+ ${cat}`}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                disabled={interestsSaving}
+                onClick={handleSaveInterests}
+                className="btn brass"
+              >
+                {interestsSaving ? "Saving Interests…" : "Update Interests"}
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Change Password Card */}
-        <div className="panel" style={{ padding: 24 }}>
-          <h2 style={{ fontSize: 18, marginBottom: 4 }}>Account Security</h2>
-          <p style={{ color: "var(--ink-soft)", fontSize: 13, marginBottom: 20 }}>
-            Update your account password. Choose a strong password with at least 8 characters.
-          </p>
-
-          {passwordSuccess && (
-            <div className="success-banner" style={{ marginBottom: 16, padding: "10px 14px", background: "var(--teal-dim)", color: "var(--teal)", borderRadius: "var(--radius)" }}>
-              {passwordSuccess}
-            </div>
-          )}
-          {passwordError && (
-            <div className="error-banner" style={{ marginBottom: 16 }}>
-              {passwordError}
-            </div>
-          )}
-
-          <form onSubmit={handlePasswordSubmit}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 14, maxWidth: 450, marginBottom: 20 }}>
+        <div className="settings-card">
+          <div className="settings-card-head">
+            <div className="settings-card-head-left">
+              <div className="settings-card-icon coral-icon">🛡️</div>
               <div>
-                <label htmlFor="currentPassword" style={{ display: "block", fontSize: 12.5, fontWeight: 500, marginBottom: 4 }}>Current Password</label>
-                <input
-                  id="currentPassword"
-                  type="password"
-                  required
-                  className="input"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="newPassword" style={{ display: "block", fontSize: 12.5, fontWeight: 500, marginBottom: 4 }}>New Password</label>
-                <input
-                  id="newPassword"
-                  type="password"
-                  required
-                  minLength={8}
-                  className="input"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="confirmPassword" style={{ display: "block", fontSize: 12.5, fontWeight: 500, marginBottom: 4 }}>Confirm New Password</label>
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  required
-                  minLength={8}
-                  className="input"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
+                <h2>Account Security</h2>
+                <p>Update your account password. Choose a strong password with at least 8 characters.</p>
               </div>
             </div>
+            <span style={{ fontSize: 11.5, color: "#059669", background: "#d1fae5", padding: "3px 10px", borderRadius: 12, fontWeight: 600 }}>
+              🔒 256-Bit Encrypted
+            </span>
+          </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <button type="submit" disabled={passwordSaving} className="btn brass">
-                {passwordSaving ? "Updating Password…" : "Change Password"}
-              </button>
+          <div className="settings-card-body">
+            {passwordSuccess && (
+              <div
+                className="success-banner"
+                style={{
+                  marginBottom: 18,
+                  padding: "10px 14px",
+                  background: "var(--teal-dim)",
+                  color: "var(--teal)",
+                  borderRadius: "var(--radius)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <span>✓</span> {passwordSuccess}
+              </div>
+            )}
+            {passwordError && (
+              <div className="error-banner" style={{ marginBottom: 18 }}>
+                {passwordError}
+              </div>
+            )}
+
+            <div className="security-grid">
+              {/* Left Column: Form */}
+              <form onSubmit={handlePasswordSubmit}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 22 }}>
+                  <div>
+                    <label htmlFor="currentPassword" style={{ display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 6, color: "var(--ink)" }}>
+                      Current Password
+                    </label>
+                    <div className="password-input-wrap">
+                      <input
+                        id="currentPassword"
+                        type={showCurrent ? "text" : "password"}
+                        required
+                        className="input"
+                        placeholder="Enter current password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle-btn"
+                        onClick={() => setShowCurrent(!showCurrent)}
+                        aria-label={showCurrent ? "Hide current password" : "Show current password"}
+                      >
+                        {showCurrent ? "🙈" : "👁️"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="newPassword" style={{ display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 6, color: "var(--ink)" }}>
+                      New Password
+                    </label>
+                    <div className="password-input-wrap">
+                      <input
+                        id="newPassword"
+                        type={showNew ? "text" : "password"}
+                        required
+                        minLength={8}
+                        className="input"
+                        placeholder="At least 8 characters"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle-btn"
+                        onClick={() => setShowNew(!showNew)}
+                        aria-label={showNew ? "Hide new password" : "Show new password"}
+                      >
+                        {showNew ? "🙈" : "👁️"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="confirmPassword" style={{ display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 6, color: "var(--ink)" }}>
+                      Confirm New Password
+                    </label>
+                    <div className="password-input-wrap">
+                      <input
+                        id="confirmPassword"
+                        type={showConfirm ? "text" : "password"}
+                        required
+                        minLength={8}
+                        className="input"
+                        placeholder="Re-enter new password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle-btn"
+                        onClick={() => setShowConfirm(!showConfirm)}
+                        aria-label={showConfirm ? "Hide confirmation password" : "Show confirmation password"}
+                      >
+                        {showConfirm ? "🙈" : "👁️"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                  <button type="submit" disabled={passwordSaving} className="btn brass">
+                    {passwordSaving ? "Updating Password…" : "Change Password"}
+                  </button>
+                </div>
+              </form>
+
+              {/* Right Column: Password Strength & Security Advice */}
+              <div className="strength-card">
+                <div className="strength-card-title">
+                  <span>Security Strength</span>
+                  {newPassword && (
+                    <span className={`strength-badge ${strength.badgeClass}`}>
+                      {strength.label}
+                    </span>
+                  )}
+                </div>
+
+                <div className="strength-bars-track">
+                  {[1, 2, 3, 4].map((seg) => {
+                    const isActive = strength.score >= seg && newPassword.length > 0;
+                    return (
+                      <div
+                        key={seg}
+                        className={`strength-bar-seg ${isActive ? `active-${strength.badgeClass}` : ""}`}
+                      />
+                    );
+                  })}
+                </div>
+
+                <div className="strength-checklist">
+                  <div className={`strength-check-item ${strength.hasMinLength ? "met" : ""}`}>
+                    <span className="strength-check-dot">{strength.hasMinLength ? "✓" : "•"}</span>
+                    <span>At least 8 characters long</span>
+                  </div>
+                  <div className={`strength-check-item ${strength.hasUpperLower ? "met" : ""}`}>
+                    <span className="strength-check-dot">{strength.hasUpperLower ? "✓" : "•"}</span>
+                    <span>Uppercase & lowercase letters</span>
+                  </div>
+                  <div className={`strength-check-item ${strength.hasNumberOrSymbol ? "met" : ""}`}>
+                    <span className="strength-check-dot">{strength.hasNumberOrSymbol ? "✓" : "•"}</span>
+                    <span>Numbers or special characters</span>
+                  </div>
+                  <div className={`strength-check-item ${strength.matchesConfirm ? "met" : ""}`}>
+                    <span className="strength-check-dot">{strength.matchesConfirm ? "✓" : "•"}</span>
+                    <span>Passwords match each other</span>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px dashed var(--line)", fontSize: 11.5, color: "var(--ink-soft)", lineHeight: 1.5 }}>
+                  💡 <strong>Security tip:</strong> Never reuse passwords across services. Antigravity hashing ensures your plaintext password is never stored or transmitted in the clear.
+                </div>
+              </div>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>
