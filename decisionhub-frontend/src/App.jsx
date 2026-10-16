@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import Landing from "./pages/Landing";
@@ -31,35 +32,37 @@ function RedirectIfAuthed({ children }) {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<RedirectIfAuthed><Landing /></RedirectIfAuthed>} />
-          <Route path="/login" element={<RedirectIfAuthed><Login /></RedirectIfAuthed>} />
-          <Route path="/register" element={<RedirectIfAuthed><Register /></RedirectIfAuthed>} />
-          <Route path="/reset-password" element={<RedirectIfAuthed><ResetPassword /></RedirectIfAuthed>} />
-          <Route path="/oauth2/callback" element={<OAuth2Callback />} />
-          <Route path="/demo" element={<Demo />} />
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<RedirectIfAuthed><Landing /></RedirectIfAuthed>} />
+            <Route path="/login" element={<RedirectIfAuthed><Login /></RedirectIfAuthed>} />
+            <Route path="/register" element={<RedirectIfAuthed><Register /></RedirectIfAuthed>} />
+            <Route path="/reset-password" element={<RedirectIfAuthed><ResetPassword /></RedirectIfAuthed>} />
+            <Route path="/oauth2/callback" element={<OAuth2Callback />} />
+            <Route path="/demo" element={<Demo />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/boards" element={<Boards />} />
-            <Route path="/boards/new" element={<CreateBoard />} />
-            <Route path="/boards/:id" element={<BoardDetail />} />
-            <Route path="/communities" element={<Communities />} />
-            <Route path="/communities/:id" element={<CommunityDetail />} />
-            <Route path="/discussions" element={<Discussions />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/feedback" element={<Feedback />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/voting-history" element={<VotingHistory />} />
-          </Route>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/boards" element={<Boards />} />
+              <Route path="/boards/new" element={<CreateBoard />} />
+              <Route path="/boards/:id" element={<BoardDetail />} />
+              <Route path="/communities" element={<Communities />} />
+              <Route path="/communities/:id" element={<CommunityDetail />} />
+              <Route path="/discussions" element={<Discussions />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/feedback" element={<Feedback />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/voting-history" element={<VotingHistory />} />
+            </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

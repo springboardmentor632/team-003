@@ -103,6 +103,24 @@ function IconFeedback() {
   );
 }
 
+function IconGearSolid() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path fillRule="evenodd" clipRule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L8.91 5.767a8.558 8.558 0 00-1.782 1.028L5.3 5.922a1.875 1.875 0 00-2.226.596l-1.079 1.868a1.875 1.875 0 00.377 2.274l1.523 1.341a8.625 8.625 0 000 2.057l-1.523 1.341a1.875 1.875 0 00-.377 2.274l1.079 1.868c.503.872 1.574 1.233 2.226.596l1.828-.873c.563.41 1.163.757 1.782 1.028l.318 1.95a1.875 1.875 0 001.85 1.567h2.158c.917 0 1.699-.663 1.85-1.567l.318-1.95a8.558 8.558 0 001.782-1.028l1.828.873c.652.637 1.723.276 2.226-.596l1.079-1.868a1.875 1.875 0 00-.377-2.274l-1.523-1.341a8.625 8.625 0 000-2.057l1.523-1.341a1.875 1.875 0 00.377-2.274l-1.079-1.868a1.875 1.875 0 00-2.226-.596l-1.828.873a8.558 8.558 0 00-1.782-1.028l-.318-1.95a1.875 1.875 0 00-1.85-1.567h-2.158zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z" />
+    </svg>
+  );
+}
+
+function IconLogout() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+  );
+}
+
 function IconPlus() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -266,22 +284,46 @@ export default function Sidebar() {
         </NavLink>
       </nav>
 
-      <div className="sidebar-foot">
-        <div className="avatar">{getInitials(user?.fullName || "?")}</div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="name" title={user?.fullName || "Guest"}>
-            {user?.fullName || "Guest"}
-          </div>
-          <div className="role">
-            {(user?.role || "USER").replace("_", " ").toLowerCase()}
-          </div>
-          <button
-            type="button"
-            className="sidebar-logout-btn"
-            onClick={logout}
+      <div className="sidebar-foot-wrapper">
+        <div className="sidebar-user-widget">
+          <Link
+            to="/settings"
+            className="sidebar-user-profile"
+            title="Account Settings & Profile"
+            onClick={() => setMobileOpen(false)}
           >
-            Log out
-          </button>
+            <div className="sidebar-user-avatar">
+              {(user?.fullName || user?.name || user?.email || "H").charAt(0).toUpperCase()}
+            </div>
+            <div className="sidebar-user-info">
+              <span className="sidebar-user-name" title={user?.fullName || user?.name || "Member"}>
+                {user?.fullName || user?.name || "Member"}
+              </span>
+              <span className="sidebar-user-email" title={user?.email || ""}>
+                {user?.email || "user@decisionhub.org"}
+              </span>
+            </div>
+          </Link>
+          <div className="sidebar-user-actions">
+            <Link
+              to="/settings"
+              className="sidebar-gear-btn"
+              title="Settings"
+              aria-label="Settings"
+              onClick={() => setMobileOpen(false)}
+            >
+              <IconGearSolid />
+            </Link>
+            <button
+              type="button"
+              className="sidebar-user-logout-btn"
+              onClick={logout}
+              title="Log out"
+              aria-label="Log out"
+            >
+              <IconLogout />
+            </button>
+          </div>
         </div>
       </div>
     </>

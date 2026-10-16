@@ -2,6 +2,7 @@ import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
+import { ThemeProvider } from "../context/ThemeContext";
 import Settings from "./Settings";
 
 const mockGetProfile = vi.fn();
@@ -127,5 +128,22 @@ describe("Settings Page", () => {
       });
       expect(screen.getByText("Password changed successfully!")).toBeTruthy();
     });
+  });
+
+  it("renders appearance & theme controls and toggles dark mode", async () => {
+    render(
+      <ThemeProvider>
+        <BrowserRouter>
+          <Settings />
+        </BrowserRouter>
+      </ThemeProvider>
+    );
+
+    expect(await screen.findByText("Appearance & Theme")).toBeTruthy();
+    const darkModeBtn = screen.getByRole("button", { name: /Dark Mode/i });
+    expect(darkModeBtn).toBeTruthy();
+
+    fireEvent.click(darkModeBtn);
+    expect(screen.getByText(/Dark Theme Active/i)).toBeTruthy();
   });
 });

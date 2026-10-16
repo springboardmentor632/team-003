@@ -31,6 +31,8 @@ const CATEGORY_ICONS = {
   General: "🌐",
 };
 
+import { useTheme } from "../context/ThemeContext";
+
 function EyeIcon() {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -49,8 +51,43 @@ function EyeOffIcon() {
   );
 }
 
+function SunIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  );
+}
+
+function MonitorIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+      <line x1="8" y1="21" x2="16" y2="21" />
+      <line x1="12" y1="17" x2="12" y2="21" />
+    </svg>
+  );
+}
+
 export default function Settings() {
   const { user, updateUserProfile } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   // Profile Form State
   const [name, setName] = useState("");
@@ -197,9 +234,13 @@ export default function Settings() {
   return (
     <div>
       <TopBar
+        breadcrumbs={[
+          { label: "Workspace", to: "/dashboard" },
+          { label: "Settings & Profile" },
+        ]}
         eyebrow="Account & Preferences"
         title="Settings & Profile"
-        subtitle="Manage your personal profile, topic interests, and account security credentials."
+        subtitle="Manage your interface appearance, personal profile, topic interests, and credentials."
       />
 
       <div className="settings-container">
@@ -230,6 +271,106 @@ export default function Settings() {
           <div style={{ fontSize: 12, opacity: 0.8, textAlign: "right" }}>
             <span>DecisionHub Member</span>
             <div style={{ marginTop: 4, fontFamily: "monospace", fontSize: 11 }}>Encrypted & Secured</div>
+          </div>
+        </div>
+
+        {/* Appearance & Theme (Light / Dark Mode) */}
+        <div className="settings-card" id="theme-preferences">
+          <div className="settings-card-head">
+            <div className="settings-card-head-left">
+              <div className="settings-card-icon" style={{ background: "rgba(185, 134, 47, 0.12)", color: "var(--brass)" }}>
+                <SunIcon />
+              </div>
+              <div>
+                <h2>Appearance & Theme</h2>
+                <p>Customize how DecisionHub looks on your device. Choose between light and dark themes.</p>
+              </div>
+            </div>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--teal)", background: "var(--teal-dim)", padding: "4px 12px", borderRadius: 12 }}>
+              {theme === "dark" ? "🌙 Dark Theme Active" : theme === "light" ? "☀️ Light Theme Active" : "🖥️ System Theme Active"}
+            </span>
+          </div>
+
+          <div className="settings-card-body">
+            <div className="theme-switcher-grid">
+              {/* Light Mode Option */}
+              <button
+                type="button"
+                className={`theme-card-button ${theme === "light" ? "selected" : ""}`}
+                onClick={() => setTheme("light")}
+                aria-pressed={theme === "light"}
+              >
+                <div className="theme-preview-box light">
+                  <div className="preview-top" />
+                  <div className="preview-split">
+                    <div className="preview-side" />
+                    <div className="preview-main">
+                      <div className="preview-line-title" />
+                      <div className="preview-box-card" />
+                    </div>
+                  </div>
+                </div>
+                <div className="theme-info-content">
+                  <div className="theme-label-row">
+                    <span className="theme-title"><SunIcon /> Light Mode</span>
+                    {theme === "light" && <span className="theme-active-indicator">Current</span>}
+                  </div>
+                  <p>Crisp, high-contrast day palette with natural paper tones and dark typography.</p>
+                </div>
+              </button>
+
+              {/* Dark Mode Option */}
+              <button
+                type="button"
+                className={`theme-card-button ${theme === "dark" ? "selected" : ""}`}
+                onClick={() => setTheme("dark")}
+                aria-pressed={theme === "dark"}
+              >
+                <div className="theme-preview-box dark">
+                  <div className="preview-top" />
+                  <div className="preview-split">
+                    <div className="preview-side" />
+                    <div className="preview-main">
+                      <div className="preview-line-title" />
+                      <div className="preview-box-card" />
+                    </div>
+                  </div>
+                </div>
+                <div className="theme-info-content">
+                  <div className="theme-label-row">
+                    <span className="theme-title"><MoonIcon /> Dark Mode</span>
+                    {theme === "dark" && <span className="theme-active-indicator">Current</span>}
+                  </div>
+                  <p>Sleek dark charcoal palette to reduce eye strain in low-light environments.</p>
+                </div>
+              </button>
+
+              {/* System Option */}
+              <button
+                type="button"
+                className={`theme-card-button ${theme === "system" ? "selected" : ""}`}
+                onClick={() => setTheme("system")}
+                aria-pressed={theme === "system"}
+              >
+                <div className="theme-preview-box system">
+                  <div className="preview-top" />
+                  <div className="preview-split">
+                    <div className="preview-side" />
+                    <div className="preview-main">
+                      <div className="preview-line-title" />
+                      <div className="preview-box-card" />
+                    </div>
+                  </div>
+                </div>
+                <div className="theme-info-content">
+                  <div className="theme-label-row">
+                    <span className="theme-title"><MonitorIcon /> System Preference</span>
+                    {theme === "system" && <span className="theme-active-indicator">Current</span>}
+                  </div>
+                  <p>Automatically match your device's operating system dark/light mode setting.</p>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
 
