@@ -10,6 +10,7 @@ export default function Communities() {
   const [name, setName] = useState(""); const [description, setDescription] = useState("");
   const [showForm, setShowForm] = useState(false); const [error, setError] = useState(""); const [loading, setLoading] = useState(true);
   const [invitations, setInvitations] = useState([]); const [success, setSuccess] = useState("");
+  const [busyId, setBusyId] = useState(null);
   const load = () => listCommunities().then(({ data }) => setCommunities(data)).catch((err) => setError(extractErrorMessage(err, "Couldn't load communities"))).finally(() => setLoading(false));
   useEffect(() => { load(); listInvitations().then(({ data }) => setInvitations(data)).catch(() => {}); }, []);
   const create = async (event) => {
@@ -18,8 +19,14 @@ export default function Communities() {
     catch (err) { setError(extractErrorMessage(err, "Couldn't create community")); }
   };
   const toggleMembership = async (community) => {
-    try { const { data } = community.joined ? await leaveCommunity(community.id) : await joinCommunity(community.id); setCommunities((items) => items.map((item) => item.id === community.id ? data : item)); }
+    setError("");
+    setBusyId(community.id);
+    try {
+      const { data } = community.joined ? await leaveCommunity(community.id) : await joinCommunity(community.id);
+      setCommunities((items) => items.map((item) => item.id === community.id ? data : item));
+    }
     catch (err) { setError(extractErrorMessage(err, "Couldn't update membership")); }
+    finally { setBusyId(null); }
   };
   const respond = async (invitation, accept) => { try { if (accept) await acceptInvitation(invitation.id); else await declineInvitation(invitation.id); setInvitations((items) => items.filter((item) => item.id !== invitation.id)); setSuccess(accept ? `You joined ${invitation.community?.name || "the community"}.` : "Invitation declined."); if (accept) load(); } catch (err) { setError(extractErrorMessage(err, "Couldn't update invitation")); } };
   return <div>
@@ -28,6 +35,31 @@ export default function Communities() {
     {success && <div className="success-note">{success}</div>}
     {invitations.length > 0 && <section className="panel invitations"><div className="section-head"><div><span className="eyebrow">Pending invitations</span><h2>Join a community</h2></div><span>{invitations.length}</span></div>{invitations.map((invitation) => <div className="invitation-row" key={invitation.id}><div><h3>{invitation.community?.name || "Community invitation"}</h3><p>You’ve been invited to collaborate on decisions.</p></div><div className="detail-actions"><button className="btn ghost" onClick={() => respond(invitation, false)}>Decline</button><button className="btn brass" onClick={() => respond(invitation, true)}>Accept</button></div></div>)}</section>}
     {showForm && <form className="form-card" onSubmit={create} style={{ marginBottom: 24 }}><div className="field"><label>Name</label><input value={name} required onChange={(e) => setName(e.target.value)} placeholder="e.g. Product leaders" /></div><div className="field"><label>Description</label><input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What brings this group together?" /></div><button className="btn brass" type="submit">Create community</button></form>}
-    {loading ? <div className="state-block">Loading communities…</div> : communities.length === 0 ? <div className="state-block"><h3>No communities yet</h3><p>Create the first space for shared decisions.</p></div> : <div className="card-grid">{communities.map((community) => <article className="card" key={community.id} onClick={() => navigate(`/communities/${community.id}`)}><div className="card-top"><span className="cat">Community</span><span>{community.memberCount} members</span></div><h3>{community.name}</h3><p>{community.description || "A place to compare options and decide together."}</p><div className="card-foot"><span>{community.joined ? "You’re a member" : "Open to join"}</span><button className="btn ghost" onClick={(event) => { event.stopPropagation(); toggleMembership(community); }}>{community.joined ? "Leave" : "Join"}</button></div></article>)}</div>}
+    {loading ? <div className="state-block">Loading communities…</div> : communities.length === 0 ? <div className="state-block"><h3>No communities yet</h3><p>Create the first space for shared decisions.</p></div> : <div className="card-grid">{communities.map((community) => (
+      <article className="card community-card" key={community.id} onClick={() => navigate(`/communities/${community.id}`)}>
+        <div className="card-top">
+          <span className="cat">Community</span>
+          <span className="community-members-count">{community.memberCount} member{community.memberCount === 1 ? "" : "s"}</span>
+        </div>
+        <h3>{community.name}</h3>
+        <p>{community.description || "A place to compare options and decide together."}</p>
+        <div className="card-foot">
+          <span className={`community-status-badge ${community.joined ? "is-member" : "is-open"}`}>
+            <span className={`status-dot ${community.joined ? "member-dot" : "open-dot"}`} />
+            {community.joined ? "You’re a member" : "Open to join"}
+          </span>
+          <button
+            type="button"
+            className={`btn community-join-btn ${community.joined ? "btn-leave" : "btn-join"}`}
+            onClick={(event) => { event.stopPropagation(); toggleMembership(community); }}
+            disabled={busyId === community.id}
+            title={community.joined ? "Click to leave community" : "Click to join community"}
+            aria-label={community.joined ? `Leave ${community.name}` : `Join ${community.name}`}
+          >
+            {busyId === community.id ? (community.joined ? "Leaving…" : "Joining…") : (community.joined ? "Leave" : "Join")}
+          </button>
+        </div>
+      </article>
+    ))}</div>}
   </div>;
 }
