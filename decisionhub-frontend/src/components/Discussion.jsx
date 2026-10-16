@@ -17,6 +17,33 @@ function CommentNode({ comment, children, onReply, onReact, onEdit, onDelete, ca
   </article>;
 }
 
+const DEMO_SEEDS = [
+  {
+    id: 9001,
+    authorName: "Sarah Chen",
+    body: "The weighted comparison criteria align well with our quarterly goals. Latency and operational risk benchmarks look dependable.",
+    createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+    reactionCount: 4,
+    parentCommentId: null,
+  },
+  {
+    id: 9002,
+    authorName: "Devon Vance",
+    body: "@Sarah Agreed. The pilot validation confirms our scalability estimates.",
+    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+    reactionCount: 2,
+    parentCommentId: 9001,
+  },
+  {
+    id: 9003,
+    authorName: "Arjun Mehta",
+    body: "Reminder to all circle members: please submit your final votes before the consensus deadline this Friday.",
+    createdAt: new Date(Date.now() - 3600000 * 1).toISOString(),
+    reactionCount: 3,
+    parentCommentId: null,
+  },
+];
+
 export default function Discussion({ boardId }) {
   const { user } = useAuth();
   const [comments, setComments] = useState([]);
@@ -26,9 +53,20 @@ export default function Discussion({ boardId }) {
   const [loading, setLoading] = useState(true);
   const composerRef = useRef(null);
 
+  const isDemo = !boardId || isNaN(Number(boardId)) || String(boardId).startsWith("demo-");
+
   const load = () => {
+    if (isDemo) {
+      setLoading(false);
+      setError("");
+      setComments(DEMO_SEEDS);
+      return;
+    }
     setLoading(true);
-    listComments(boardId).then(({ data }) => setComments(data)).catch((err) => setError(extractErrorMessage(err, "Couldn't load comments"))).finally(() => setLoading(false));
+    listComments(boardId)
+      .then(({ data }) => setComments(data))
+      .catch((err) => setError(extractErrorMessage(err, "Couldn't load comments")))
+      .finally(() => setLoading(false));
   };
   useEffect(() => { setDraft(""); setReplyTo(null); setError(""); load(); }, [boardId]);
   const count = useMemo(() => `${comments.length} ${comments.length === 1 ? "comment" : "comments"}`, [comments]);
@@ -45,6 +83,20 @@ export default function Discussion({ boardId }) {
   const submit = async (event) => {
     event.preventDefault();
     if (!draft.trim()) return;
+    if (isDemo) {
+      const newComment = {
+        id: Date.now(),
+        authorName: user?.fullName || user?.name || "Community Member",
+        body: draft.trim(),
+        createdAt: new Date().toISOString(),
+        reactionCount: 0,
+        parentCommentId: replyTo?.id || null,
+      };
+      setComments((items) => [...items, newComment]);
+      setDraft("");
+      setReplyTo(null);
+      return;
+    }
     try {
       const { data } = await createComment(boardId, { content: draft.trim(), parentCommentId: replyTo?.id });
       setComments((items) => [...items, data]);
@@ -52,14 +104,43 @@ export default function Discussion({ boardId }) {
     } catch (err) { setError(extractErrorMessage(err, "Couldn't post your comment")); }
   };
   const react = async (id) => {
+    if (isDemo) {
+      setComments((items) =>
+        items.map((item) => (item.id === id ? { ...item, reactionCount: (item.reactionCount || 0) + 1 } : item))
+      );
+      return;
+    }
     try {
       const { data } = await reactToComment(boardId, id);
       setComments((items) => items.map((item) => item.id === id ? data : item));
     } catch (err) { setError(extractErrorMessage(err, "Couldn't add your reaction")); }
   };
   const startReply = (comment) => { setReplyTo(comment); setDraft(`@${comment.authorName.split(" ")[0]} `); requestAnimationFrame(() => composerRef.current?.focus()); };
-  const edit = async (comment) => { const content = window.prompt("Edit comment", comment.body); if (!content?.trim()) return; try { const { data } = await updateComment(boardId, comment.id, { content }); setComments((all) => all.map((item) => item.id === data.id ? data : item)); } catch (err) { setError(extractErrorMessage(err, "Couldn't edit comment")); } };
-  const remove = async (comment) => { if (!window.confirm("Delete this comment?")) return; try { await deleteComment(boardId, comment.id); setComments((all) => all.filter((item) => item.id !== comment.id)); } catch (err) { setError(extractErrorMessage(err, "Couldn't delete comment")); } };
+  const edit = async (comment) => {
+    const content = window.prompt("Edit comment", comment.body);
+    if (!content?.trim()) return;
+    if (isDemo) {
+      setComments((all) =>
+        all.map((item) => (item.id === comment.id ? { ...item, body: content.trim() } : item))
+      );
+      return;
+    }
+    try {
+      const { data } = await updateComment(boardId, comment.id, { content });
+      setComments((all) => all.map((item) => item.id === data.id ? data : item));
+    } catch (err) { setError(extractErrorMessage(err, "Couldn't edit comment")); }
+  };
+  const remove = async (comment) => {
+    if (!window.confirm("Delete this comment?")) return;
+    if (isDemo) {
+      setComments((all) => all.filter((item) => item.id !== comment.id));
+      return;
+    }
+    try {
+      await deleteComment(boardId, comment.id);
+      setComments((all) => all.filter((item) => item.id !== comment.id));
+    } catch (err) { setError(extractErrorMessage(err, "Couldn't delete comment")); }
+  };
 
   return (
     <section className="discussion" id="discussion">

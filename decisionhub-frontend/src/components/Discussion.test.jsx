@@ -1,6 +1,6 @@
 import React from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor, cleanup } from "@testing-library/react";
 
 const mocks = vi.hoisted(() => ({ listComments: vi.fn(), createComment: vi.fn(), reactToComment: vi.fn(), updateComment: vi.fn(), deleteComment: vi.fn() }));
 vi.mock("../api/collaboration", () => mocks);
@@ -11,6 +11,7 @@ const comment = { id: 1, authorName: "Maya User", body: "Original thought", crea
 
 describe("Discussion", () => {
   beforeEach(() => { vi.clearAllMocks(); mocks.listComments.mockResolvedValue({ data: [comment] }); mocks.createComment.mockResolvedValue({ data: { ...comment, id: 2, body: "Reply text", parentCommentId: 1 } }); mocks.updateComment.mockResolvedValue({ data: { ...comment, body: "Edited thought" } }); mocks.deleteComment.mockResolvedValue({}); window.prompt = vi.fn(() => "Edited thought"); window.confirm = vi.fn(() => true); });
+  afterEach(() => { cleanup(); });
 
   it("supports reply, edit, and delete actions", async () => {
     render(<Discussion boardId="8" />);
@@ -29,5 +30,16 @@ describe("Discussion", () => {
     mocks.listComments.mockRejectedValue({ response: { data: { error: "Conversation unavailable" } } });
     render(<Discussion boardId="8" />);
     expect(await screen.findByText("Conversation unavailable")).toBeTruthy();
+  });
+
+  it("handles demo boards gracefully without calling the backend API", async () => {
+    render(<Discussion boardId="demo-maya-roadmap" />);
+    expect(await screen.findByText(/The weighted comparison criteria align well/i)).toBeTruthy();
+    expect(mocks.listComments).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Live demo test comment" } });
+    fireEvent.click(screen.getByRole("button", { name: /Post comment/i }));
+    expect(await screen.findByText("Live demo test comment")).toBeTruthy();
+    expect(mocks.createComment).not.toHaveBeenCalled();
   });
 });
