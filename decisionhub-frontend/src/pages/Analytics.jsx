@@ -486,9 +486,11 @@ function Analytics() {
               />
               <YAxis
                 allowDecimals={false}
-                tick={{ fill: "#4b5563", fontSize: 12, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}
-                axisLine={{ stroke: "#d1dedc" }}
+                tick={{ fill: "#1E293B", fontSize: 12.5, fontWeight: 600, fontFamily: "'Inter', -apple-system, sans-serif" }}
+                axisLine={{ stroke: "#CBD5E1" }}
                 tickLine={false}
+                tickMargin={6}
+                width={36}
               />
               <Tooltip
                 formatter={(value) => [`${value} votes`, "Votes"]}
@@ -542,9 +544,11 @@ function Analytics() {
               />
               <YAxis
                 allowDecimals={false}
-                tick={{ fill: "#4b5563", fontSize: 12, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}
-                axisLine={{ stroke: "#d1dedc" }}
+                tick={{ fill: "#1E293B", fontSize: 12.5, fontWeight: 600, fontFamily: "'Inter', -apple-system, sans-serif" }}
+                axisLine={{ stroke: "#CBD5E1" }}
                 tickLine={false}
+                tickMargin={6}
+                width={36}
               />
               <Tooltip
                 formatter={(value) => [`${value} votes`, "Votes"]}
@@ -599,9 +603,11 @@ function Analytics() {
               />
               <YAxis
                 allowDecimals={false}
-                tick={{ fill: "#4b5563", fontSize: 12, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}
-                axisLine={{ stroke: "#d1dedc" }}
+                tick={{ fill: "#1E293B", fontSize: 12.5, fontWeight: 600, fontFamily: "'Inter', -apple-system, sans-serif" }}
+                axisLine={{ stroke: "#CBD5E1" }}
                 tickLine={false}
+                tickMargin={6}
+                width={36}
               />
               <Tooltip
                 formatter={(value, name, item) => [
@@ -648,9 +654,11 @@ function Analytics() {
               />
               <YAxis
                 allowDecimals={false}
-                tick={{ fill: "#4b5563", fontSize: 12, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}
-                axisLine={{ stroke: "#d1dedc" }}
+                tick={{ fill: "#1E293B", fontSize: 12.5, fontWeight: 600, fontFamily: "'Inter', -apple-system, sans-serif" }}
+                axisLine={{ stroke: "#CBD5E1" }}
                 tickLine={false}
+                tickMargin={6}
+                width={36}
               />
               <Tooltip
                 contentStyle={{
@@ -773,9 +781,11 @@ function Analytics() {
             />
             <YAxis
               allowDecimals={false}
-              tick={{ fill: "#4b5563", fontSize: 12, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}
-              axisLine={{ stroke: "#d1dedc" }}
+              tick={{ fill: "#1E293B", fontSize: 12.5, fontWeight: 600, fontFamily: "'Inter', -apple-system, sans-serif" }}
+              axisLine={{ stroke: "#CBD5E1" }}
               tickLine={false}
+              tickMargin={6}
+              width={36}
             />
             <Tooltip
               contentStyle={{
@@ -834,13 +844,14 @@ function Analytics() {
               type="number"
               allowDecimals={false}
               tick={{
-                fill: "#4b5563",
-                fontSize: 12,
-                fontWeight: 500,
-                fontFamily: "'Inter', sans-serif",
+                fill: "#1E293B",
+                fontSize: 12.5,
+                fontWeight: 600,
+                fontFamily: "'Inter', -apple-system, sans-serif",
               }}
-              axisLine={{ stroke: "#d1dedc" }}
+              axisLine={{ stroke: "#CBD5E1" }}
               tickLine={false}
+              tickMargin={6}
             />
 
             <YAxis
@@ -851,9 +862,9 @@ function Analytics() {
                 fill: "#171B1E",
                 fontSize: 12.5,
                 fontWeight: 600,
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: "'Inter', -apple-system, sans-serif",
               }}
-              axisLine={{ stroke: "#d1dedc" }}
+              axisLine={{ stroke: "#CBD5E1" }}
               tickLine={false}
               tickFormatter={(title) => {
                 if (!title) return "";
