@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import Discussion from "../components/Discussion";
 import Suggestions from "../components/Suggestions";
 import Attachments from "../components/Attachments";
+import ShareModal from "../components/ShareModal";
 
 const STANDARD_FACTORS = [
   { key: "costScore", label: "Cost", isCustom: false },
@@ -40,6 +41,7 @@ export default function BoardDetail() {
   const [reportReason, setReportReason] = useState("");
   const [isSaved, setIsSaved] = useState(false);
   const [bookmarkBusy, setBookmarkBusy] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [showAddCriteriaModal, setShowAddCriteriaModal] = useState(false);
   const [newCriterionName, setNewCriterionName] = useState("");
   const [newCriterionScores, setNewCriterionScores] = useState({});
@@ -318,7 +320,14 @@ export default function BoardDetail() {
           </button>
           <a className="btn ghost" href="#attachments">Attachments</a>
           <a className="btn ghost" href="#discussion">Discussion</a>
-          <button className="btn ghost" onClick={() => navigator.clipboard?.writeText(window.location.href)}>Share board</button>
+          <button
+            type="button"
+            className="btn ghost"
+            onClick={() => setShareOpen(true)}
+            title="Share this decision board"
+          >
+            🔗 Share board
+          </button>
           <button className="btn ghost" onClick={() => setReporting((value) => !value)}>Report</button>
         </div>
       </div>
@@ -573,6 +582,13 @@ export default function BoardDetail() {
           </div>
         </aside>
       </div>
+
+      {/* Interactive Share Modal */}
+      <ShareModal
+        isOpen={shareOpen}
+        onClose={() => setShareOpen(false)}
+        board={decision}
+      />
     </div>
   );
 }

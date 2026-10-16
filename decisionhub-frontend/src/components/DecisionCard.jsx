@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import TipBar from "./TipBar";
 import { topTwo, timeAgo, getInitials } from "../utils/decisionHelpers";
 import { saveDecision, unsaveDecision } from "../api/user";
+import ShareModal from "./ShareModal";
 
 export default function DecisionCard({ decision, initialSaved = false, onToggleSave }) {
   const navigate = useNavigate();
   const [saved, setSaved] = useState(initialSaved || decision.isSaved || false);
   const [busy, setBusy] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const { a, b, pctA, pctB } = topTwo(decision);
 
   const handleBookmark = async (e) => {
@@ -57,15 +59,29 @@ export default function DecisionCard({ decision, initialSaved = false, onToggleS
           )}
         </div>
 
-        <button
-          type="button"
-          aria-label={saved ? "Remove bookmark" : "Save decision"}
-          title={saved ? "Remove bookmark" : "Save decision"}
-          onClick={handleBookmark}
-          className={`card-bookmark-btn ${saved ? "saved" : ""}`}
-        >
-          {saved ? "★" : "☆"}
-        </button>
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <button
+            type="button"
+            aria-label="Share decision"
+            title="Share decision"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShareOpen(true);
+            }}
+            className="card-bookmark-btn"
+          >
+            🔗
+          </button>
+          <button
+            type="button"
+            aria-label={saved ? "Remove bookmark" : "Save decision"}
+            title={saved ? "Remove bookmark" : "Save decision"}
+            onClick={handleBookmark}
+            className={`card-bookmark-btn ${saved ? "saved" : ""}`}
+          >
+            {saved ? "★" : "☆"}
+          </button>
+        </div>
       </div>
 
       <h3 className="proposal-title">{decision.title}</h3>
@@ -103,6 +119,12 @@ export default function DecisionCard({ decision, initialSaved = false, onToggleS
           <span className="vote-counter-pill">{decision.totalVotes} votes</span>
         </div>
       </div>
+
+      <ShareModal
+        isOpen={shareOpen}
+        onClose={() => setShareOpen(false)}
+        board={decision}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import BrandMark from "../components/BrandMark";
 import Discussion from "../components/Discussion";
 import TopBar from "../components/TopBar";
+import ShareModal from "../components/ShareModal";
 
 export const ROLE_PROFILES = {
   ADMIN: {
@@ -980,6 +981,7 @@ function DetailDemo({ board, setView, profile }) {
   const [closed, setClosed] = useState(Boolean(board.closed));
   const [pinnedConsensus, setPinnedConsensus] = useState(false);
   const [hasVotedIndex, setHasVotedIndex] = useState(null);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const total = votes.reduce((sum, vote) => sum + vote, 0);
   const leadingIndex = votes.indexOf(Math.max(...votes));
@@ -1038,7 +1040,14 @@ function DetailDemo({ board, setView, profile }) {
             </button>
           )}
           <a className="btn ghost" href="#discussion">Discussion</a>
-          <button className="btn ghost" onClick={() => navigator.clipboard?.writeText(window.location.href)}>Share board</button>
+          <button
+            type="button"
+            className="btn ghost"
+            onClick={() => setShareOpen(true)}
+            title="Share this decision board"
+          >
+            🔗 Share board
+          </button>
         </div>
       </div>
 
@@ -1194,6 +1203,13 @@ function DetailDemo({ board, setView, profile }) {
           </div>
         </aside>
       </div>
+
+      {/* Interactive Share Modal */}
+      <ShareModal
+        isOpen={shareOpen}
+        onClose={() => setShareOpen(false)}
+        board={{ ...board, closed }}
+      />
     </div>
   );
 }
