@@ -37,7 +37,7 @@ public class SeedDataConfig {
             existing.setPassword(encoder.encode(password));
             updated = true;
         }
-        if (existing.getAvatarUrl() == null || existing.getAvatarUrl().isBlank()) {
+        if (existing.getAvatarUrl() == null || existing.getAvatarUrl().isBlank() || existing.getAvatarUrl().contains("images.unsplash.com")) {
             existing.setAvatarUrl(avatarUrl);
             updated = true;
         }
