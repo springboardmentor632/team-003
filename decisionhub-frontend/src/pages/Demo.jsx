@@ -4,12 +4,28 @@ import BrandMark from "../components/BrandMark";
 import Discussion from "../components/Discussion";
 import TopBar from "../components/TopBar";
 
-const ROLE_PROFILES = {
+export const ROLE_PROFILES = {
   ADMIN: {
     id: "ADMIN",
     name: "System Admin",
-    badge: "Global Admin",
-    subtitle: "Organization-wide governance, platform infrastructure, and cross-community moderation.",
+    roleTag: "Global Admin",
+    badge: "🛡️ Global Admin",
+    badgeColor: "#7c3aed",
+    subtitle: "Organization-wide governance, cloud infrastructure resilience, platform security compliance, and moderation override.",
+    capabilities: [
+      "Full administrative override across all decision boards (force finalize, close, reopen, or delete)",
+      "Global moderation queue access across all communities with one-click resolution and comment hiding",
+      "Direct multi-region cloud deployment and zero-trust SSO enterprise identity policies",
+      "Organization compliance audit dataset export in CSV and machine-readable JSON format",
+    ],
+    navLinks: [
+      { id: "dashboard", label: "Dashboard", icon: "⌂" },
+      { id: "boards", label: "Decision boards", icon: "◈" },
+      { id: "communities", label: "Communities", icon: "◎" },
+      { id: "moderation", label: "Global Moderation Queue", icon: "🛡️" },
+      { id: "exports", label: "Compliance & Audit Exports", icon: "📊" },
+      { id: "detail", label: "Board details", icon: "◌" },
+    ],
     communities: [
       { id: "gov", name: "Platform Governance & Security", role: "OWNER", members: 18, description: "Global security standards, multi-region compliance, enterprise SSO, and cloud infrastructure governance." },
       { id: "workplace", name: "Workplace & Culture", role: "ADMIN OVERRIDE", members: 34, description: "Collaborative policies, compensation guidelines, and inclusive workplace initiatives." },
@@ -70,8 +86,23 @@ const ROLE_PROFILES = {
   MODERATOR: {
     id: "MODERATOR",
     name: "Arjun Mehta",
-    badge: "Community Moderator",
-    subtitle: "Lead engineering architecture discussions, technical RFC deliberations, and community moderation.",
+    roleTag: "Community Moderator",
+    badge: "⚙️ Community Moderator",
+    badgeColor: "#0284c7",
+    subtitle: "Lead engineering RFC deliberations, technical consensus discovery, and maintain civil discussion quality.",
+    capabilities: [
+      "Moderate engineering circle discussions, hide policy-violating comments, and resolve flags",
+      "Define user-evaluated custom criteria for option comparison matrices",
+      "Pin consensus synthesis notes to clearly communicate engineering direction",
+      "Facilitate microservices, AI inference engines, and on-call rotation deliberations",
+    ],
+    navLinks: [
+      { id: "dashboard", label: "Dashboard", icon: "⌂" },
+      { id: "boards", label: "Decision boards", icon: "◈" },
+      { id: "communities", label: "Communities", icon: "◎" },
+      { id: "content-review", label: "Content Review & Flags", icon: "⚖️" },
+      { id: "detail", label: "Board details", icon: "◌" },
+    ],
     communities: [
       { id: "eng", name: "Engineering Circle", role: "OWNER", members: 27, description: "Microservices architecture, ingress routing, developer tooling, and technical design RFCs." },
       { id: "ai-guild", name: "AI & Architecture Guild", role: "OWNER", members: 19, description: "LLM inference performance, prompt engineering guardrails, and automated deliberation synthesis." },
@@ -131,8 +162,24 @@ const ROLE_PROFILES = {
   OWNER: {
     id: "OWNER",
     name: "Maya Patel",
-    badge: "Community Owner",
-    subtitle: "Drive product roadmap prioritization, pricing tiering, and organize strategic team summits.",
+    roleTag: "Community Owner",
+    badge: "👑 Community Owner",
+    badgeColor: "#d97706",
+    subtitle: "Direct product roadmap strategy, manage community member rosters, promote moderators, and finalize consensus.",
+    capabilities: [
+      "Full community lifecycle ownership: manage member rosters, invitations, and permissions",
+      "Promote trusted members to Moderator roles and configure community visibility",
+      "Finalize consensus, declare winning proposals, and conclude active voting",
+      "Export deliberation analytics and raw polling datasets in CSV and JSON formats",
+    ],
+    navLinks: [
+      { id: "dashboard", label: "Dashboard", icon: "⌂" },
+      { id: "boards", label: "Decision boards", icon: "◈" },
+      { id: "communities", label: "Communities", icon: "◎" },
+      { id: "roster", label: "Community Roster & Roles", icon: "👑" },
+      { id: "exports", label: "Polling Data Exports", icon: "📊" },
+      { id: "detail", label: "Board details", icon: "◌" },
+    ],
     communities: [
       { id: "prod-owner", name: "Product Builders", role: "OWNER", members: 35, description: "Product roadmap prioritization, customer discovery synthesis, and collaborative decision matrices." },
       { id: "travel-owner", name: "Weekend Explorers", role: "OWNER", members: 29, description: "Quarterly team workcations, offsite strategy retreats, and cultural immersion experiences." },
@@ -191,8 +238,24 @@ const ROLE_PROFILES = {
   USER: {
     id: "USER",
     name: "Harish",
-    badge: "Community Member",
-    subtitle: "Compare personal professional growth pathways, team workcations, and vote on community initiatives.",
+    roleTag: "Community Member",
+    badge: "👤 Community Member",
+    badgeColor: "#00897b",
+    subtitle: "Deliberate on individual growth pathways, collaborate on team workcations, and submit verified ballots.",
+    capabilities: [
+      "Cast weighted, multiple-choice, and rating ballots with optional anonymity",
+      "Retract or revise cast votes prior to community decision closure",
+      "Access cryptographically timestamped personal voting history and verified receipts",
+      "Submit direct product suggestions, user feedback, and bug reports to maintainers",
+    ],
+    navLinks: [
+      { id: "dashboard", label: "Dashboard", icon: "⌂" },
+      { id: "boards", label: "Decision boards", icon: "◈" },
+      { id: "communities", label: "Communities", icon: "◎" },
+      { id: "history", label: "Voting History & Receipts", icon: "⏱️" },
+      { id: "feedback", label: "Submit Feedback", icon: "✍️" },
+      { id: "detail", label: "Board details", icon: "◌" },
+    ],
     communities: [
       { id: "member-travel", name: "Weekend Explorers", role: "MEMBER", members: 29, description: "Quarterly team workcations, offsite strategy retreats, and cultural immersion experiences." },
       { id: "member-workplace", name: "Workplace & Culture", role: "MEMBER", members: 34, description: "Collaborative policies, compensation guidelines, and inclusive workplace initiatives." },
@@ -268,7 +331,9 @@ function DemoCard({ board, onOpen }) {
     <button className="card demo-card" type="button" onClick={() => onOpen(board)}>
       <div className="card-top">
         <span className="cat">{board.category}</span>
-        <span className={`status-pill ${board.closed ? "closed" : "open"}`}>{board.closed ? "Decision reached" : "Voting open"}</span>
+        <span className={`status-pill ${board.closed ? "closed" : "open"}`}>
+          {board.closed ? "Decision reached" : "Voting open"}
+        </span>
       </div>
       <h3>{board.title}</h3>
       <div className="tip">
@@ -281,16 +346,21 @@ function DemoCard({ board, onOpen }) {
           <div className="tip-track"><div className="tip-fill b" style={{ width: `${shareB}%` }} /></div>
         </div>
       )}
-      <div className="card-foot"><span>{board.pollType.replace("_", " ").toLowerCase()}</span><span>{board.totalVotes} votes <b>→</b></span></div>
+      <div className="card-foot">
+        <span>{board.pollType.replace("_", " ").toLowerCase()}</span>
+        <span>{board.totalVotes} votes <b>→</b></span>
+      </div>
     </button>
   );
 }
 
 function DemoNav({ active, setView, roleKey, onSelectRole }) {
+  const profile = ROLE_PROFILES[roleKey];
+
   return (
     <aside className="sidebar demo-sidebar">
       <div className="brand"><BrandMark /><div className="brand-name">DecisionHub</div></div>
-      <div className="demo-label">Interactive preview · {ROLE_PROFILES[roleKey].badge}</div>
+      <div className="demo-label">Interactive preview · {profile.badge}</div>
       <nav className="nav">
         <div className="nav-label">Switch Role Persona</div>
         {Object.values(ROLE_PROFILES).map((r) => (
@@ -298,15 +368,24 @@ function DemoNav({ active, setView, roleKey, onSelectRole }) {
             ● <span>{r.badge} ({r.name.split(" ")[0]})</span>
           </button>
         ))}
-        <div className="nav-label">Workspace</div>
-        <button className={active === "dashboard" ? "active" : ""} onClick={() => setView("dashboard")}>⌂ <span>Dashboard</span></button>
-        <button className={active === "boards" ? "active" : ""} onClick={() => setView("boards")}>◈ <span>Decision boards</span></button>
-        <button className={active === "communities" ? "active" : ""} onClick={() => setView("communities")}>◎ <span>Communities</span></button>
-        <button className={active === "detail" ? "active" : ""} onClick={() => setView("detail")}>◌ <span>Board details</span></button>
+
+        <div className="nav-label">{profile.name.split(" ")[0]}'s Workspace</div>
+        {profile.navLinks.map((item) => (
+          <button
+            key={item.id}
+            className={active === item.id ? "active" : ""}
+            onClick={() => setView(item.id)}
+          >
+            <span>{item.icon}</span> <span>{item.label}</span>
+          </button>
+        ))}
       </nav>
       <div className="demo-side-note">
-        Viewing as <b>{ROLE_PROFILES[roleKey].name}</b><br />
-        <Link to="/login" style={{ color: "var(--brass)" }}>Sign in to live account →</Link>
+        Viewing as <b>{profile.name}</b><br />
+        <span style={{ fontSize: 10.5, color: profile.badgeColor, fontWeight: 600 }}>{profile.badge}</span><br />
+        <Link to="/login" style={{ color: "var(--brass)", marginTop: 6, display: "inline-block" }}>
+          Sign in to live account →
+        </Link>
       </div>
     </aside>
   );
@@ -324,17 +403,29 @@ function DashboardDemo({ profile, openBoard, setView }) {
         eyebrow={`Role preview · ${profile.badge}`}
         title={`Good to see you, ${profile.name}.`}
         subtitle={profile.subtitle}
-        action={<button className="btn brass" onClick={() => setView("communities")}>View {profile.name.split(" ")[0]}'s communities</button>}
+        action={<button className="btn brass" onClick={() => setView("boards")}>Explore {profile.name.split(" ")[0]}'s boards</button>}
       />
+
       <div className="demo-banner">
-        <span>{profile.badge}</span> Showing distinct decision boards and communities tailored to <b>{profile.name}</b>. Use the sidebar to switch roles.
+        <span>{profile.badge}</span> Showing tailored workspace, role permissions, and decision boards for <b>{profile.name}</b>.
       </div>
+
+      <div className="demo-capabilities-card">
+        <h4><span>✨</span> Role Capabilities & Powers ({profile.roleTag})</h4>
+        <ul className="demo-capabilities-list">
+          {profile.capabilities.map((cap, i) => (
+            <li key={i}>{cap}</li>
+          ))}
+        </ul>
+      </div>
+
       <div className="stats dashboard-stats">
         <div className="stat"><div className="num display">{active.length}</div><div className="lbl">Open decisions</div></div>
         <div className="stat"><div className="num display">{totalVotes}</div><div className="lbl">Votes recorded</div></div>
         <div className="stat"><div className="num display">{resolved.length}</div><div className="lbl">Decisions reached</div></div>
         <div className="stat"><div className="num display">{profile.communities.length}</div><div className="lbl">Role communities</div></div>
       </div>
+
       <section className="dashboard-section">
         <div className="section-head dashboard-section-head">
           <div><span className="eyebrow">{profile.badge} workspace</span><h2>{profile.name}'s active decisions</h2></div>
@@ -342,6 +433,7 @@ function DashboardDemo({ profile, openBoard, setView }) {
         </div>
         <div className="card-grid dashboard-card-grid">{active.map((board) => <DemoCard key={board.id} board={board} onOpen={openBoard} />)}</div>
       </section>
+
       <section className="dashboard-section">
         <div className="section-head dashboard-section-head">
           <div><span className="eyebrow">Role-specific access</span><h2>{profile.name}'s communities</h2></div>
@@ -418,24 +510,690 @@ function BoardsDemo({ profile, openBoard, setView }) {
   );
 }
 
+function ModerationDemo({ profile, mode = "admin" }) {
+  const [reports, setReports] = useState([
+    {
+      id: 101,
+      boardTitle: "Microservices Ingress Gateway & Service Mesh Architecture",
+      comment: "This proposal is utterly unworkable and a total waste of engineering time.",
+      flaggedBy: "Vikram R. (Staff SRE)",
+      reason: "Hostile tone violating RFC discussion guidelines",
+      hidden: false,
+      status: "PENDING",
+      time: "12m ago",
+    },
+    {
+      id: 102,
+      boardTitle: "Enterprise Cloud Hosting & Multi-Region Resiliency",
+      comment: "Claim your 90% cloud rebate here: https://bit.ly/cloud-rebate-phish",
+      flaggedBy: "Maya Patel",
+      reason: "Spam link / phishing URL",
+      hidden: false,
+      status: "PENDING",
+      time: "45m ago",
+    },
+    {
+      id: 103,
+      boardTitle: "AI Model Data Privacy & Sovereign Training Policy",
+      comment: "Completely off-topic rambling regarding unrelated consumer hardware.",
+      flaggedBy: "Arjun Mehta",
+      reason: "Derailing deliberation thread",
+      hidden: false,
+      status: "PENDING",
+      time: "2h ago",
+    },
+  ]);
+
+  const [toast, setToast] = useState("");
+
+  const handleResolve = (id, actionType) => {
+    setReports((prev) => prev.filter((r) => r.id !== id));
+    setToast(`Report #${id} marked as ${actionType}.`);
+  };
+
+  const handleToggleHide = (id) => {
+    setReports((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, hidden: !r.hidden } : r))
+    );
+  };
+
+  return (
+    <div>
+      <TopBar
+        eyebrow={`Governance · ${profile.badge}`}
+        title={mode === "admin" ? "Global Moderation Queue" : "Content Review & Discussion Safety"}
+        subtitle="Review community flags, manage discussion civility, and enforce deliberation code of conduct."
+      />
+
+      {toast && <div className="success-note" style={{ marginBottom: 16 }}>✓ {toast}</div>}
+
+      <div className="stats dashboard-stats" style={{ marginBottom: 24 }}>
+        <div className="stat"><div className="num display">{reports.length}</div><div className="lbl">Pending flags</div></div>
+        <div className="stat"><div className="num display">18</div><div className="lbl">Resolved this week</div></div>
+        <div className="stat"><div className="num display">&lt; 1.5h</div><div className="lbl">Median response time</div></div>
+        <div className="stat"><div className="num display">100%</div><div className="lbl">Queue coverage</div></div>
+      </div>
+
+      {reports.length === 0 ? (
+        <div className="state-block">
+          <h3>Moderation queue clear</h3>
+          <p>All reported items have been reviewed and resolved. Deliberation standards are maintained.</p>
+        </div>
+      ) : (
+        <div className="panel">
+          <div className="recent-boards">
+            {reports.map((r) => (
+              <div className="recent-board-row" key={r.id}>
+                <span className={`recent-status ${r.hidden ? "closed" : "open"}`} />
+                <div className="recent-main">
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4 }}>
+                    <span className="tag" style={{ background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", fontWeight: 600 }}>
+                      Flag: {r.reason}
+                    </span>
+                    <span style={{ fontSize: 11, color: "var(--ink-soft)" }}>{r.time} by {r.flaggedBy}</span>
+                  </div>
+                  <h3 style={{ fontSize: 14, margin: "2px 0 4px" }}>{r.boardTitle}</h3>
+                  <div style={{ fontSize: 13, color: r.hidden ? "var(--ink-soft)" : "var(--ink)", fontStyle: r.hidden ? "italic" : "normal" }}>
+                    <b>Reported content:</b> "{r.comment}"
+                    {r.hidden && <span style={{ marginLeft: 8, color: "#ef4444", fontWeight: 600 }}>(Hidden from public view)</span>}
+                  </div>
+                </div>
+                <div className="detail-actions">
+                  <button className="btn ghost" type="button" onClick={() => handleToggleHide(r.id)}>
+                    {r.hidden ? "Unhide" : "Hide comment"}
+                  </button>
+                  <button className="btn ghost" type="button" onClick={() => handleResolve(r.id, "DISMISSED")}>
+                    Dismiss
+                  </button>
+                  <button className="btn brass" type="button" onClick={() => handleResolve(r.id, "RESOLVED")}>
+                    Resolve
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CommunityRosterDemo({ profile }) {
+  const [members, setMembers] = useState([
+    { id: 1, name: "Maya Patel", email: "maya@decisionhub.org", role: "OWNER", joined: "Jan 12, 2026" },
+    { id: 2, name: "Arjun Mehta", email: "arjun@decisionhub.org", role: "MODERATOR", joined: "Feb 04, 2026" },
+    { id: 3, name: "Harish", email: "harish@decisionhub.org", role: "MEMBER", joined: "Mar 10, 2026" },
+    { id: 4, name: "Priya Sharma", email: "priya@decisionhub.org", role: "MEMBER", joined: "Apr 02, 2026" },
+    { id: 5, name: "Marcus Vance", email: "marcus@decisionhub.org", role: "MEMBER", joined: "May 18, 2026" },
+  ]);
+
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("MEMBER");
+  const [toast, setToast] = useState("");
+
+  const handleRoleChange = (memberId, newRole) => {
+    setMembers((prev) =>
+      prev.map((m) => (m.id === memberId ? { ...m, role: newRole } : m))
+    );
+    const member = members.find((m) => m.id === memberId);
+    setToast(`Updated role for ${member?.name} to ${newRole}.`);
+  };
+
+  const handleInvite = (e) => {
+    e.preventDefault();
+    if (!inviteEmail) return;
+    const newMember = {
+      id: Date.now(),
+      name: inviteEmail.split("@")[0],
+      email: inviteEmail,
+      role: inviteRole,
+      joined: "Just now",
+    };
+    setMembers((prev) => [...prev, newMember]);
+    setToast(`Sent invitation to ${inviteEmail} as ${inviteRole}.`);
+    setInviteEmail("");
+  };
+
+  return (
+    <div>
+      <TopBar
+        eyebrow={`Community Leadership · ${profile.badge}`}
+        title="Community Roster & Permissions"
+        subtitle="Manage member permissions, assign community moderators, and invite team members."
+      />
+
+      {toast && <div className="success-note" style={{ marginBottom: 16 }}>✓ {toast}</div>}
+
+      <div className="panel" style={{ marginBottom: 24, padding: 18 }}>
+        <h3 style={{ fontSize: 14, margin: "0 0 12px 0" }}>Invite New Colleague to Product Builders</h3>
+        <form onSubmit={handleInvite} style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <input
+            type="email"
+            required
+            value={inviteEmail}
+            onChange={(e) => setInviteEmail(e.target.value)}
+            placeholder="colleague@organization.org"
+            style={{ flex: "1 1 240px" }}
+          />
+          <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)} style={{ width: 140 }}>
+            <option value="MEMBER">Member</option>
+            <option value="MODERATOR">Moderator</option>
+          </select>
+          <button type="submit" className="btn brass">Send Invitation</button>
+        </form>
+      </div>
+
+      <div className="panel" style={{ padding: 0, overflow: "hidden" }}>
+        <table className="demo-roster-table">
+          <thead>
+            <tr>
+              <th>Member Name</th>
+              <th>Email</th>
+              <th>Joined</th>
+              <th>Assigned Role</th>
+              <th>Permissions Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {members.map((m) => (
+              <tr key={m.id}>
+                <td><b>{m.name}</b></td>
+                <td style={{ color: "var(--ink-soft)" }}>{m.email}</td>
+                <td style={{ color: "var(--ink-soft)" }}>{m.joined}</td>
+                <td>
+                  <span className={`tag ${m.role === "OWNER" ? "brass" : ""}`}>
+                    {m.role === "OWNER" ? "👑 Owner" : m.role === "MODERATOR" ? "⚙️ Moderator" : "👤 Member"}
+                  </span>
+                </td>
+                <td>
+                  {m.role === "OWNER" ? (
+                    <span style={{ fontSize: 11.5, color: "var(--ink-soft)" }}>Community Creator</span>
+                  ) : (
+                    <select
+                      value={m.role}
+                      onChange={(e) => handleRoleChange(m.id, e.target.value)}
+                      style={{ fontSize: 12, padding: "4px 8px" }}
+                    >
+                      <option value="MEMBER">Member</option>
+                      <option value="MODERATOR">Promote to Moderator</option>
+                    </select>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function PollingExportsDemo({ profile }) {
+  const [downloading, setDownloading] = useState("");
+  const boards = profile.boards;
+
+  const downloadCsv = () => {
+    setDownloading("csv");
+    const headers = ["ID", "Title", "Category", "PollType", "Status", "TotalVotes", "LeadingOption"];
+    const rows = boards.map((b) => {
+      const topOpt = [...b.options].sort((x, y) => y.voteCount - x.voteCount)[0]?.title || "";
+      return [
+        b.id,
+        `"${b.title.replace(/"/g, '""')}"`,
+        `"${b.category}"`,
+        b.pollType,
+        b.closed ? "CLOSED" : "OPEN",
+        b.totalVotes,
+        `"${topOpt.replace(/"/g, '""')}"`,
+      ];
+    });
+    const content = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `decisionhub-${profile.id.toLowerCase()}-decisions.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setTimeout(() => setDownloading(""), 600);
+  };
+
+  const downloadJson = () => {
+    setDownloading("json");
+    const content = JSON.stringify(boards, null, 2);
+    const blob = new Blob([content], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `decisionhub-${profile.id.toLowerCase()}-decisions.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setTimeout(() => setDownloading(""), 600);
+  };
+
+  return (
+    <div>
+      <TopBar
+        eyebrow={`Exports & Analytics · ${profile.badge}`}
+        title="Deliberation Datasets & Polling Exports"
+        subtitle="Export structured decision matrices, criteria scores, and voter distribution records."
+      />
+
+      <div className="card-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
+        <article className="card">
+          <div className="card-top"><span className="cat">Tabular Analysis</span><span className="lead-badge">Ready</span></div>
+          <h3>Spreadsheet Matrix (CSV)</h3>
+          <p>Download tabular decision summaries, including vote shares, criteria evaluations, and category distributions for {profile.name}'s boards.</p>
+          <div className="card-foot" style={{ marginTop: 20 }}>
+            <button className="btn brass" type="button" onClick={downloadCsv} disabled={Boolean(downloading)}>
+              {downloading === "csv" ? "Generating CSV…" : "Download CSV Dataset"}
+            </button>
+          </div>
+        </article>
+
+        <article className="card">
+          <div className="card-top"><span className="cat">Raw Data Format</span><span className="lead-badge">Ready</span></div>
+          <h3>Full Decision Schema (JSON)</h3>
+          <p>Export complete decision objects, evaluation factor weights, option comparison criteria, and timestamps formatted for programmatic ingestion.</p>
+          <div className="card-foot" style={{ marginTop: 20 }}>
+            <button className="btn ghost" type="button" onClick={downloadJson} disabled={Boolean(downloading)}>
+              {downloading === "json" ? "Generating JSON…" : "Download JSON Schema"}
+            </button>
+          </div>
+        </article>
+      </div>
+    </div>
+  );
+}
+
+function VotingHistoryDemo({ profile }) {
+  const [receipts] = useState([
+    {
+      id: "REC-9014",
+      hash: "0x7a8fe2...c914b5",
+      decisionTitle: "Career Trajectory: Staff Technical Lead vs Engineering Management",
+      choice: "Staff Principal Architect Track",
+      type: "Single Choice",
+      timestamp: "Today at 09:14 AM",
+      status: "VERIFIED_ON_LEDGER",
+    },
+    {
+      id: "REC-8841",
+      hash: "0x3c2ba7...84e6f1",
+      decisionTitle: "Quarterly Team Workcation Destination",
+      choice: "Bali Canggu Digital Nomad Hub",
+      type: "Multiple Choice",
+      timestamp: "Yesterday at 04:30 PM",
+      status: "VERIFIED_ON_LEDGER",
+    },
+    {
+      id: "REC-7120",
+      hash: "0x91e4a3...f507d8",
+      decisionTitle: "Annual Professional Growth & Home Lab Budget Allocation",
+      choice: "Cloud Architecture Certifications (Rating: 5 ★)",
+      type: "Rating (1–5)",
+      timestamp: "Sep 15, 2026",
+      status: "CONSENSUS_CONCLUDED",
+    },
+  ]);
+
+  const [copied, setCopied] = useState("");
+
+  const handleCopy = (hash) => {
+    navigator.clipboard?.writeText(hash);
+    setCopied(hash);
+    setTimeout(() => setCopied(""), 2000);
+  };
+
+  return (
+    <div>
+      <TopBar
+        eyebrow={`Audit Trail · ${profile.badge}`}
+        title={`${profile.name}'s Verified Voting History`}
+        subtitle="Review your tamper-evident ballot receipts and cryptographically timestamped decision participation."
+      />
+
+      <div className="stats dashboard-stats" style={{ marginBottom: 24 }}>
+        <div className="stat"><div className="num display">{receipts.length}</div><div className="lbl">Verified ballots</div></div>
+        <div className="stat"><div className="num display">100%</div><div className="lbl">Ledger verification</div></div>
+        <div className="stat"><div className="num display">3</div><div className="lbl">Distinct categories</div></div>
+        <div className="stat"><div className="num display">SHA-256</div><div className="lbl">Receipt security</div></div>
+      </div>
+
+      <div className="panel" style={{ padding: 0, overflow: "hidden" }}>
+        <table className="demo-roster-table">
+          <thead>
+            <tr>
+              <th>Receipt ID</th>
+              <th>Decision Board</th>
+              <th>Your Ballot Choice</th>
+              <th>Timestamp</th>
+              <th>Cryptographic Receipt Hash</th>
+            </tr>
+          </thead>
+          <tbody>
+            {receipts.map((r) => (
+              <tr key={r.id}>
+                <td><b>{r.id}</b></td>
+                <td>{r.decisionTitle}</td>
+                <td><span className="tag brass">{r.choice}</span></td>
+                <td style={{ color: "var(--ink-soft)" }}>{r.timestamp}</td>
+                <td>
+                  <button
+                    type="button"
+                    className="demo-crypto-hash"
+                    onClick={() => handleCopy(r.hash)}
+                    title="Click to copy receipt hash"
+                  >
+                    {copied === r.hash ? "✓ Copied!" : r.hash}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function FeedbackDemo({ profile }) {
+  const [category, setCategory] = useState("Feature Request");
+  const [rating, setRating] = useState(5);
+  const [message, setMessage] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!message) return;
+    setSubmitted(true);
+    setMessage("");
+  };
+
+  return (
+    <div>
+      <TopBar
+        eyebrow={`Community Input · ${profile.badge}`}
+        title="Submit Platform Feedback"
+        subtitle="Share user experience suggestions, feature requests, or praise with the maintainers."
+      />
+
+      {submitted && (
+        <div className="success-note" style={{ marginBottom: 18, padding: 14, background: "rgba(0,137,123,0.08)", borderRadius: "var(--radius)" }}>
+          ✓ Thank you, {profile.name}! Your feedback has been delivered to the platform engineering team.
+        </div>
+      )}
+
+      <form className="form-card" onSubmit={handleSubmit} style={{ maxWidth: 640 }}>
+        <div className="field">
+          <label>Feedback Category</label>
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+            <option value="Feature Request">Feature Request</option>
+            <option value="UI / UX Improvement">UI / UX Usability Improvement</option>
+            <option value="Performance">Deliberation Speed & Performance</option>
+            <option value="General Praise">General Praise</option>
+          </select>
+        </div>
+
+        <div className="field">
+          <label>Overall Experience Satisfaction (1–5 Stars)</label>
+          <div style={{ display: "flex", gap: 8, fontSize: 22, cursor: "pointer", color: "var(--brass)" }}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                onClick={() => setRating(star)}
+                style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", padding: "2px 4px", color: star <= rating ? "#f59e0b" : "#d1d5db" }}
+              >
+                ★
+              </button>
+            ))}
+            <span style={{ fontSize: 13, alignSelf: "center", color: "var(--ink-soft)", marginLeft: 6 }}>
+              ({rating} of 5 stars)
+            </span>
+          </div>
+        </div>
+
+        <div className="field">
+          <label>Your Message & Observations</label>
+          <textarea
+            required
+            rows={5}
+            value={message}
+            onChange={(e) => { setMessage(e.target.value); setSubmitted(false); }}
+            placeholder="Share your thoughts on how we can improve the deliberation workflow…"
+          />
+        </div>
+
+        <button className="btn brass" type="submit">Submit Feedback to Team</button>
+      </form>
+    </div>
+  );
+}
+
 function DotRow({ score }) {
   return <div className="dot-row">{[1, 2, 3, 4, 5].map((item) => <i key={item} className={`dot ${item <= Math.round(score / 2) ? "fill" : ""}`} />)}</div>;
 }
 
-function DetailDemo({ board, setView }) {
+function DetailDemo({ board, setView, profile }) {
   const [votes, setVotes] = useState(board.options.map((option) => option.voteCount));
+  const [closed, setClosed] = useState(Boolean(board.closed));
+  const [pinnedConsensus, setPinnedConsensus] = useState(false);
+  const [hasVotedIndex, setHasVotedIndex] = useState(null);
+
   const total = votes.reduce((sum, vote) => sum + vote, 0);
   const leadingIndex = votes.indexOf(Math.max(...votes));
-  const selectOption = (index) => setVotes((current) => current.map((vote, item) => item === index ? vote + 1 : vote));
+
+  const selectOption = (index) => {
+    if (closed) return;
+    if (hasVotedIndex === index) {
+      setVotes((current) => current.map((v, i) => (i === index ? v - 1 : v)));
+      setHasVotedIndex(null);
+    } else {
+      setVotes((current) =>
+        current.map((v, i) => {
+          if (i === index) return v + 1;
+          if (i === hasVotedIndex) return v - 1;
+          return v;
+        })
+      );
+      setHasVotedIndex(index);
+    }
+  };
+
+  const toggleClosure = () => {
+    setClosed((prev) => !prev);
+  };
 
   return (
     <div>
-      <div className="breadcrumb"><button onClick={() => setView("dashboard")}>Dashboard</button><span>/</span><button onClick={() => setView("boards")}>Decision boards</button><span>/</span><b>{board.title}</b></div>
-      <div className="detail-head"><div><h1 className="display">{board.title}</h1><p className="detail-description">{board.description}</p><div className="tag-row"><span className="tag">Public board</span><span className="tag">{total} votes</span><span className="tag">{board.pollType.replace("_", " ").toLowerCase()}</span></div></div><div className="detail-actions"><a className="btn ghost" href="#discussion">Discussion</a><button className="btn ghost">Share board</button></div></div>
-      <div className="detail-body"><div><div className="compare-grid">{board.options.map((option, index) => <div className={`opt-card ${index === leadingIndex ? "leading" : ""}`} key={option.id}><div className="opt-card-head"><h3>{option.title}</h3>{index === leadingIndex && <span className="lead-badge">Leading</span>}</div><div className="opt-score mono">Weighted score — {((option.costScore + option.benefitsScore + option.riskScore + option.timeScore + option.convenienceScore) / 5).toFixed(1)} / 10</div><div className="pc-row"><span className="pc-label pros">+ Pro</span><span>{option.pros}</span></div><div className="pc-row"><span className="pc-label cons">− Con</span><span>{option.cons}</span></div><button className="vote-btn" onClick={() => selectOption(index)}>Vote for this option</button></div>)}</div>
-        <div className="section-head"><h2>Comparison by criteria</h2></div><table className="criteria-table"><thead><tr><th>Criteria</th>{board.options.map((option) => <th key={option.id}>{option.title}</th>)}</tr></thead><tbody>{FACTORS.map(([key, label]) => <tr key={key}><td>{label}</td>{board.options.map((option) => <td key={option.id} className="score"><DotRow score={option[key]} /></td>)}</tr>)}</tbody></table>
-        <Discussion boardId={`demo-${board.id}`} />
-      </div><aside className="rail"><div className="rail-panel"><h4>Board info</h4><div className="rail-meta"><span className="k">Created by</span><span>{board.createdByName}</span></div><div className="rail-meta"><span className="k">Category</span><span>{board.category}</span></div><div className="rail-meta"><span className="k">Visibility</span><span>Public</span></div><div className="rail-meta"><span className="k">Poll type</span><span>{board.pollType.replace("_", " ").toLowerCase()}</span></div></div><div className="rail-panel"><h4>Vote breakdown</h4>{board.options.map((option, index) => <div className="voter-row" key={option.id}><span className="who">{option.title}</span><span className={`pick ${index === leadingIndex ? "a" : "b"}`}>{Math.round((votes[index] / total) * 100)}% · {votes[index]}</span></div>)}</div></aside></div>
+      <div className="breadcrumb">
+        <button onClick={() => setView("dashboard")}>Dashboard</button>
+        <span>/</span>
+        <button onClick={() => setView("boards")}>Decision boards</button>
+        <span>/</span>
+        <b>{board.title}</b>
+      </div>
+
+      <div className="detail-head">
+        <div>
+          <h1 className="display">{board.title}</h1>
+          <p className="detail-description">{board.description}</p>
+          <div className="tag-row">
+            <span className="tag" style={{ background: "rgba(0,137,123,0.1)", color: profile.badgeColor, fontWeight: 600 }}>
+              {profile.badge}
+            </span>
+            <span className="tag">Public board</span>
+            <span className="tag">{total} votes</span>
+            <span className="tag">{board.pollType.replace("_", " ").toLowerCase()}</span>
+            <span className={`tag ${closed ? "closed" : "brass"}`}>
+              {closed ? "Consensus Reached (Closed)" : "Voting Open"}
+            </span>
+          </div>
+        </div>
+        <div className="detail-actions">
+          {(profile.id === "ADMIN" || profile.id === "OWNER") && (
+            <button className={`btn ${closed ? "ghost" : "brass"}`} type="button" onClick={toggleClosure}>
+              {closed ? "↺ Reopen Voting" : "✓ Finalize Consensus & Close"}
+            </button>
+          )}
+          <a className="btn ghost" href="#discussion">Discussion</a>
+          <button className="btn ghost" onClick={() => navigator.clipboard?.writeText(window.location.href)}>Share board</button>
+        </div>
+      </div>
+
+      {/* Role-Specific Capabilities Toolbar */}
+      <div className="demo-role-toolbar">
+        <div>
+          <strong style={{ fontSize: 13, color: "var(--ink)", display: "block" }}>
+            {profile.badge} Mode Action Toolbar
+          </strong>
+          <span style={{ fontSize: 12, color: "var(--ink-soft)" }}>
+            {profile.id === "ADMIN" && "You hold global administrative override permissions on any organization decision board."}
+            {profile.id === "MODERATOR" && "You are facilitating this engineering circle's technical RFC deliberation and criteria."}
+            {profile.id === "OWNER" && "You are the creator and owner of this decision board with consensus finalization authority."}
+            {profile.id === "USER" && "You are an active voting member in this deliberation. Cast or revise your verified ballot below."}
+          </span>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {profile.id === "ADMIN" && (
+            <button className="btn ghost" type="button" onClick={toggleClosure} style={{ fontSize: 12, padding: "6px 12px" }}>
+              {closed ? "Reopen Board" : "Force Close Board"}
+            </button>
+          )}
+          {profile.id === "MODERATOR" && (
+            <button className="btn ghost" type="button" onClick={() => setPinnedConsensus(!pinnedConsensus)} style={{ fontSize: 12, padding: "6px 12px" }}>
+              {pinnedConsensus ? "Unpin Consensus" : "📌 Pin Consensus Summary"}
+            </button>
+          )}
+          {profile.id === "OWNER" && (
+            <button className="btn brass" type="button" onClick={toggleClosure} style={{ fontSize: 12, padding: "6px 12px" }}>
+              {closed ? "Reopen Deliberation" : "Declare Consensus"}
+            </button>
+          )}
+          {profile.id === "USER" && (
+            <button className="btn ghost" type="button" onClick={() => setView("history")} style={{ fontSize: 12, padding: "6px 12px" }}>
+              ⏱️ View My Ballot Receipts
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Pinned Consensus Note for Moderator */}
+      {pinnedConsensus && (
+        <div style={{ marginBottom: 20, padding: 14, background: "rgba(2,132,199,0.08)", border: "1px solid rgba(2,132,199,0.25)", borderRadius: "var(--radius)" }}>
+          <strong style={{ color: "#0284c7", fontSize: 13, display: "block" }}>📌 Pinned Moderator Consensus Recommendation</strong>
+          <span style={{ fontSize: 12.5, color: "var(--ink-soft)" }}>
+            Arjun Mehta (Moderator): "Engineering consensus favors {board.options[leadingIndex].title} due to clear resiliency benefits and production reliability."
+          </span>
+        </div>
+      )}
+
+      {/* Consensus Reached Banner */}
+      {closed && (
+        <div
+          style={{
+            marginBottom: 20,
+            padding: "14px 18px",
+            background: "rgba(217, 119, 6, 0.08)",
+            border: "1px solid rgba(217, 119, 6, 0.3)",
+            borderRadius: "var(--radius)",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <span style={{ fontSize: 24 }}>🏆</span>
+          <div>
+            <strong style={{ color: "#b45309", display: "block", fontSize: 14 }}>
+              Consensus Declared & Voting Concluded
+            </strong>
+            <span style={{ fontSize: 12.5, color: "var(--ink-soft)" }}>
+              Deliberation is closed. Leading option <b>{board.options[leadingIndex].title}</b> is declared the community consensus.
+            </span>
+          </div>
+        </div>
+      )}
+
+      <div className="detail-body">
+        <div>
+          <div className="compare-grid">
+            {board.options.map((option, index) => {
+              const isLeading = index === leadingIndex;
+              const hasVoted = hasVotedIndex === index;
+
+              return (
+                <div className={`opt-card ${isLeading ? "leading" : ""}`} key={option.id}>
+                  <div className="opt-card-head">
+                    <h3>{option.title}</h3>
+                    {isLeading && <span className="lead-badge">{closed ? "🏆 Winner" : "Leading"}</span>}
+                  </div>
+                  <div className="opt-score mono">
+                    Weighted score — {((option.costScore + option.benefitsScore + option.riskScore + option.timeScore + option.convenienceScore) / 5).toFixed(1)} / 10
+                  </div>
+                  <div className="pc-row"><span className="pc-label pros">+ Pro</span><span>{option.pros}</span></div>
+                  <div className="pc-row"><span className="pc-label cons">− Con</span><span>{option.cons}</span></div>
+                  <button
+                    className={`vote-btn ${hasVoted ? "voted" : ""}`}
+                    disabled={closed}
+                    onClick={() => selectOption(index)}
+                  >
+                    {closed
+                      ? "Voting closed — consensus reached"
+                      : hasVoted
+                      ? "✓ You voted for this (Click to retract)"
+                      : "Vote for this option"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="section-head" style={{ marginTop: 28 }}>
+            <h2>Comparison by criteria</h2>
+          </div>
+          <table className="criteria-table">
+            <thead>
+              <tr><th>Criteria</th>{board.options.map((option) => <th key={option.id}>{option.title}</th>)}</tr>
+            </thead>
+            <tbody>
+              {FACTORS.map(([key, label]) => (
+                <tr key={key}>
+                  <td>{label}</td>
+                  {board.options.map((option) => (
+                    <td key={option.id} className="score"><DotRow score={option[key]} /></td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <Discussion boardId={`demo-${board.id}`} />
+        </div>
+
+        <aside className="rail">
+          <div className="rail-panel">
+            <h4>Board info</h4>
+            <div className="rail-meta"><span className="k">Created by</span><span>{board.createdByName}</span></div>
+            <div className="rail-meta"><span className="k">Category</span><span>{board.category}</span></div>
+            <div className="rail-meta"><span className="k">Visibility</span><span>Public</span></div>
+            <div className="rail-meta"><span className="k">Poll type</span><span>{board.pollType.replace("_", " ").toLowerCase()}</span></div>
+            <div className="rail-meta"><span className="k">Role context</span><span style={{ color: profile.badgeColor, fontWeight: 600 }}>{profile.badge}</span></div>
+          </div>
+
+          <div className="rail-panel">
+            <h4>Vote breakdown</h4>
+            {board.options.map((option, index) => (
+              <div className="voter-row" key={option.id}>
+                <span className="who">{option.title}</span>
+                <span className={`pick ${index === leadingIndex ? "a" : "b"}`}>
+                  {total > 0 ? Math.round((votes[index] / total) * 100) : 0}% · {votes[index]}
+                </span>
+              </div>
+            ))}
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
@@ -449,10 +1207,14 @@ export default function Demo() {
   const handleSelectRole = (nextRole) => {
     setRoleKey(nextRole);
     setSelected(ROLE_PROFILES[nextRole].boards[0]);
-    if (view === "detail") setView("dashboard");
+    setView("dashboard");
   };
 
-  const openBoard = (board) => { setSelected(board); setView("detail"); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const openBoard = (board) => {
+    setSelected(board);
+    setView("detail");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <div className="shell demo-shell">
@@ -461,7 +1223,13 @@ export default function Demo() {
         {view === "dashboard" && <DashboardDemo profile={profile} openBoard={openBoard} setView={setView} />}
         {view === "boards" && <BoardsDemo profile={profile} openBoard={openBoard} setView={setView} />}
         {view === "communities" && <CommunitiesDemo profile={profile} openBoard={openBoard} />}
-        {view === "detail" && <DetailDemo key={selected.id} board={selected} setView={setView} />}
+        {view === "moderation" && <ModerationDemo profile={profile} mode="admin" />}
+        {view === "content-review" && <ModerationDemo profile={profile} mode="moderator" />}
+        {view === "roster" && <CommunityRosterDemo profile={profile} />}
+        {view === "exports" && <PollingExportsDemo profile={profile} />}
+        {view === "history" && <VotingHistoryDemo profile={profile} />}
+        {view === "feedback" && <FeedbackDemo profile={profile} />}
+        {view === "detail" && <DetailDemo key={`${selected.id}-${roleKey}`} board={selected} setView={setView} profile={profile} />}
       </main>
     </div>
   );

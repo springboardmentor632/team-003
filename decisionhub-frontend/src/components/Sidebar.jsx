@@ -291,9 +291,14 @@ export default function Sidebar() {
               {(user?.fullName || user?.name || user?.email || "H").charAt(0).toUpperCase()}
             </div>
             <div className="sidebar-user-info">
-              <span className="sidebar-user-name" title={user?.fullName || user?.name || "Member"}>
-                {user?.fullName || user?.name || "Member"}
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span className="sidebar-user-name" title={user?.fullName || user?.name || "Member"}>
+                  {user?.fullName || user?.name || "Member"}
+                </span>
+                <span className="sidebar-role-badge">
+                  {user?.role === "ADMIN" ? "Admin" : user?.role === "MODERATOR" ? "Mod" : "Member"}
+                </span>
+              </div>
               <span className="sidebar-user-email" title={user?.email || ""}>
                 {user?.email || "user@decisionhub.org"}
               </span>

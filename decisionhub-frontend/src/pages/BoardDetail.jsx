@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getDecision, castVote, retractVote, addCriteria, removeCriteria, updateOptionCriteriaScore } from "../api/decisions";
+import { getDecision, updateDecision, castVote, retractVote, addCriteria, removeCriteria, updateOptionCriteriaScore } from "../api/decisions";
 import { reportDecision } from "../api/collaboration";
 import { extractErrorMessage } from "../api/client";
 import { resolveFileUrl } from "../api/files";
@@ -44,8 +44,37 @@ export default function BoardDetail() {
   const [newCriterionScores, setNewCriterionScores] = useState({});
   const [savingCriteria, setSavingCriteria] = useState(false);
   const [criteriaError, setCriteriaError] = useState("");
+  const [closingBusy, setClosingBusy] = useState(false);
 
-  const canManageCriteria = Boolean(user && decision && (user.role === "ADMIN" || user.name === decision.createdBy || user.email === decision.createdBy));
+  const isBoardOwner = Boolean(
+    user && decision && (user.name === decision.createdBy || user.email === decision.createdBy || user.fullName === decision.createdByName)
+  );
+  const isAdmin = Boolean(user && user.role === "ADMIN");
+  const canManageBoard = isBoardOwner || isAdmin;
+  const canManageCriteria = canManageBoard;
+
+  const handleToggleClose = async () => {
+    if (!decision || closingBusy) return;
+    setClosingBusy(true);
+    setError("");
+    const nextClosed = !decision.closed;
+    try {
+      const { data } = await updateDecision(id, {
+        title: decision.title,
+        description: decision.description,
+        category: decision.category,
+        visibility: decision.visibility,
+        pollType: decision.pollType,
+        allowAnonymousVoting: decision.allowAnonymousVoting,
+        closed: nextClosed,
+      });
+      setDecision(data);
+    } catch (err) {
+      setError(extractErrorMessage(err, "Failed to update decision closure status"));
+    } finally {
+      setClosingBusy(false);
+    }
+  };
 
   const customCriteriaList = Array.from(
     new Set([
@@ -211,13 +240,40 @@ export default function BoardDetail() {
           <h1 className="display">{decision.title}</h1>
           {decision.description && <p className="detail-description">{decision.description}</p>}
           <div className="tag-row">
+            {isAdmin && (
+              <span className="tag" style={{ background: "rgba(124, 58, 237, 0.12)", color: "#7c3aed", fontWeight: 600 }}>
+                🛡️ Global Admin Mode
+              </span>
+            )}
+            {!isAdmin && isBoardOwner && (
+              <span className="tag" style={{ background: "rgba(0, 137, 123, 0.12)", color: "var(--brass)", fontWeight: 600 }}>
+                👑 Board Creator
+              </span>
+            )}
             <span className="tag">{decision.visibility === "PUBLIC" ? "Public board" : "Private board"}</span>
             <span className="tag">{decision.totalVotes} votes</span>
             <span className="tag">{decision.pollType?.replace("_", " ").toLowerCase()}</span>
-            {decision.closed && <span className="tag">Closed</span>}
+            <span className={`tag ${decision.closed ? "closed" : "brass"}`}>
+              {decision.closed ? "Decision Reached (Closed)" : "Voting Open"}
+            </span>
           </div>
         </div>
         <div className="detail-actions">
+          {canManageBoard && (
+            <button
+              type="button"
+              className={`btn ${decision.closed ? "ghost" : "brass"}`}
+              onClick={handleToggleClose}
+              disabled={closingBusy}
+              title={decision.closed ? "Reopen voting on this board" : "Finalize consensus and conclude voting"}
+            >
+              {closingBusy
+                ? "Updating…"
+                : decision.closed
+                ? "↺ Reopen Voting"
+                : "✓ Finalize Consensus & Close"}
+            </button>
+          )}
           <button
             type="button"
             className={`btn ${isSaved ? "brass" : "ghost"}`}
@@ -239,6 +295,30 @@ export default function BoardDetail() {
 
       <div className="detail-body">
         <div>
+          {decision.closed && (
+            <div
+              style={{
+                marginBottom: 20,
+                padding: "14px 18px",
+                background: "rgba(217, 119, 6, 0.08)",
+                border: "1px solid rgba(217, 119, 6, 0.3)",
+                borderRadius: "var(--radius)",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
+              <span style={{ fontSize: 24 }}>🏆</span>
+              <div>
+                <strong style={{ color: "#b45309", display: "block", fontSize: 14 }}>
+                  Consensus Declared & Voting Concluded
+                </strong>
+                <span style={{ fontSize: 12.5, color: "var(--ink-soft)" }}>
+                  This board has reached its final decision. Leading option <b>{options.find((o) => o.id === leadingId)?.title || "the community favorite"}</b> is declared the consensus outcome.
+                </span>
+              </div>
+            </div>
+          )}
           <div className="compare-grid">
             {options.map((opt) => {
               const isLeading = opt.id === leadingId;
