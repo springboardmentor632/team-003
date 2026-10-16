@@ -60,6 +60,7 @@ describe("VotingHistory Page", () => {
     expect(screen.getByText("Comprehensive Dental")).toBeTruthy();
     expect(screen.getByText("★ 5 / 5")).toBeTruthy();
     expect(screen.getByText("Total Votes Cast")).toBeTruthy();
+    expect(screen.getByText("Categories Explored")).toBeTruthy();
     expect(screen.getAllByText("2").length).toBeGreaterThanOrEqual(1);
   });
 

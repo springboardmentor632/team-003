@@ -59,6 +59,10 @@ export default function VotingHistory() {
     return (sum / rated.length).toFixed(1);
   }, [history]);
 
+  const categoriesCount = useMemo(() => {
+    return new Set(history.map((h) => h.decisionCategory).filter(Boolean)).size;
+  }, [history]);
+
   return (
     <div>
       <TopBar
@@ -79,6 +83,10 @@ export default function VotingHistory() {
         <div className="stat">
           <div className="num display">{averageRating ? `${averageRating} / 5` : "—"}</div>
           <div className="lbl">Average Rating Score</div>
+        </div>
+        <div className="stat">
+          <div className="num display">{categoriesCount}</div>
+          <div className="lbl">Categories Explored</div>
         </div>
       </div>
 
