@@ -3,8 +3,17 @@ import TopBar from "../components/TopBar";
 import { listReports, setCommentHidden, updateReport } from "../api/collaboration";
 import { listMyDecisions } from "../api/decisions";
 import { extractErrorMessage } from "../api/client";
+import { useAuth } from "../context/AuthContext";
 
 export default function Reports() {
+  let user = null;
+  try {
+    const auth = useAuth();
+    user = auth?.user;
+  } catch {
+    user = null;
+  }
+  const isAdmin = user?.role === "ADMIN";
   const [activeTab, setActiveTab] = useState("moderation");
   const [reports, setReports] = useState([]);
   const [error, setError] = useState("");
@@ -101,12 +110,34 @@ export default function Reports() {
       <TopBar
         breadcrumbs={[
           { label: "Workspace", to: "/dashboard" },
-          { label: "Reports & Exports" },
+          { label: "Reports & Governance" },
         ]}
-        eyebrow="Analysis & Governance"
-        title="Reports & Moderation"
-        subtitle="Review community flags, maintain deliberation standards, and export decision records."
+        eyebrow={isAdmin ? "Organization Governance · 🛡️ Global Admin" : "Community Moderation · ⚖️ Moderator"}
+        title={isAdmin ? "Global Moderation & Audit" : "Community Moderation Queue"}
+        subtitle={
+          isAdmin
+            ? "Review cross-community flags, enforce platform safety guidelines, and export deliberation audit datasets."
+            : "Review discussions and reported comments within your moderated communities."
+        }
       />
+
+      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 16 }}>
+        <span
+          className="tag"
+          style={{
+            background: isAdmin ? "rgba(124, 58, 237, 0.12)" : "rgba(2, 132, 199, 0.12)",
+            color: isAdmin ? "#7c3aed" : "#0284c7",
+            fontWeight: 600,
+          }}
+        >
+          {isAdmin ? "🛡️ Global Organization Admin Scope" : "⚖️ Community Moderator Scope"}
+        </span>
+        <span style={{ fontSize: 12, color: "var(--ink-soft)" }}>
+          {isAdmin
+            ? "Showing flags across all organizational communities and decision boards."
+            : "Showing flags within communities where you hold moderation permissions."}
+        </span>
+      </div>
 
       <div className="boards-controls" style={{ marginBottom: 20 }}>
         <div className="board-tabs">

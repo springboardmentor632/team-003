@@ -140,10 +140,8 @@ describe("BoardDetail Custom Criteria", () => {
       expect(screen.getByText("Scalability")).toBeTruthy();
     });
 
-    const deleteButtons = screen.getAllByRole("button", { name: /Delete/i });
-    expect(deleteButtons.length).toBeGreaterThanOrEqual(1);
-
-    fireEvent.click(deleteButtons[0]);
+    const deleteBtn = screen.getByTitle("Delete Scalability");
+    fireEvent.click(deleteBtn);
 
     await waitFor(() => {
       expect(decisionsApi.removeCriteria).toHaveBeenCalled();

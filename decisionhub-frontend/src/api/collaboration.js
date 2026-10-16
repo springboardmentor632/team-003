@@ -16,6 +16,9 @@ export const leaveCommunity = (id) => client.delete(`/api/communities/${id}/memb
 export const listInvitations = () => client.get("/api/communities/invitations");
 export const acceptInvitation = (id) => client.post(`/api/communities/invitations/${id}/accept`);
 export const declineInvitation = (id) => client.post(`/api/communities/invitations/${id}/decline`);
+export const inviteCommunityMember = (communityId, email) => client.post(`/api/communities/${communityId}/invitations`, null, { params: { email } });
+export const setCommunityMemberRole = (communityId, memberId, role) => client.put(`/api/communities/${communityId}/members/${memberId}/role`, null, { params: { role } });
+export const updateCommunity = (communityId, payload) => client.put(`/api/communities/${communityId}`, payload);
 
 export const listNotifications = () => client.get("/api/notifications");
 export const notificationSummary = () => client.get("/api/notifications/summary");

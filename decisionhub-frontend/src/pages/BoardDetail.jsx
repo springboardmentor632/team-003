@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { getDecision, updateDecision, castVote, retractVote, addCriteria, removeCriteria, updateOptionCriteriaScore } from "../api/decisions";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { getDecision, updateDecision, deleteDecision, castVote, retractVote, addCriteria, removeCriteria, updateOptionCriteriaScore } from "../api/decisions";
 import { reportDecision } from "../api/collaboration";
 import { extractErrorMessage } from "../api/client";
 import { resolveFileUrl } from "../api/files";
@@ -29,6 +29,7 @@ function DotRow({ score }) {
 
 export default function BoardDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [decision, setDecision] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -50,8 +51,19 @@ export default function BoardDetail() {
     user && decision && (user.name === decision.createdBy || user.email === decision.createdBy || user.fullName === decision.createdByName)
   );
   const isAdmin = Boolean(user && user.role === "ADMIN");
+  const isModerator = Boolean(user && user.role === "MODERATOR");
   const canManageBoard = isBoardOwner || isAdmin;
-  const canManageCriteria = canManageBoard;
+  const canManageCriteria = canManageBoard || isModerator;
+
+  const handleDeleteBoard = async () => {
+    if (!window.confirm(`Are you sure you want to permanently delete "${decision.title}"? This action cannot be undone.`)) return;
+    try {
+      await deleteDecision(id);
+      navigate("/boards");
+    } catch (err) {
+      setError(extractErrorMessage(err, "Failed to delete board"));
+    }
+  };
 
   const handleToggleClose = async () => {
     if (!decision || closingBusy) return;
@@ -250,6 +262,16 @@ export default function BoardDetail() {
                 👑 Board Creator
               </span>
             )}
+            {!isAdmin && !isBoardOwner && isModerator && (
+              <span className="tag" style={{ background: "rgba(2, 132, 199, 0.12)", color: "#0284c7", fontWeight: 600 }}>
+                ⚖️ Community Moderator
+              </span>
+            )}
+            {!isAdmin && !isBoardOwner && !isModerator && (
+              <span className="tag" style={{ background: "rgba(100, 116, 139, 0.12)", color: "var(--ink-soft)", fontWeight: 500 }}>
+                👤 Community Member
+              </span>
+            )}
             <span className="tag">{decision.visibility === "PUBLIC" ? "Public board" : "Private board"}</span>
             <span className="tag">{decision.totalVotes} votes</span>
             <span className="tag">{decision.pollType?.replace("_", " ").toLowerCase()}</span>
@@ -272,6 +294,17 @@ export default function BoardDetail() {
                 : decision.closed
                 ? "↺ Reopen Voting"
                 : "✓ Finalize Consensus & Close"}
+            </button>
+          )}
+          {canManageBoard && (
+            <button
+              type="button"
+              className="btn ghost"
+              style={{ color: "var(--red, #e53935)", borderColor: "rgba(229,57,53,0.3)" }}
+              onClick={handleDeleteBoard}
+              title="Permanently delete this decision board"
+            >
+              Delete Board
             </button>
           )}
           <button

@@ -74,7 +74,7 @@ export default function Discussion({ boardId }) {
         </div>
       </form>
       <div className="comment-list">
-        {loading ? <div className="empty-note">Loading conversation…</div> : comments.length === 0 ? <div className="empty-note">Start the conversation.</div> : threadRoots.map((comment) => <CommentNode key={comment.id} comment={comment} children={comment.children} onReply={startReply} onReact={react} onEdit={edit} onDelete={remove} canManage={(item) => item.authorName === user?.fullName || user?.role === "ADMIN"} canEdit={(item) => item.authorName === user?.fullName} />)}
+        {loading ? <div className="empty-note">Loading conversation…</div> : comments.length === 0 ? <div className="empty-note">Start the conversation.</div> : threadRoots.map((comment) => <CommentNode key={comment.id} comment={comment} children={comment.children} onReply={startReply} onReact={react} onEdit={edit} onDelete={remove} canManage={(item) => item.authorName === user?.fullName || user?.role === "ADMIN" || user?.role === "MODERATOR"} canEdit={(item) => item.authorName === user?.fullName} />)}
       </div>
     </section>
   );
