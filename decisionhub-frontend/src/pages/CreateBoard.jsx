@@ -163,62 +163,64 @@ export default function CreateBoard() {
   };
 
   return (
-    <div>
+    <div style={{ width: "100%", maxWidth: "100%", boxSizing: "border-box" }}>
       <TopBar eyebrow={communityName ? "Community board" : "New board"} title="Create a decision board" subtitle={communityName ? `Create a shared decision for ${communityName}. Every member can view and vote.` : "Frame your choice, add at least two options, and open it up for votes."} />
 
       {error && <div className="error-banner">{error}</div>}
 
-      <form className="form-card create-board-form full-scale" onSubmit={handleSubmit}>
+      <form className="form-card create-board-form full-scale" style={{ width: "100%", maxWidth: "100%", boxSizing: "border-box" }} onSubmit={handleSubmit}>
         <div className="field">
           <label>Title</label>
           <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. MBA vs. Staying in my Job" />
         </div>
 
-        <div className="field">
-          <label>Description (optional)</label>
-          <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A sentence of context for voters" />
-        </div>
+        <div className="form-row">
+          <div className="field">
+            <label>Description (optional)</label>
+            <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A sentence of context for voters" />
+          </div>
 
-        <div className="field">
-          <label>Cover image or diagram (optional)</label>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <input
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://example.com/cover.jpg or upload below"
-              style={{ flex: 1 }}
-            />
-            <label className="btn ghost" style={{ cursor: "pointer", whiteSpace: "nowrap", margin: 0, padding: "10px 14px", fontSize: 12 }}>
-              {uploadingCover ? "Uploading…" : "📁 Upload image"}
+          <div className="field">
+            <label>Cover image or diagram (optional)</label>
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
               <input
-                type="file"
-                accept="image/*,.pdf"
-                onChange={handleCoverUpload}
-                disabled={uploadingCover}
-                style={{ display: "none" }}
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://example.com/cover.jpg or upload below"
+                style={{ flex: 1 }}
               />
-            </label>
+              <label className="btn ghost" style={{ cursor: "pointer", whiteSpace: "nowrap", margin: 0, padding: "10px 14px", fontSize: 12 }}>
+                {uploadingCover ? "Uploading…" : "📁 Upload image"}
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={handleCoverUpload}
+                  disabled={uploadingCover}
+                  style={{ display: "none" }}
+                />
+              </label>
+              {imageUrl && (
+                <button
+                  type="button"
+                  className="remove-link"
+                  onClick={() => setImageUrl("")}
+                  style={{ fontSize: 12 }}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
             {imageUrl && (
-              <button
-                type="button"
-                className="remove-link"
-                onClick={() => setImageUrl("")}
-                style={{ fontSize: 12 }}
-              >
-                Clear
-              </button>
+              <div style={{ marginTop: 10, borderRadius: "var(--radius)", overflow: "hidden", maxHeight: 160, maxWidth: 320, border: "1px solid var(--line)" }}>
+                <img
+                  src={resolveFileUrl(imageUrl)}
+                  alt="Cover preview"
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+              </div>
             )}
           </div>
-          {imageUrl && (
-            <div style={{ marginTop: 10, borderRadius: "var(--radius)", overflow: "hidden", maxHeight: 160, maxWidth: 320, border: "1px solid var(--line)" }}>
-              <img
-                src={resolveFileUrl(imageUrl)}
-                alt="Cover preview"
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                onError={(e) => { e.currentTarget.style.display = "none"; }}
-              />
-            </div>
-          )}
         </div>
 
         <div className="form-row config-row">
@@ -332,51 +334,53 @@ export default function CreateBoard() {
               )}
             </div>
 
-            <div className="field">
-              <label>Title</label>
-              <input required value={opt.title} onChange={(e) => updateOption(i, "title", e.target.value)} placeholder="e.g. MBA" />
-            </div>
+            <div className="form-row">
+              <div className="field">
+                <label>Title</label>
+                <input required value={opt.title} onChange={(e) => updateOption(i, "title", e.target.value)} placeholder="e.g. MBA" />
+              </div>
 
-            <div className="field">
-              <label>Option image / diagram (optional)</label>
-              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <input
-                  value={opt.imageUrl || ""}
-                  onChange={(e) => updateOption(i, "imageUrl", e.target.value)}
-                  placeholder="https://example.com/option.jpg or upload"
-                  style={{ flex: 1 }}
-                />
-                <label className="btn ghost" style={{ cursor: "pointer", whiteSpace: "nowrap", margin: 0, padding: "8px 12px", fontSize: 11.5 }}>
-                  {uploadingOptionIdx === i ? "Uploading…" : "📁 Upload image"}
+              <div className="field">
+                <label>Option image / diagram (optional)</label>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                   <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => e.target.files?.[0] && handleOptionUpload(i, e.target.files[0])}
-                    disabled={uploadingOptionIdx === i}
-                    style={{ display: "none" }}
+                    value={opt.imageUrl || ""}
+                    onChange={(e) => updateOption(i, "imageUrl", e.target.value)}
+                    placeholder="https://example.com/option.jpg or upload"
+                    style={{ flex: 1 }}
                   />
-                </label>
+                  <label className="btn ghost" style={{ cursor: "pointer", whiteSpace: "nowrap", margin: 0, padding: "8px 12px", fontSize: 11.5 }}>
+                    {uploadingOptionIdx === i ? "Uploading…" : "📁 Upload image"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => e.target.files?.[0] && handleOptionUpload(i, e.target.files[0])}
+                      disabled={uploadingOptionIdx === i}
+                      style={{ display: "none" }}
+                    />
+                  </label>
+                  {opt.imageUrl && (
+                    <button
+                      type="button"
+                      className="remove-link"
+                      onClick={() => updateOption(i, "imageUrl", "")}
+                      style={{ fontSize: 11.5 }}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
                 {opt.imageUrl && (
-                  <button
-                    type="button"
-                    className="remove-link"
-                    onClick={() => updateOption(i, "imageUrl", "")}
-                    style={{ fontSize: 11.5 }}
-                  >
-                    Clear
-                  </button>
+                  <div style={{ marginTop: 8, borderRadius: "var(--radius)", overflow: "hidden", maxHeight: 120, maxWidth: 240, border: "1px solid var(--line)" }}>
+                    <img
+                      src={resolveFileUrl(opt.imageUrl)}
+                      alt="Option preview"
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                      onError={(e) => { e.currentTarget.style.display = "none"; }}
+                    />
+                  </div>
                 )}
               </div>
-              {opt.imageUrl && (
-                <div style={{ marginTop: 8, borderRadius: "var(--radius)", overflow: "hidden", maxHeight: 120, maxWidth: 240, border: "1px solid var(--line)" }}>
-                  <img
-                    src={resolveFileUrl(opt.imageUrl)}
-                    alt="Option preview"
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                    onError={(e) => { e.currentTarget.style.display = "none"; }}
-                  />
-                </div>
-              )}
             </div>
 
             <div className="form-row">
