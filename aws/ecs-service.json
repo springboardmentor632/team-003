@@ -1,0 +1,32 @@
+{
+  "cluster": "decisionhub-cluster",
+  "serviceName": "decisionhub-backend-service",
+  "taskDefinition": "decisionhub-backend",
+  "desiredCount": 2,
+  "launchType": "FARGATE",
+  "platformVersion": "LATEST",
+  "networkConfiguration": {
+    "awsvpcConfiguration": {
+      "subnets": [
+        "subnet-YOUR_SUBNET_1",
+        "subnet-YOUR_SUBNET_2"
+      ],
+      "securityGroups": [
+        "sg-YOUR_BACKEND_SECURITY_GROUP"
+      ],
+      "assignPublicIp": "ENABLED"
+    }
+  },
+  "loadBalancers": [
+    {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:YOUR_AWS_ACCOUNT_ID:targetgroup/decisionhub-tg/YOUR_TG_ID",
+      "containerName": "decisionhub-backend",
+      "containerPort": 8080
+    }
+  ],
+  "healthCheckGracePeriodSeconds": 60,
+  "deploymentConfiguration": {
+    "maximumPercent": 200,
+    "minimumHealthyPercent": 100
+  }
+}

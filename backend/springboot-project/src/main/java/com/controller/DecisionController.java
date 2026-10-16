@@ -1,5 +1,7 @@
 package com.decisionhub.controller;
 
+import com.decisionhub.dto.CustomCriterionRequest;
+import com.decisionhub.dto.OptionCriteriaScoreRequest;
 import com.decisionhub.dto.DecisionRequest;
 import com.decisionhub.dto.OptionRequest;
 import com.decisionhub.dto.VoteRequest;
@@ -89,6 +91,21 @@ public class DecisionController {
 
     @GetMapping("/{id}/votes/results")
     public ResponseEntity<Decision> results(@PathVariable Long id) { return ResponseEntity.ok(decisions.results(id)); }
+
+    @PostMapping("/{id}/criteria")
+    public ResponseEntity<Decision> addCriteria(@PathVariable Long id, @RequestBody CustomCriterionRequest request) {
+        return ResponseEntity.ok(decisions.addCustomCriterion(id, request, currentUser()));
+    }
+
+    @DeleteMapping("/{id}/criteria/{criterionName}")
+    public ResponseEntity<Decision> removeCriteria(@PathVariable Long id, @PathVariable String criterionName) {
+        return ResponseEntity.ok(decisions.removeCustomCriterion(id, criterionName, currentUser()));
+    }
+
+    @PutMapping("/{id}/options/{optionId}/criteria")
+    public ResponseEntity<Decision> updateOptionCriteria(@PathVariable Long id, @PathVariable Long optionId, @RequestBody OptionCriteriaScoreRequest request) {
+        return ResponseEntity.ok(decisions.updateOptionCriteriaScore(id, optionId, request, currentUser()));
+    }
 
     private PageRequest page(int page, int size) { return PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100), Sort.by("createdAt").descending()); }
     private User currentUser() {

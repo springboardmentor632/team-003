@@ -14,6 +14,7 @@ public class DecisionRequest {
     private boolean allowAnonymousVoting;
     private Boolean closed;
     private Long communityId;
+    private String imageUrl;
     private List<OptionRequest> options = new ArrayList<>();
 
     public DecisionRequest() {
@@ -54,6 +55,12 @@ public class DecisionRequest {
     public void setClosed(Boolean closed) { this.closed = closed; }
     public Long getCommunityId() { return communityId; }
     public void setCommunityId(Long communityId) { this.communityId = communityId; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public List<OptionRequest> getOptions() { return options; }
     public void setOptions(List<OptionRequest> options) { this.options = options == null ? new ArrayList<>() : options; }
+
+    private List<String> customCriteria = new ArrayList<>();
+    public List<String> getCustomCriteria() { return customCriteria; }
+    public void setCustomCriteria(List<String> customCriteria) { this.customCriteria = customCriteria == null ? new ArrayList<>() : customCriteria; }
 }

@@ -1,0 +1,94 @@
+# Render Blueprint Specification for DecisionHub
+# Docs: https://render.com/docs/blueprint-spec
+version: "1"
+
+services:
+  # ============================================================================
+  # Backend Web Service (Spring Boot 4 / Java 25)
+  # ============================================================================
+  - type: web
+    name: decisionhub-backend
+    runtime: docker
+    dockerfilePath: backend/springboot-project/Dockerfile.cloud
+    dockerContext: backend/springboot-project
+    plan: starter
+    region: oregon
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_URL
+        fromDatabase:
+          name: decisionhub-db
+          property: connectionString
+      - key: DB_USERNAME
+        fromDatabase:
+          name: decisionhub-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: decisionhub-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION
+        value: "86400000"
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://decisionhub-frontend.onrender.com,https://decisionhub.vercel.app
+      - key: STORAGE_PROVIDER
+        value: cloudinary
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: OAUTH2_FRONTEND_REDIRECT_URI
+        value: https://decisionhub-frontend.onrender.com/oauth2/callback
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      - key: FIREBASE_ENABLED
+        value: "true"
+
+  # ============================================================================
+  # Frontend Static Site (React 18 / Vite 5 SPA)
+  # ============================================================================
+  - type: web
+    name: decisionhub-frontend
+    runtime: static
+    plan: starter
+    region: oregon
+    rootDir: decisionhub-frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    autoDeploy: true
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://decisionhub-backend.onrender.com/api/*
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://decisionhub-backend.onrender.com
+
+# ==============================================================================
+# Managed PostgreSQL Database
+# ==============================================================================
+databases:
+  - name: decisionhub-db
+    databaseName: decisionhub
+    user: decisionhub
+    plan: starter
+    region: oregon
+    postgresMajorVersion: "16"

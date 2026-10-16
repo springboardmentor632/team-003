@@ -44,8 +44,20 @@ public class Decision {
 
     private LocalDateTime updatedAt;
 
+    @Column(name = "image_url", length = 1000)
+    private String imageUrl;
+
     @OneToMany(mappedBy = "decision", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Option> options = new ArrayList<>();
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @OneToMany(mappedBy = "decision", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Attachment> attachments = new ArrayList<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "decision_custom_criteria", joinColumns = @JoinColumn(name = "decision_id"))
+    @Column(name = "criterion_name")
+    private java.util.Set<String> customCriteria = new java.util.LinkedHashSet<>();
 
     @Transient
     private long totalVotes;
@@ -98,7 +110,14 @@ public class Decision {
 
     public String getCreatedByName() { return createdBy; }
     public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category == null || category.isBlank() ? "General" : category; }
+    public void setCategory(String category) {
+        if (category == null || category.isBlank()) {
+            this.category = "General";
+        } else {
+            String trimmed = category.trim();
+            this.category = Character.toUpperCase(trimmed.charAt(0)) + trimmed.substring(1).toLowerCase();
+        }
+    }
     public String getVisibility() { return visibility; }
     public void setVisibility(String visibility) { this.visibility = visibility == null ? "PUBLIC" : visibility.toUpperCase(); }
     public String getPollType() { return pollType; }
@@ -131,5 +150,29 @@ public class Decision {
         if (options != null) {
             this.options.addAll(options);
         }
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public List<Attachment> getAttachments() {
+        return attachments;
+    }
+
+    public void setAttachments(List<Attachment> attachments) {
+        this.attachments = attachments == null ? new ArrayList<>() : attachments;
+    }
+
+    public java.util.Set<String> getCustomCriteria() {
+        return customCriteria;
+    }
+
+    public void setCustomCriteria(java.util.Set<String> customCriteria) {
+        this.customCriteria = customCriteria == null ? new java.util.LinkedHashSet<>() : new java.util.LinkedHashSet<>(customCriteria);
     }
 }

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm --prefix decisionhub-frontend run build",
+  "outputDirectory": "decisionhub-frontend/dist",
+  "installCommand": "npm --prefix decisionhub-frontend install",
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/firebase-messaging-sw.js",
+      "destination": "/firebase-messaging-sw.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

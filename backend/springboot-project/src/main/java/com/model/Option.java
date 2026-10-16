@@ -26,6 +26,12 @@ public class Option {
     private Integer timeScore;
     private Integer convenienceScore;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "option_custom_scores", joinColumns = @JoinColumn(name = "option_id"))
+    @MapKeyColumn(name = "criterion_name")
+    @Column(name = "score")
+    private java.util.Map<String, Integer> customScores = new java.util.LinkedHashMap<>();
+
     @Transient
     private long voteCount;
 
@@ -34,6 +40,13 @@ public class Option {
 
     @Transient
     private Double averageRating;
+
+    @Column(name = "image_url", length = 1000)
+    private String imageUrl;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "option", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<Attachment> attachments = new java.util.ArrayList<>();
 
     @JsonIgnore
     @ManyToOne
@@ -107,7 +120,20 @@ public class Option {
         for (Integer score : new Integer[] { costScore, benefitsScore, riskScore, timeScore, convenienceScore }) {
             if (score != null) { total += score; count++; }
         }
+        if (customScores != null) {
+            for (Integer score : customScores.values()) {
+                if (score != null) { total += score; count++; }
+            }
+        }
         return count == 0 ? null : (double) total / count;
+    }
+
+    public java.util.Map<String, Integer> getCustomScores() {
+        return customScores;
+    }
+
+    public void setCustomScores(java.util.Map<String, Integer> customScores) {
+        this.customScores = customScores == null ? new java.util.LinkedHashMap<>() : new java.util.LinkedHashMap<>(customScores);
     }
 
     public Decision getDecision() {
@@ -116,5 +142,21 @@ public class Option {
 
     public void setDecision(Decision decision) {
         this.decision = decision;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public java.util.List<Attachment> getAttachments() {
+        return attachments;
+    }
+
+    public void setAttachments(java.util.List<Attachment> attachments) {
+        this.attachments = attachments == null ? new java.util.ArrayList<>() : attachments;
     }
 }

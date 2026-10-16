@@ -1,5 +1,7 @@
 package com.decisionhub.service;
 
+import com.decisionhub.dto.CustomCriterionRequest;
+import com.decisionhub.dto.OptionCriteriaScoreRequest;
 import com.decisionhub.dto.DecisionRequest;
 import com.decisionhub.dto.OptionRequest;
 import com.decisionhub.dto.VoteRequest;
@@ -53,6 +55,16 @@ public class DecisionService {
         apply(decision, request);
         decision.setCreatedBy(creator == null ? request.getCreatedBy() : creator.getName());
         if (decision.getCreatedBy() == null || decision.getCreatedBy().isBlank()) decision.setCreatedBy("DecisionHub member");
+        if (request.getCustomCriteria() != null) {
+            decision.getCustomCriteria().addAll(request.getCustomCriteria());
+        }
+        if (request.getOptions() != null) {
+            request.getOptions().forEach(option -> {
+                if (option.getCustomScores() != null) {
+                    decision.getCustomCriteria().addAll(option.getCustomScores().keySet());
+                }
+            });
+        }
         Decision saved = decisions.save(decision);
         request.getOptions().forEach(option -> addOption(saved, option));
         return hydrate(saved);
@@ -103,8 +115,14 @@ public class DecisionService {
     public Decision updateDecision(Long id, DecisionRequest request, User user) {
         Decision decision = raw(id);
         requireOwnerOrAdmin(decision, user);
+        boolean wasClosed = decision.isClosed();
         apply(decision, request);
-        return hydrate(decisions.save(decision));
+        Decision saved = decisions.save(decision);
+        users.findFirstByName(saved.getCreatedBy()).filter(owner -> !owner.getId().equals(user.getId())).ifPresent(owner ->
+            notifications.notify(owner, NotificationType.DECISION_UPDATED, user.getName() + " updated " + saved.getTitle(), saved));
+        if (!wasClosed && saved.isClosed()) users.findFirstByName(saved.getCreatedBy()).ifPresent(owner ->
+            notifications.notify(owner, NotificationType.POLL_COMPLETED, saved.getTitle() + " has been closed", saved));
+        return hydrate(saved);
     }
 
     @Transactional
@@ -120,6 +138,83 @@ public class DecisionService {
         requireOwnerOrAdmin(decision, user);
         if (decision.isClosed()) throw new IllegalStateException("Closed boards cannot be changed");
         return addOption(decision, request);
+    }
+
+    @Transactional
+    public Decision addCustomCriterion(Long decisionId, CustomCriterionRequest request, User user) {
+        Decision decision = raw(decisionId);
+        requireOwnerOrAdmin(decision, user);
+        if (decision.isClosed()) throw new IllegalStateException("Closed boards cannot be changed");
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Criterion name cannot be blank");
+        }
+        String criterionName = request.getName().trim();
+        decision.getCustomCriteria().add(criterionName);
+        decisions.save(decision);
+
+        if (request.getScores() != null && !request.getScores().isEmpty()) {
+            List<Option> boardOptions = options.findByDecisionId(decisionId);
+            for (Option option : boardOptions) {
+                if (request.getScores().containsKey(option.getId())) {
+                    Integer score = request.getScores().get(option.getId());
+                    if (score != null) {
+                        if (score < 1 || score > 10) {
+                            throw new IllegalArgumentException("Score must be between 1 and 10");
+                        }
+                        option.getCustomScores().put(criterionName, score);
+                        options.save(option);
+                    }
+                }
+            }
+        }
+        return hydrate(raw(decisionId));
+    }
+
+    @Transactional
+    public Decision removeCustomCriterion(Long decisionId, String criterionName, User user) {
+        Decision decision = raw(decisionId);
+        requireOwnerOrAdmin(decision, user);
+        if (decision.isClosed()) throw new IllegalStateException("Closed boards cannot be changed");
+        String name = criterionName == null ? "" : criterionName.trim();
+        decision.getCustomCriteria().remove(name);
+        decisions.save(decision);
+
+        List<Option> boardOptions = options.findByDecisionId(decisionId);
+        for (Option option : boardOptions) {
+            if (option.getCustomScores().remove(name) != null) {
+                options.save(option);
+            }
+        }
+        return hydrate(raw(decisionId));
+    }
+
+    @Transactional
+    public Decision updateOptionCriteriaScore(Long decisionId, Long optionId, OptionCriteriaScoreRequest request, User user) {
+        Decision decision = raw(decisionId);
+        requireOwnerOrAdmin(decision, user);
+        if (decision.isClosed()) throw new IllegalStateException("Closed boards cannot be changed");
+        if (request.getCriterion() == null || request.getCriterion().trim().isEmpty()) {
+            throw new IllegalArgumentException("Criterion name cannot be blank");
+        }
+        String criterionName = request.getCriterion().trim();
+        Option option = options.findById(optionId).orElseThrow(() -> new IllegalArgumentException("Option not found"));
+        if (!option.getDecision().getId().equals(decisionId)) {
+            throw new IllegalArgumentException("Option does not belong to this decision board");
+        }
+
+        Integer score = request.getScore();
+        if (score != null) {
+            if (score < 1 || score > 10) {
+                throw new IllegalArgumentException("Score must be between 1 and 10");
+            }
+            option.getCustomScores().put(criterionName, score);
+            decision.getCustomCriteria().add(criterionName);
+            decisions.save(decision);
+        } else {
+            option.getCustomScores().remove(criterionName);
+        }
+        options.save(option);
+        return hydrate(raw(decisionId));
     }
 
     @Transactional(readOnly = true)
@@ -164,9 +259,13 @@ public class DecisionService {
         decision.setPollType(request.getPollType());
         decision.setAllowAnonymousVoting(request.isAllowAnonymousVoting());
         if (request.getClosed() != null) decision.setClosed(request.getClosed());
+        if (request.getImageUrl() != null) decision.setImageUrl(request.getImageUrl());
         if (request.getCommunityId() != null) {
             Community community = communities.findById(request.getCommunityId()).orElseThrow(() -> new IllegalArgumentException("Community not found"));
             decision.setCommunity(community);
+        }
+        if (request.getCustomCriteria() != null) {
+            decision.setCustomCriteria(new java.util.LinkedHashSet<>(request.getCustomCriteria()));
         }
     }
 
@@ -182,6 +281,10 @@ public class DecisionService {
         option.setRiskScore(request.getRiskScore());
         option.setTimeScore(request.getTimeScore());
         option.setConvenienceScore(request.getConvenienceScore());
+        if (request.getCustomScores() != null && !request.getCustomScores().isEmpty()) {
+            option.setCustomScores(request.getCustomScores());
+        }
+        if (request.getImageUrl() != null) option.setImageUrl(request.getImageUrl());
         option.setDecision(decision);
         return options.save(option);
     }

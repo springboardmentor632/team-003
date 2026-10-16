@@ -1,0 +1,77 @@
+name: CD - Cloud Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - release/*
+  workflow_dispatch:
+
+jobs:
+  # ============================================================================
+  # 1. AWS ECS & ECR Deployment
+  # ============================================================================
+  deploy-aws:
+    name: Deploy to AWS ECS
+    runs-on: ubuntu-latest
+    if: false # Enable when AWS credentials secrets are configured in repository
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: decisionhub-backend
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -f backend/springboot-project/Dockerfile.cloud -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest backend/springboot-project
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Update Amazon ECS task definition & service
+        run: |
+          aws ecs update-service --cluster decisionhub-cluster --service decisionhub-backend-service --force-new-deployment
+
+  # ============================================================================
+  # 2. Render Cloud Deployment Trigger
+  # ============================================================================
+  deploy-render:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+    if: false # Enable when RENDER_DEPLOY_HOOK_URL secret is added
+    steps:
+      - name: Trigger Render Deploy Hook
+        run: |
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+
+  # ============================================================================
+  # 3. Vercel Frontend Deployment
+  # ============================================================================
+  deploy-vercel:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    if: false # Enable when VERCEL_TOKEN secret is added
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./decisionhub-frontend
+          vercel-args: '--prod'

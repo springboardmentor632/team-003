@@ -31,8 +31,20 @@ public class AuthController {
     public ResponseEntity<LoginResponse> demoAdmin() {
         LoginRequest request = new LoginRequest();
         request.setEmail("admin@decisionhub.local");
-        request.setPassword("admin123");
+        request.setPassword("demo123");
         return ResponseEntity.ok(auth.loginUser(request));
+    }
+
+    @PostMapping("/auth/oauth2/google")
+    public ResponseEntity<LoginResponse> oauth2Google(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        String name = payload.get("name");
+        return ResponseEntity.ok(auth.processOAuth2Login(email, name));
+    }
+
+    @GetMapping("/auth/oauth2/demo-google")
+    public ResponseEntity<LoginResponse> demoGoogle() {
+        return ResponseEntity.ok(auth.processOAuth2Login("google.user@decisionhub.local", "Google Evaluator"));
     }
 
     @PostMapping("/auth/password-reset/request")
@@ -45,11 +57,5 @@ public class AuthController {
     public Map<String, String> confirmReset(@RequestBody PasswordResetConfirmRequest request) {
         auth.confirmPasswordReset(request.getToken(), request.getNewPassword());
         return Map.of("message", "Password updated");
-    }
-
-    @GetMapping("/users/me")
-    public User me() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return users.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 }

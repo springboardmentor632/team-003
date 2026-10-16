@@ -1,5 +1,33 @@
+# Environment files and credentials
 .env
 **/.env
+*.env.local
+
+# Build artifacts
 **/target/
 **/node_modules/
 **/dist/
+
+# Application logs & dumps
+logs/
+**/logs/
+*.log
+*.log.gz
+backups/
+*.sql.gz
+
+# SSL certificates and private keys
+nginx/ssl/live/
+*.pem
+*.key
+*.crt
+
+# IDE and OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Academic/assignment scratch files
+Set_A_Linear_Regression.*
+real_estate_valuation.csv

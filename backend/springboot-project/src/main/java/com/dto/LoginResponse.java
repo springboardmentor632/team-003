@@ -6,15 +6,21 @@ public class LoginResponse {
     private String name;
     private String email;
     private String role;
+    private String avatarUrl;
 
     public LoginResponse() {
     }
 
     public LoginResponse(String token, String name, String email, String role) {
+        this(token, name, email, role, null);
+    }
+
+    public LoginResponse(String token, String name, String email, String role, String avatarUrl) {
         this.token = token;
         this.name = name;
         this.email = email;
         this.role = role;
+        this.avatarUrl = avatarUrl;
     }
 
     public String getToken() {
@@ -47,5 +53,13 @@ public class LoginResponse {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 }

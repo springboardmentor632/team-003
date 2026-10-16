@@ -11,4 +11,5 @@ public interface VoteRepository extends JpaRepository<Vote, Long> {
     long countByOptionId(Long optionId);
     Optional<Vote> findByDecisionIdAndOptionIdAndVoterId(Long decisionId, Long optionId, Long voterId);
     List<Vote> findByDecisionId(Long decisionId);
+    List<Vote> findByVoterIdOrderByCreatedAtDesc(Long voterId);
 }

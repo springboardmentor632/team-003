@@ -22,5 +22,9 @@ public class CommunityController {
     @PostMapping("/{id}/members") public Community join(@PathVariable Long id) { return communities.join(id, current()); }
     @DeleteMapping("/{id}/members/me") public Community leave(@PathVariable Long id) { return communities.leave(id, current()); }
     @PutMapping("/{id}/members/{memberId}/role") public Community setMemberRole(@PathVariable Long id, @PathVariable Long memberId, @RequestParam String role) { return communities.setMemberRole(id, memberId, role, current()); }
+    @PostMapping("/{id}/invitations") public java.util.Map<String, String> invite(@PathVariable Long id, @RequestParam String email) { communities.invite(id, email, current()); return java.util.Map.of("message", "Invitation sent"); }
+    @GetMapping("/invitations") public java.util.List<com.decisionhub.model.CommunityInvitation> invitations() { return communities.invitations(current()); }
+    @PostMapping("/invitations/{id}/accept") public Community accept(@PathVariable Long id) { return communities.acceptInvitation(id, current()); }
+    @PostMapping("/invitations/{id}/decline") public java.util.Map<String,String> decline(@PathVariable Long id) { communities.declineInvitation(id, current()); return java.util.Map.of("message", "Invitation declined"); }
     private User current() { return users.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new IllegalArgumentException("User not found")); }
 }

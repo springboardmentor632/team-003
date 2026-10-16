@@ -15,17 +15,34 @@ public class SeedDataConfig {
     @Order(1)
     CommandLineRunner seedUsers(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            createIfMissing(userRepository, passwordEncoder, "System Admin", "admin@decisionhub.local", "admin123", "ADMIN");
-            createIfMissing(userRepository, passwordEncoder, "Harish", "harish@decisionhub.local", "harish123", "USER");
-            createIfMissing(userRepository, passwordEncoder, "Maya Patel", "maya@decisionhub.local", "demo123", "USER");
-            createIfMissing(userRepository, passwordEncoder, "Arjun Mehta", "arjun@decisionhub.local", "demo123", "USER");
-            createIfMissing(userRepository, passwordEncoder, "Priya Nair", "priya@decisionhub.local", "demo123", "USER");
-            createIfMissing(userRepository, passwordEncoder, "Rohan Shah", "rohan@decisionhub.local", "demo123", "USER");
+            upsertDemoUser(userRepository, passwordEncoder, "System Admin", "admin@decisionhub.local", "demo123", "ADMIN", "https://api.dicebear.com/7.x/bottts/svg?seed=AdminBot&backgroundColor=b6e3f4");
+            upsertDemoUser(userRepository, passwordEncoder, "Harish", "harish@decisionhub.local", "demo123", "USER", "https://api.dicebear.com/7.x/avataaars/svg?seed=HarishDev&backgroundColor=c0aede");
+            upsertDemoUser(userRepository, passwordEncoder, "Maya Patel", "maya@decisionhub.local", "demo123", "USER", "https://api.dicebear.com/7.x/avataaars/svg?seed=MayaLeader&backgroundColor=ffd5dc");
+            upsertDemoUser(userRepository, passwordEncoder, "Arjun Mehta", "arjun@decisionhub.local", "demo123", "USER", "https://api.dicebear.com/7.x/avataaars/svg?seed=ArjunMod&backgroundColor=d1d4f9");
+            upsertDemoUser(userRepository, passwordEncoder, "Priya Nair", "priya@decisionhub.local", "demo123", "USER", "https://api.dicebear.com/7.x/micah/svg?seed=PriyaDesigner&backgroundColor=ffdfbf");
+            upsertDemoUser(userRepository, passwordEncoder, "Rohan Shah", "rohan@decisionhub.local", "demo123", "USER", "https://api.dicebear.com/7.x/adventurer/svg?seed=RohanArchitect&backgroundColor=c7f9cc");
         };
     }
 
-    private void createIfMissing(UserRepository users, PasswordEncoder encoder, String name, String email, String password, String role) {
-        if (users.existsByEmail(email)) return;
-        users.save(new User(name, email, encoder.encode(password), role));
+    private void upsertDemoUser(UserRepository users, PasswordEncoder encoder, String name, String email, String password, String role, String avatarUrl) {
+        User existing = users.findByEmail(email).orElse(null);
+        if (existing == null) {
+            User user = new User(name, email, encoder.encode(password), role);
+            user.setAvatarUrl(avatarUrl);
+            users.save(user);
+            return;
+        }
+        boolean updated = false;
+        if (!encoder.matches(password, existing.getPassword())) {
+            existing.setPassword(encoder.encode(password));
+            updated = true;
+        }
+        if (existing.getAvatarUrl() == null || existing.getAvatarUrl().isBlank() || existing.getAvatarUrl().contains("images.unsplash.com")) {
+            existing.setAvatarUrl(avatarUrl);
+            updated = true;
+        }
+        if (updated) {
+            users.save(existing);
+        }
     }
 }
