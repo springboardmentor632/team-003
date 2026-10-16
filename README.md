@@ -167,15 +167,21 @@ npm run build
 Generates minified, hashed production static assets in `decisionhub-frontend/dist/`.
 
 ### HTTPS/SSL Production Deployment
-DecisionHub includes a production Compose configuration with SSL termination and automated Certbot renewal:
-```bash
-# 1. Generate SSL certificates (or use Let's Encrypt)
-./scripts/generate-ssl-certs.sh ./nginx/ssl/live localhost
+DecisionHub includes production SSL/TLS termination on port 443 with automated HTTP-to-HTTPS (301) redirection, modern security headers (HSTS, X-Frame-Options, nosniff), and Certbot background renewal:
 
-# 2. Launch production stack with HTTPS enabled
-docker compose -f docker-compose.prod.yml up -d
+```bash
+# Option A: Automated Let's Encrypt CA-Signed Certificate
+./scripts/init-letsencrypt.sh yourdomain.com admin@yourdomain.com 0
+# (Windows: .\scripts\init-letsencrypt.ps1 -Domain yourdomain.com -Email admin@yourdomain.com)
+
+# Option B: Self-Signed Local / Staging Certificate
+./scripts/generate-ssl-certs.sh ./nginx/ssl/live localhost
+# (Windows: .\scripts\generate-ssl-certs.ps1)
+
+# Launch Stack with HTTPS Enabled
+docker compose up -d
 ```
-Access `https://localhost` (or your domain name) with HTTP-to-HTTPS automatic redirection and HSTS security.
+Access `https://localhost` (or `https://yourdomain.com`) with automatic HTTP-to-HTTPS redirection, HSTS security, and background Certbot renewal.
 
 ---
 

@@ -199,6 +199,47 @@ aws ecs create-service --cli-input-json file://aws/ecs-service.json
 
 ---
 
+### 4.4 VPS / Linux VM / Docker Compose HTTPS & Let's Encrypt Termination
+
+DecisionHub includes active SSL/TLS termination on port 443 with automated HTTP-to-HTTPS (301) redirection, modern security headers (HSTS, CSP, XFO), and automated Let's Encrypt ACME renewals.
+
+#### Architecture:
+- **Port 80 (HTTP)**: Serves `/.well-known/acme-challenge/` for ACME HTTP-01 domain validation, `/healthz` for load balancer probes, and returns `301 Moved Permanently` to `https://$host$request_uri` for all incoming browser traffic.
+- **Port 443 (HTTPS)**: High-performance TLS 1.2 / TLS 1.3 termination with Mozilla Modern Ciphers, HSTS preload (`max-age=31536000`), reverse proxies `/api/*` and `/actuator/*` to Spring Boot backend, and serves the minified React SPA.
+- **Certbot Service**: Background companion container (`decisionhub-certbot`) checking and renewing certificates automatically every 12 hours.
+
+#### Automated Let's Encrypt CA-Signed Certificate Issuance:
+
+**On Linux / macOS (Bash):**
+```bash
+chmod +x ./scripts/init-letsencrypt.sh
+./scripts/init-letsencrypt.sh yourdomain.com admin@yourdomain.com 0
+```
+*(Use `1` as the 3rd argument to test against Let's Encrypt Staging API and avoid rate limits).*
+
+**On Windows (PowerShell):**
+```powershell
+.\scripts\init-letsencrypt.ps1 -Domain yourdomain.com -Email admin@yourdomain.com
+```
+
+#### Self-Signed Staging / Local HTTPS:
+```powershell
+# Windows
+.\scripts\generate-ssl-certs.ps1 -CertDir .\nginx\ssl\live -Domain localhost
+
+# Linux / macOS
+chmod +x ./scripts/generate-ssl-certs.sh
+./scripts/generate-ssl-certs.sh ./nginx/ssl/live localhost
+```
+
+#### Launching the Stack:
+```bash
+docker compose up -d
+```
+All containers will start with active port 80 (HTTP) and port 443 (HTTPS) termination. Test via `https://localhost` or `https://yourdomain.com`.
+
+---
+
 ## 5. Production Environment Variables Reference
 
 | Variable Name | Required | Default / Example | Purpose |

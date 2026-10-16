@@ -56,10 +56,25 @@ services:
       MAIL_STARTTLS: ${MAIL_STARTTLS:-true}
       PASSWORD_RESET_FROM: ${PASSWORD_RESET_FROM:-no-reply@decisionhub.org}
       PASSWORD_RESET_URL: ${PASSWORD_RESET_URL:-https://decisionhub.org/reset-password}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://decisionhub.org,https://www.decisionhub.org}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://decisionhub.org,https://www.decisionhub.org,https://localhost,https://localhost:443}
       LOG_PATH: /app/logs
+      MANAGEMENT_HEALTH_MAIL_ENABLED: ${MANAGEMENT_HEALTH_MAIL_ENABLED:-false}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-decisionhub-google-client-id}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-decisionhub-google-client-secret}
+      OAUTH2_FRONTEND_REDIRECT_URI: ${OAUTH2_FRONTEND_REDIRECT_URI:-https://decisionhub.org/oauth2/callback}
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
+      STORAGE_LOCAL_UPLOAD_DIR: /app/uploads
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:-decisionhub-storage}
+      AWS_S3_REGION: ${AWS_S3_REGION:-us-east-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_S3_ENDPOINT: ${AWS_S3_ENDPOINT:-}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-decisionhub-demo}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
     volumes:
       - ./logs/backend-prod:/app/logs
+      - backend-prod-uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -103,7 +118,7 @@ services:
       backend:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost/ || curl -k -f https://localhost/ || exit 1"]
+      test: ["CMD-SHELL", "curl -k -f https://localhost/actuator/health || curl -k -f https://localhost/ || curl -f http://localhost/healthz || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 3
@@ -138,6 +153,8 @@ networks:
 
 volumes:
   postgres-prod-data:
+    driver: local
+  backend-prod-uploads:
     driver: local
   certbot-challenge:
     driver: local
