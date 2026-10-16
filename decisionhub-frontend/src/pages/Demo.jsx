@@ -415,6 +415,10 @@ function DemoNav({ active, setView, roleKey, onSelectRole }) {
           <Link to="/login" style={{ color: "var(--brass)", marginTop: 4, display: "inline-block", fontSize: 11.5 }}>
             Sign in to live account →
           </Link>
+          <br />
+          <Link to="/dashboard" style={{ color: "var(--teal)", marginTop: 6, display: "inline-block", fontSize: 11.5, fontWeight: 600 }}>
+            ← Return to Workspace
+          </Link>
         </div>
       </div>
     </aside>
@@ -1024,16 +1028,38 @@ function FeedbackDemo({ profile }) {
   );
 }
 
-function DotRow({ score }) {
-  return <div className="dot-row">{[1, 2, 3, 4, 5].map((item) => <i key={item} className={`dot ${item <= Math.round(score / 2) ? "fill" : ""}`} />)}</div>;
+function DotRow({ score, onScoreChange }) {
+  const currentLevel = Math.max(1, Math.min(5, Math.round(score / 2)));
+  return (
+    <div className="dot-row" title={onScoreChange ? "Click a dot to tune this criterion score (1-5)" : undefined}>
+      {[1, 2, 3, 4, 5].map((item) => (
+        <i
+          key={item}
+          className={`dot ${item <= currentLevel ? "fill" : ""}`}
+          onClick={() => onScoreChange && onScoreChange(item * 2)}
+          style={{ cursor: onScoreChange ? "pointer" : "default" }}
+        />
+      ))}
+    </div>
+  );
 }
 
-function DetailDemo({ board, setView, profile }) {
+function DetailDemo({ board, setView, profile, onSelectRole }) {
   const [votes, setVotes] = useState(board.options.map((option) => option.voteCount));
   const [closed, setClosed] = useState(Boolean(board.closed));
   const [pinnedConsensus, setPinnedConsensus] = useState(false);
   const [hasVotedIndex, setHasVotedIndex] = useState(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [liveToast, setLiveToast] = useState("");
+  const [criteriaScores, setCriteriaScores] = useState(() =>
+    board.options.map((opt) => ({
+      costScore: opt.costScore,
+      benefitsScore: opt.benefitsScore,
+      riskScore: opt.riskScore,
+      timeScore: opt.timeScore,
+      convenienceScore: opt.convenienceScore,
+    }))
+  );
 
   const total = votes.reduce((sum, vote) => sum + vote, 0);
   const leadingIndex = votes.indexOf(Math.max(...votes));
@@ -1043,6 +1069,7 @@ function DetailDemo({ board, setView, profile }) {
     if (hasVotedIndex === index) {
       setVotes((current) => current.map((v, i) => (i === index ? v - 1 : v)));
       setHasVotedIndex(null);
+      setLiveToast(`Ballot retracted for ${board.options[index].title.split(" ")[0]}.`);
     } else {
       setVotes((current) =>
         current.map((v, i) => {
@@ -1052,11 +1079,89 @@ function DetailDemo({ board, setView, profile }) {
         })
       );
       setHasVotedIndex(index);
+      setLiveToast(`✓ Vote recorded for ${board.options[index].title.split(" ")[0]} as ${profile.name.split(" ")[0]}!`);
     }
+    setTimeout(() => setLiveToast(""), 3500);
+  };
+
+  const handleScoreChange = (optIndex, factorKey, newScore) => {
+    setCriteriaScores((prev) => {
+      const next = [...prev];
+      next[optIndex] = { ...next[optIndex], [factorKey]: newScore };
+      return next;
+    });
+    setLiveToast(`Adjusted ${factorKey.replace("Score", "")} factor to ${newScore}/10 for ${board.options[optIndex].title.split(" ")[0]}.`);
+    setTimeout(() => setLiveToast(""), 3000);
+  };
+
+  const getWeightedScore = (optIndex) => {
+    const scores = criteriaScores[optIndex] || board.options[optIndex];
+    return (
+      (scores.costScore +
+        scores.benefitsScore +
+        scores.riskScore +
+        scores.timeScore +
+        scores.convenienceScore) /
+      5
+    ).toFixed(1);
   };
 
   const toggleClosure = () => {
     setClosed((prev) => !prev);
+  };
+
+  const simulateVotes = () => {
+    if (closed) return;
+    setVotes((current) => {
+      const next = [...current];
+      for (let i = 0; i < 5; i++) {
+        const rand = Math.floor(Math.random() * next.length);
+        next[rand] += 1;
+      }
+      return next;
+    });
+    setLiveToast("⚡ 5 simulated community ballots cast! Live consensus recalculated.");
+    setTimeout(() => setLiveToast(""), 3500);
+  };
+
+  const resetBoard = () => {
+    setVotes(board.options.map((option) => option.voteCount));
+    setClosed(Boolean(board.closed));
+    setPinnedConsensus(false);
+    setHasVotedIndex(null);
+    setCriteriaScores(
+      board.options.map((opt) => ({
+        costScore: opt.costScore,
+        benefitsScore: opt.benefitsScore,
+        riskScore: opt.riskScore,
+        timeScore: opt.timeScore,
+        convenienceScore: opt.convenienceScore,
+      }))
+    );
+    setLiveToast("↺ Board state reset to initial baseline.");
+    setTimeout(() => setLiveToast(""), 3000);
+  };
+
+  const exportCsv = () => {
+    const rows = [
+      ["Option", "Votes", "Percentage Share", "Weighted Score", "Pros", "Cons"],
+      ...board.options.map((opt, i) => [
+        `"${opt.title}"`,
+        votes[i],
+        `${total > 0 ? Math.round((votes[i] / total) * 100) : 0}%`,
+        getWeightedScore(i),
+        `"${opt.pros}"`,
+        `"${opt.cons}"`,
+      ]),
+    ];
+    const csv = rows.map((r) => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${board.title.replace(/\s+/g, "_")}_ballots.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -1067,6 +1172,117 @@ function DetailDemo({ board, setView, profile }) {
         <button onClick={() => setView("boards")}>Decision boards</button>
         <span>/</span>
         <b>{board.title}</b>
+      </div>
+
+      {/* Interactive Persona Quick Switcher on Board Detail */}
+      <div
+        className="demo-role-quick-bar"
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 12,
+          padding: "12px 18px",
+          background: "var(--paper-raised)",
+          border: "1px solid var(--line)",
+          borderRadius: "var(--radius)",
+          marginBottom: 16,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>🎭 Active Demo Persona:</span>
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: profile.badgeColor }}>
+            {profile.badge} ({profile.name})
+          </span>
+        </div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {Object.values(ROLE_PROFILES).map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              onClick={() => onSelectRole && onSelectRole(r.id)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "4px 10px",
+                fontSize: 11.5,
+                borderRadius: 14,
+                border: profile.id === r.id ? `2px solid ${r.badgeColor}` : "1px solid var(--line)",
+                background: profile.id === r.id ? "rgba(0,137,123,0.12)" : "var(--paper)",
+                color: "var(--ink)",
+                fontWeight: profile.id === r.id ? 700 : 500,
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+              }}
+              title={`Switch demonstration persona to ${r.name}`}
+            >
+              <span>{r.badge.split(" ")[0]}</span>
+              <span>{r.name.split(" ")[0]}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Demonstration Actions Toolbar: Simulate votes, reset, export */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 10,
+          padding: "10px 16px",
+          background: "var(--paper)",
+          border: "1px solid var(--line)",
+          borderRadius: "var(--radius)",
+          marginBottom: 16,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-soft)" }}>⚡ Demonstration Tools:</span>
+          <button
+            type="button"
+            className="btn brass"
+            style={{ fontSize: 11.5, padding: "5px 12px", display: "inline-flex", alignItems: "center", gap: 6 }}
+            disabled={closed}
+            onClick={simulateVotes}
+          >
+            <span>⚡ Simulate 5 Community Votes</span>
+          </button>
+          <button
+            type="button"
+            className="btn ghost"
+            style={{ fontSize: 11.5, padding: "5px 12px" }}
+            onClick={resetBoard}
+          >
+            ↺ Reset Ballots
+          </button>
+          <button
+            type="button"
+            className="btn ghost"
+            style={{ fontSize: 11.5, padding: "5px 12px", display: "inline-flex", alignItems: "center", gap: 5 }}
+            onClick={exportCsv}
+          >
+            <span>📊 Export Ballot CSV</span>
+          </button>
+        </div>
+
+        {liveToast && (
+          <span
+            style={{
+              fontSize: 11.5,
+              fontWeight: 600,
+              color: "var(--teal)",
+              background: "var(--teal-dim)",
+              padding: "4px 10px",
+              borderRadius: 12,
+            }}
+          >
+            {liveToast}
+          </span>
+        )}
       </div>
 
       <div className="detail-head">
@@ -1182,6 +1398,9 @@ function DetailDemo({ board, setView, profile }) {
             {board.options.map((option, index) => {
               const isLeading = index === leadingIndex;
               const hasVoted = hasVotedIndex === index;
+              const voteCount = votes[index];
+              const pct = total > 0 ? Math.round((voteCount / total) * 100) : 0;
+              const weightedScore = getWeightedScore(index);
 
               return (
                 <div className={`opt-card ${isLeading ? "leading" : ""}`} key={option.id}>
@@ -1189,8 +1408,27 @@ function DetailDemo({ board, setView, profile }) {
                     <h3>{option.title}</h3>
                     {isLeading && <span className="lead-badge">{closed ? "🏆 Winner" : "Leading"}</span>}
                   </div>
+
+                  {/* Real-Time Vote Share & Progress Bar */}
+                  <div style={{ marginTop: 8, marginBottom: 12 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 600, marginBottom: 4 }}>
+                      <span style={{ color: "var(--ink)" }}>{voteCount} votes</span>
+                      <span style={{ color: isLeading ? "var(--brass)" : "var(--teal)" }}>{pct}%</span>
+                    </div>
+                    <div style={{ height: 6, background: "var(--line)", borderRadius: 3, overflow: "hidden" }}>
+                      <div
+                        style={{
+                          height: "100%",
+                          width: `${pct}%`,
+                          background: isLeading ? "var(--brass)" : "var(--teal)",
+                          transition: "width 0.4s ease",
+                        }}
+                      />
+                    </div>
+                  </div>
+
                   <div className="opt-score mono">
-                    Weighted score — {((option.costScore + option.benefitsScore + option.riskScore + option.timeScore + option.convenienceScore) / 5).toFixed(1)} / 10
+                    Weighted score — {weightedScore} / 10
                   </div>
                   <div className="pc-row"><span className="pc-label pros">+ Pro</span><span>{option.pros}</span></div>
                   <div className="pc-row"><span className="pc-label cons">− Con</span><span>{option.cons}</span></div>
@@ -1202,8 +1440,8 @@ function DetailDemo({ board, setView, profile }) {
                     {closed
                       ? "Voting closed — consensus reached"
                       : hasVoted
-                      ? "✓ You voted for this (Click to retract)"
-                      : "Vote for this option"}
+                      ? `✓ You voted for this as ${profile.name.split(" ")[0]} (Click to retract)`
+                      : `Vote for this option as ${profile.name.split(" ")[0]}`}
                   </button>
                 </div>
               );
@@ -1211,7 +1449,12 @@ function DetailDemo({ board, setView, profile }) {
           </div>
 
           <div className="section-head" style={{ marginTop: 28 }}>
-            <h2>Comparison by criteria</h2>
+            <div>
+              <h2>Comparison by criteria</h2>
+              <span style={{ fontSize: 12, color: "var(--ink-soft)" }}>
+                Click any dot to tune criteria scores and watch the weighted score update live.
+              </span>
+            </div>
           </div>
           <table className="criteria-table">
             <thead>
@@ -1221,15 +1464,25 @@ function DetailDemo({ board, setView, profile }) {
               {FACTORS.map(([key, label]) => (
                 <tr key={key}>
                   <td>{label}</td>
-                  {board.options.map((option) => (
-                    <td key={option.id} className="score"><DotRow score={option[key]} /></td>
-                  ))}
+                  {board.options.map((option, optIdx) => {
+                    const currentVal = criteriaScores[optIdx] ? criteriaScores[optIdx][key] : option[key];
+                    return (
+                      <td key={option.id} className="score">
+                        <DotRow
+                          score={currentVal}
+                          onScoreChange={(newScore) => handleScoreChange(optIdx, key, newScore)}
+                        />
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
           </table>
 
-          <Discussion boardId={`demo-${board.id}`} />
+          <div id="discussion" style={{ marginTop: 24 }}>
+            <Discussion boardId={`demo-${board.id}`} />
+          </div>
         </div>
 
         <aside className="rail">
@@ -1278,6 +1531,16 @@ export default function Demo() {
     setView("dashboard");
   };
 
+  const handleSwitchPersonaOnDetail = (nextRole) => {
+    setRoleKey(nextRole);
+    // Find matching board in new role or keep current
+    const nextProfile = ROLE_PROFILES[nextRole];
+    const match = nextProfile.boards.find((b) => b.id === selected.id);
+    if (match) {
+      setSelected(match);
+    }
+  };
+
   const openBoard = (board) => {
     setSelected(board);
     setView("detail");
@@ -1297,7 +1560,15 @@ export default function Demo() {
         {view === "exports" && <PollingExportsDemo profile={profile} />}
         {view === "history" && <VotingHistoryDemo profile={profile} />}
         {view === "feedback" && <FeedbackDemo profile={profile} />}
-        {view === "detail" && <DetailDemo key={`${selected.id}-${roleKey}`} board={selected} setView={setView} profile={profile} />}
+        {view === "detail" && (
+          <DetailDemo
+            key={`${selected.id}-${roleKey}`}
+            board={selected}
+            setView={setView}
+            profile={profile}
+            onSelectRole={handleSwitchPersonaOnDetail}
+          />
+        )}
       </main>
     </div>
   );

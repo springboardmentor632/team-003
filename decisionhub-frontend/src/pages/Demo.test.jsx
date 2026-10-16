@@ -83,4 +83,32 @@ describe("Demo Page with Role-Differentiated Features", () => {
     fireEvent.click(closeBtn);
     expect(screen.getByText(/Consensus Declared & Voting Concluded/i)).toBeTruthy();
   });
+
+  it("allows interactive voting, community simulation, and ballot resetting on demo boards", () => {
+    renderDemo();
+    // Navigate to board detail
+    const detailBtn = screen.getByRole("button", { name: /Board details/i });
+    fireEvent.click(detailBtn);
+
+    // Initial total votes displayed
+    expect(screen.getByText("36 votes")).toBeTruthy();
+
+    // Click Vote button on first option
+    const voteBtns = screen.getAllByRole("button", { name: /Vote for this option as System/i });
+    fireEvent.click(voteBtns[0]);
+
+    // Should update total votes and vote button
+    expect(screen.getByText("37 votes")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /You voted for this as System/i })).toBeTruthy();
+
+    // Click Simulate 5 Community Votes
+    const simulateBtn = screen.getByRole("button", { name: /Simulate 5 Community Votes/i });
+    fireEvent.click(simulateBtn);
+    expect(screen.getByText("42 votes")).toBeTruthy();
+
+    // Click Reset Ballots
+    const resetBtn = screen.getByRole("button", { name: /Reset Ballots/i });
+    fireEvent.click(resetBtn);
+    expect(screen.getByText("36 votes")).toBeTruthy();
+  });
 });

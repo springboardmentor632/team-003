@@ -83,6 +83,17 @@ export default function Login() {
           <div className="auth-switch">
             Don't have an account? <Link to="/register">Sign up</Link>
           </div>
+
+          <div style={{ textAlign: "center", marginTop: 14 }}>
+            <Link
+              to="/demo"
+              className="btn ghost"
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, padding: "6px 12px", width: "100%", justifyContent: "center" }}
+            >
+              <span>🎯</span>
+              <span>Launch Interactive Role Demo (No Login Required)</span>
+            </Link>
+          </div>
         </form>
       </div>
     </div>
