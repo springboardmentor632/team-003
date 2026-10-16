@@ -189,40 +189,6 @@ export default function Sidebar() {
       <nav className="nav">
         <div className="nav-label">Main Workspace</div>
         <NavLink
-          to="/demo"
-          className={({ isActive }) => (isActive ? "active demo-nav-pill" : "demo-nav-pill")}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "8px 12px",
-            borderRadius: "var(--radius)",
-            marginBottom: 6,
-            background: "rgba(0,137,123,0.08)",
-            color: "var(--teal)",
-            fontWeight: 600,
-            textDecoration: "none",
-            transition: "all 0.15s ease",
-          }}
-        >
-          <span style={{ fontSize: 16 }}>🎯</span>
-          <span style={{ flex: 1 }}>Interactive Demo</span>
-          <span
-            style={{
-              fontSize: 10,
-              padding: "1px 6px",
-              background: "var(--teal)",
-              color: "#fff",
-              borderRadius: 10,
-              fontWeight: 700,
-              letterSpacing: "0.5px",
-            }}
-          >
-            DEMO
-          </span>
-        </NavLink>
-
-        <NavLink
           to="/dashboard"
           className={({ isActive }) => (isActive ? "active" : "")}
         >

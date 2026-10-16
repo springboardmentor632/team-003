@@ -66,15 +66,9 @@ export default function Dashboard() {
         title={`Good to see you, ${firstName}.`}
         subtitle="Keep momentum on decisions needing your vote, track community deliberations, and propose what your workspace decides next."
         action={
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <Link to="/demo" className="btn ghost" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-              <span>🎯</span>
-              <span>Interactive Demo</span>
-            </Link>
-            <Link to="/boards/new">
-              <button className="btn brass">+ New Decision Board</button>
-            </Link>
-          </div>
+          <Link to="/boards/new">
+            <button className="btn brass">+ New Decision Board</button>
+          </Link>
         }
       />
 
