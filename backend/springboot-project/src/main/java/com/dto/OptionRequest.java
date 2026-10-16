@@ -62,4 +62,10 @@ public class OptionRequest {
     public void setConvenienceScore(Integer convenienceScore) { this.convenienceScore = convenienceScore; }
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    private java.util.Map<String, Integer> customScores = new java.util.HashMap<>();
+    public java.util.Map<String, Integer> getCustomScores() { return customScores; }
+    public void setCustomScores(java.util.Map<String, Integer> customScores) {
+        this.customScores = customScores == null ? new java.util.HashMap<>() : customScores;
+    }
 }

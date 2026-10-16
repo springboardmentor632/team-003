@@ -1,5 +1,7 @@
 package com.decisionhub.service;
 
+import com.decisionhub.dto.CustomCriterionRequest;
+import com.decisionhub.dto.OptionCriteriaScoreRequest;
 import com.decisionhub.dto.DecisionRequest;
 import com.decisionhub.dto.OptionRequest;
 import com.decisionhub.dto.VoteRequest;
@@ -223,5 +225,84 @@ class DecisionServiceTest {
 
         assertThrows(SecurityException.class, () -> decisionService.deleteDecision(100L, stranger));
         verify(decisions, never()).delete(any());
+    }
+
+    @Test
+    @DisplayName("addCustomCriterion - Adds new criterion and scores options on the fly")
+    void testAddCustomCriterion_Success() {
+        when(decisions.findById(100L)).thenReturn(Optional.of(testDecision));
+        when(options.findByDecisionId(100L)).thenReturn(List.of(testOption1));
+        when(votes.findByDecisionId(100L)).thenReturn(List.of());
+
+        CustomCriterionRequest req = new CustomCriterionRequest("Scalability", java.util.Map.of(201L, 9));
+        Decision result = decisionService.addCustomCriterion(100L, req, testUser);
+
+        assertNotNull(result);
+        assertTrue(testDecision.getCustomCriteria().contains("Scalability"));
+        assertEquals(9, testOption1.getCustomScores().get("Scalability"));
+        verify(options).save(testOption1);
+        verify(decisions).save(testDecision);
+    }
+
+    @Test
+    @DisplayName("removeCustomCriterion - Removes criterion from board and all option scores")
+    void testRemoveCustomCriterion_Success() {
+        testDecision.getCustomCriteria().add("Scalability");
+        testOption1.getCustomScores().put("Scalability", 9);
+
+        when(decisions.findById(100L)).thenReturn(Optional.of(testDecision));
+        when(options.findByDecisionId(100L)).thenReturn(List.of(testOption1));
+        when(votes.findByDecisionId(100L)).thenReturn(List.of());
+
+        Decision result = decisionService.removeCustomCriterion(100L, "Scalability", testUser);
+
+        assertNotNull(result);
+        assertFalse(testDecision.getCustomCriteria().contains("Scalability"));
+        assertFalse(testOption1.getCustomScores().containsKey("Scalability"));
+        verify(options).save(testOption1);
+        verify(decisions).save(testDecision);
+    }
+
+    @Test
+    @DisplayName("updateOptionCriteriaScore - Updates score for an option on the fly")
+    void testUpdateOptionCriteriaScore_Success() {
+        when(decisions.findById(100L)).thenReturn(Optional.of(testDecision));
+        when(options.findById(201L)).thenReturn(Optional.of(testOption1));
+        when(votes.findByDecisionId(100L)).thenReturn(List.of());
+        when(options.findByDecisionId(100L)).thenReturn(List.of(testOption1));
+
+        OptionCriteriaScoreRequest req = new OptionCriteriaScoreRequest("Security", 8);
+        Decision result = decisionService.updateOptionCriteriaScore(100L, 201L, req, testUser);
+
+        assertNotNull(result);
+        assertTrue(testDecision.getCustomCriteria().contains("Security"));
+        assertEquals(8, testOption1.getCustomScores().get("Security"));
+        verify(options).save(testOption1);
+    }
+
+    @Test
+    @DisplayName("updateOptionCriteriaScore - Rejects score out of range (1-10)")
+    void testUpdateOptionCriteriaScore_InvalidScore_Throws() {
+        when(decisions.findById(100L)).thenReturn(Optional.of(testDecision));
+        when(options.findById(201L)).thenReturn(Optional.of(testOption1));
+
+        OptionCriteriaScoreRequest req = new OptionCriteriaScoreRequest("Security", 15);
+        assertThrows(IllegalArgumentException.class, () -> decisionService.updateOptionCriteriaScore(100L, 201L, req, testUser));
+    }
+
+    @Test
+    @DisplayName("getAverageScore - Computes weighted average incorporating standard and custom criteria")
+    void testCustomCriteriaScoreIncludedInAverageScore() {
+        testOption1.setCostScore(8);
+        testOption1.setBenefitsScore(9);
+        testOption1.setRiskScore(7);
+        // 3 standard scores sum to 24 (avg 8.0)
+        assertEquals(8.0, testOption1.getAverageScore());
+
+        // Add 2 custom scores
+        testOption1.getCustomScores().put("Scalability", 10);
+        testOption1.getCustomScores().put("Security", 6);
+        // Total sum = 8 + 9 + 7 + 10 + 6 = 40 across 5 criteria -> avg 8.0
+        assertEquals(8.0, testOption1.getAverageScore());
     }
 }

@@ -54,6 +54,11 @@ public class Decision {
     @OneToMany(mappedBy = "decision", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Attachment> attachments = new ArrayList<>();
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "decision_custom_criteria", joinColumns = @JoinColumn(name = "decision_id"))
+    @Column(name = "criterion_name")
+    private java.util.Set<String> customCriteria = new java.util.LinkedHashSet<>();
+
     @Transient
     private long totalVotes;
 
@@ -154,5 +159,13 @@ public class Decision {
 
     public void setAttachments(List<Attachment> attachments) {
         this.attachments = attachments == null ? new ArrayList<>() : attachments;
+    }
+
+    public java.util.Set<String> getCustomCriteria() {
+        return customCriteria;
+    }
+
+    public void setCustomCriteria(java.util.Set<String> customCriteria) {
+        this.customCriteria = customCriteria == null ? new java.util.LinkedHashSet<>() : new java.util.LinkedHashSet<>(customCriteria);
     }
 }

@@ -8,7 +8,7 @@ import { extractErrorMessage } from "../api/client";
 const CATEGORIES = ["Career", "Technology", "Travel", "Finance", "Lifestyle", "Education"];
 
 function emptyOption() {
-  return { title: "", description: "", imageUrl: "", costScore: "", benefitsScore: "", riskScore: "", timeScore: "", convenienceScore: "", pros: "", cons: "" };
+  return { title: "", description: "", imageUrl: "", costScore: "", benefitsScore: "", riskScore: "", timeScore: "", convenienceScore: "", pros: "", cons: "", customScores: {} };
 }
 
 export default function CreateBoard() {
@@ -26,11 +26,49 @@ export default function CreateBoard() {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingOptionIdx, setUploadingOptionIdx] = useState(null);
   const [options, setOptions] = useState([emptyOption(), emptyOption()]);
+  const [customCriteria, setCustomCriteria] = useState([]);
+  const [newCriterionInput, setNewCriterionInput] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const updateOption = (index, field, value) => {
     setOptions((prev) => prev.map((opt, i) => (i === index ? { ...opt, [field]: value } : opt)));
+  };
+
+  const updateOptionCustomScore = (index, criterion, value) => {
+    setOptions((prev) =>
+      prev.map((opt, i) => {
+        if (i !== index) return opt;
+        return {
+          ...opt,
+          customScores: {
+            ...(opt.customScores || {}),
+            [criterion]: value,
+          },
+        };
+      })
+    );
+  };
+
+  const addCustomCriterion = (e) => {
+    if (e) e.preventDefault();
+    const trimmed = newCriterionInput.trim();
+    if (!trimmed) return;
+    if (!customCriteria.includes(trimmed)) {
+      setCustomCriteria((prev) => [...prev, trimmed]);
+    }
+    setNewCriterionInput("");
+  };
+
+  const removeCustomCriterion = (criterion) => {
+    setCustomCriteria((prev) => prev.filter((c) => c !== criterion));
+    setOptions((prev) =>
+      prev.map((opt) => {
+        const next = { ...(opt.customScores || {}) };
+        delete next[criterion];
+        return { ...opt, customScores: next };
+      })
+    );
   };
 
   const addOption = () => setOptions((prev) => [...prev, emptyOption()]);
@@ -89,18 +127,29 @@ export default function CreateBoard() {
       allowAnonymousVoting,
       imageUrl: imageUrl.trim() || undefined,
       communityId: communityId ? Number(communityId) : undefined,
-      options: options.map((o) => ({
-        title: o.title,
-        description: o.description || undefined,
-        imageUrl: o.imageUrl?.trim() || undefined,
-        costScore: toIntOrUndefined(o.costScore),
-        benefitsScore: toIntOrUndefined(o.benefitsScore),
-        riskScore: toIntOrUndefined(o.riskScore),
-        timeScore: toIntOrUndefined(o.timeScore),
-        convenienceScore: toIntOrUndefined(o.convenienceScore),
-        pros: o.pros || undefined,
-        cons: o.cons || undefined,
-      })),
+      customCriteria: customCriteria.length > 0 ? customCriteria : undefined,
+      options: options.map((o) => {
+        const cleanCustomScores = {};
+        if (o.customScores) {
+          Object.entries(o.customScores).forEach(([k, v]) => {
+            const num = toIntOrUndefined(v);
+            if (num != null) cleanCustomScores[k] = num;
+          });
+        }
+        return {
+          title: o.title,
+          description: o.description || undefined,
+          imageUrl: o.imageUrl?.trim() || undefined,
+          costScore: toIntOrUndefined(o.costScore),
+          benefitsScore: toIntOrUndefined(o.benefitsScore),
+          riskScore: toIntOrUndefined(o.riskScore),
+          timeScore: toIntOrUndefined(o.timeScore),
+          convenienceScore: toIntOrUndefined(o.convenienceScore),
+          customScores: Object.keys(cleanCustomScores).length > 0 ? cleanCustomScores : undefined,
+          pros: o.pros || undefined,
+          cons: o.cons || undefined,
+        };
+      }),
     };
 
     setSubmitting(true);
@@ -206,6 +255,73 @@ export default function CreateBoard() {
           </div>
         </div>
 
+        <div style={{ marginTop: 24, padding: "16px", background: "var(--card-bg, #fff)", border: "1px solid var(--line)", borderRadius: "var(--radius)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--ink)" }}>
+              User-Defined Comparison Criteria (Optional)
+            </span>
+            <span style={{ fontSize: 11, color: "var(--ink-soft)" }}>Module 4 Criteria</span>
+          </div>
+          <p style={{ fontSize: 12, color: "var(--ink-soft)", margin: "0 0 12px" }}>
+            In addition to Cost, Benefits, Risk, Time, and Convenience, you can define custom evaluation factors (e.g. Scalability, Security, UX, Maintenance) for this board.
+          </p>
+
+          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+            <input
+              type="text"
+              value={newCriterionInput}
+              onChange={(e) => setNewCriterionInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomCriterion(); } }}
+              placeholder="e.g. Scalability, Security, Maintainability"
+              style={{ flex: 1 }}
+            />
+            <button
+              type="button"
+              className="btn ghost"
+              onClick={addCustomCriterion}
+              style={{ padding: "8px 14px", fontSize: 12 }}
+            >
+              + Add criterion
+            </button>
+          </div>
+
+          {customCriteria.length > 0 ? (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {customCriteria.map((c) => (
+                <span
+                  key={c}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "4px 10px",
+                    background: "rgba(0, 137, 123, 0.1)",
+                    border: "1px solid rgba(0, 137, 123, 0.25)",
+                    borderRadius: 16,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "var(--brass, #00897b)",
+                  }}
+                >
+                  {c}
+                  <button
+                    type="button"
+                    onClick={() => removeCustomCriterion(c)}
+                    style={{ background: "none", border: "none", cursor: "pointer", padding: 0, fontSize: 13, color: "inherit", lineHeight: 1 }}
+                    title={`Remove ${c}`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <div style={{ fontSize: 11.5, color: "var(--ink-soft)", fontStyle: "italic" }}>
+              No custom criteria added yet. Type a factor name above to evaluate your options against custom dimensions.
+            </div>
+          )}
+        </div>
+
         <div style={{ margin: "22px 0 12px", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--ink-soft)", fontWeight: 600 }}>
           Options to compare
         </div>
@@ -280,6 +396,29 @@ export default function CreateBoard() {
               <div className="field"><label>Time (1–10)</label><input type="number" min="1" max="10" value={opt.timeScore} onChange={(e) => updateOption(i, "timeScore", e.target.value)} /></div>
             </div>
             <div className="field"><label>Convenience (1–10)</label><input type="number" min="1" max="10" value={opt.convenienceScore} onChange={(e) => updateOption(i, "convenienceScore", e.target.value)} /></div>
+
+            {customCriteria.length > 0 && (
+              <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px dashed var(--line)" }}>
+                <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--brass, #00897b)", display: "block", marginBottom: 8 }}>
+                  User-Defined Custom Criteria (1–10)
+                </label>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
+                  {customCriteria.map((crit) => (
+                    <div key={crit} className="field" style={{ margin: 0 }}>
+                      <label style={{ fontSize: 11.5 }}>{crit} (1–10)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={opt.customScores?.[crit] ?? ""}
+                        onChange={(e) => updateOptionCustomScore(i, crit, e.target.value)}
+                        placeholder="1-10"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ))}
 

@@ -43,3 +43,15 @@ export function retractVote(decisionId, optionId) {
 export function getResults(decisionId) {
   return client.get(`/api/decisions/${decisionId}/votes/results`);
 }
+
+export function addCriteria(decisionId, { name, scores }) {
+  return client.post(`/api/decisions/${decisionId}/criteria`, { name, scores });
+}
+
+export function removeCriteria(decisionId, criterionName) {
+  return client.delete(`/api/decisions/${decisionId}/criteria/${encodeURIComponent(criterionName)}`);
+}
+
+export function updateOptionCriteriaScore(decisionId, optionId, { criterion, score }) {
+  return client.put(`/api/decisions/${decisionId}/options/${optionId}/criteria`, { criterion, score });
+}

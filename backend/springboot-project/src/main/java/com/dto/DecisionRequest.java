@@ -59,4 +59,8 @@ public class DecisionRequest {
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public List<OptionRequest> getOptions() { return options; }
     public void setOptions(List<OptionRequest> options) { this.options = options == null ? new ArrayList<>() : options; }
+
+    private List<String> customCriteria = new ArrayList<>();
+    public List<String> getCustomCriteria() { return customCriteria; }
+    public void setCustomCriteria(List<String> customCriteria) { this.customCriteria = customCriteria == null ? new ArrayList<>() : customCriteria; }
 }

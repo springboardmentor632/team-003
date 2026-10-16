@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getDecision, castVote, retractVote } from "../api/decisions";
+import { getDecision, castVote, retractVote, addCriteria, removeCriteria, updateOptionCriteriaScore } from "../api/decisions";
 import { reportDecision } from "../api/collaboration";
 import { extractErrorMessage } from "../api/client";
 import { resolveFileUrl } from "../api/files";
@@ -10,12 +10,12 @@ import Discussion from "../components/Discussion";
 import Suggestions from "../components/Suggestions";
 import Attachments from "../components/Attachments";
 
-const FACTORS = [
-  { key: "costScore", label: "Cost" },
-  { key: "benefitsScore", label: "Benefits" },
-  { key: "riskScore", label: "Risk" },
-  { key: "timeScore", label: "Time" },
-  { key: "convenienceScore", label: "Convenience" },
+const STANDARD_FACTORS = [
+  { key: "costScore", label: "Cost", isCustom: false },
+  { key: "benefitsScore", label: "Benefits", isCustom: false },
+  { key: "riskScore", label: "Risk", isCustom: false },
+  { key: "timeScore", label: "Time", isCustom: false },
+  { key: "convenienceScore", label: "Convenience", isCustom: false },
 ];
 
 function DotRow({ score }) {
@@ -39,6 +39,67 @@ export default function BoardDetail() {
   const [reportReason, setReportReason] = useState("");
   const [isSaved, setIsSaved] = useState(false);
   const [bookmarkBusy, setBookmarkBusy] = useState(false);
+  const [showAddCriteriaModal, setShowAddCriteriaModal] = useState(false);
+  const [newCriterionName, setNewCriterionName] = useState("");
+  const [newCriterionScores, setNewCriterionScores] = useState({});
+  const [savingCriteria, setSavingCriteria] = useState(false);
+  const [criteriaError, setCriteriaError] = useState("");
+
+  const canManageCriteria = Boolean(user && decision && (user.role === "ADMIN" || user.name === decision.createdBy || user.email === decision.createdBy));
+
+  const customCriteriaList = Array.from(
+    new Set([
+      ...(decision?.customCriteria || []),
+      ...(decision?.options || []).flatMap((o) => Object.keys(o.customScores || {})),
+    ])
+  );
+
+  const customFactors = customCriteriaList.map((c) => ({
+    key: c,
+    label: c,
+    isCustom: true,
+  }));
+
+  const allFactors = [...STANDARD_FACTORS, ...customFactors];
+
+  const handleAddCriteria = async (e) => {
+    if (e) e.preventDefault();
+    const trimmed = newCriterionName.trim();
+    if (!trimmed) {
+      setCriteriaError("Criterion name cannot be blank");
+      return;
+    }
+    setSavingCriteria(true);
+    setCriteriaError("");
+    try {
+      const optionScoresMap = {};
+      Object.entries(newCriterionScores).forEach(([optId, score]) => {
+        const num = parseInt(score, 10);
+        if (!isNaN(num) && num >= 1 && num <= 10) {
+          optionScoresMap[optId] = num;
+        }
+      });
+      const { data } = await addCriteria(id, { name: trimmed, scores: optionScoresMap });
+      setDecision(data);
+      setShowAddCriteriaModal(false);
+      setNewCriterionName("");
+      setNewCriterionScores({});
+    } catch (err) {
+      setCriteriaError(extractErrorMessage(err, "Failed to add criterion"));
+    } finally {
+      setSavingCriteria(false);
+    }
+  };
+
+  const handleRemoveCriteria = async (criterionName) => {
+    if (!window.confirm(`Are you sure you want to remove the criterion "${criterionName}"?`)) return;
+    try {
+      const { data } = await removeCriteria(id, criterionName);
+      setDecision(data);
+    } catch (err) {
+      setError(extractErrorMessage(err, "Failed to remove criterion"));
+    }
+  };
 
   useEffect(() => {
     getSavedDecisionIds()
@@ -249,29 +310,120 @@ export default function BoardDetail() {
             })}
           </div>
 
-          {options.some((o) => o.costScore != null || o.benefitsScore != null || o.riskScore != null) && (
-            <>
-              <div className="section-head"><h2>Comparison by criteria</h2></div>
-              <table className="criteria-table">
+          {/* Comparison by criteria with user-defined dynamic criteria */}
+          <div style={{ marginTop: 28, background: "var(--card-bg, #fff)", border: "1px solid var(--line)", borderRadius: "var(--radius)", padding: "18px 20px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
+              <div>
+                <h2 style={{ fontSize: 18, margin: 0, color: "var(--ink)" }}>Comparison by criteria</h2>
+                <span style={{ fontSize: 12, color: "var(--ink-soft)" }}>Standard factors & user-defined custom evaluation criteria</span>
+              </div>
+              {canManageCriteria && !decision.closed && (
+                <button
+                  type="button"
+                  className="btn ghost"
+                  onClick={() => { setShowAddCriteriaModal((prev) => !prev); setCriteriaError(""); }}
+                  style={{ fontSize: 12, padding: "6px 12px" }}
+                >
+                  {showAddCriteriaModal ? "Cancel" : "+ Add custom criterion"}
+                </button>
+              )}
+            </div>
+
+            {/* Inline Criterion Addition Form */}
+            {showAddCriteriaModal && (
+              <form onSubmit={handleAddCriteria} style={{ marginBottom: 18, padding: 14, background: "rgba(0,137,123,0.04)", border: "1px solid rgba(0,137,123,0.2)", borderRadius: "var(--radius)" }}>
+                <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 8, color: "var(--brass, #00897b)" }}>
+                  Add a user-defined criterion to this decision board
+                </div>
+                {criteriaError && <div className="error-banner" style={{ marginBottom: 10, fontSize: 12 }}>{criteriaError}</div>}
+                <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+                  <input
+                    type="text"
+                    required
+                    value={newCriterionName}
+                    onChange={(e) => setNewCriterionName(e.target.value)}
+                    placeholder="Criterion name (e.g. Scalability, Security, UX)"
+                    style={{ flex: "1 1 200px" }}
+                  />
+                  <button type="submit" className="btn brass" disabled={savingCriteria} style={{ padding: "8px 16px", fontSize: 12 }}>
+                    {savingCriteria ? "Saving…" : "Save criterion"}
+                  </button>
+                </div>
+                <div style={{ fontSize: 11.5, color: "var(--ink-soft)", marginBottom: 6 }}>
+                  Option scores for this criterion (1–10 optional):
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 8 }}>
+                  {options.map((opt) => (
+                    <div key={opt.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: 12, fontWeight: 500, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {opt.title}:
+                      </span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={newCriterionScores[opt.id] ?? ""}
+                        onChange={(e) => setNewCriterionScores((prev) => ({ ...prev, [opt.id]: e.target.value }))}
+                        placeholder="1-10"
+                        style={{ width: 64, padding: "4px 8px", fontSize: 12 }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </form>
+            )}
+
+            <div style={{ overflowX: "auto" }}>
+              <table className="criteria-table" style={{ width: "100%", margin: 0 }}>
                 <thead>
                   <tr>
                     <th>Criteria</th>
                     {options.map((opt) => <th key={opt.id}>{opt.title}</th>)}
+                    {canManageCriteria && <th style={{ width: 80, textAlign: "center" }}>Action</th>}
                   </tr>
                 </thead>
                 <tbody>
-                  {FACTORS.map((f) => (
+                  {allFactors.map((f) => (
                     <tr key={f.key}>
-                      <td>{f.label}</td>
-                      {options.map((opt) => (
-                        <td className="score" key={opt.id}><DotRow score={opt[f.key]} /></td>
-                      ))}
+                      <td>
+                        <strong>{f.label}</strong>
+                        {f.isCustom && (
+                          <span style={{ fontSize: 10, marginLeft: 6, padding: "2px 6px", background: "rgba(0,137,123,0.12)", color: "var(--brass, #00897b)", borderRadius: 10, fontWeight: 600 }}>
+                            Custom
+                          </span>
+                        )}
+                      </td>
+                      {options.map((opt) => {
+                        const score = f.isCustom ? opt.customScores?.[f.key] : opt[f.key];
+                        return (
+                          <td className="score" key={opt.id}>
+                            <DotRow score={score} />
+                            {score != null && <span style={{ fontSize: 11, marginLeft: 6, color: "var(--ink-soft)" }}>({score}/10)</span>}
+                          </td>
+                        );
+                      })}
+                      {canManageCriteria && (
+                        <td style={{ textAlign: "center" }}>
+                          {f.isCustom ? (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCriteria(f.key)}
+                              style={{ background: "none", border: "none", color: "var(--red, #e53935)", cursor: "pointer", fontSize: 11.5, fontWeight: 600, padding: "2px 6px" }}
+                              title={`Delete ${f.label}`}
+                            >
+                              Delete
+                            </button>
+                          ) : (
+                            <span style={{ fontSize: 11, color: "var(--ink-soft)" }}>Standard</span>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </>
-          )}
+            </div>
+          </div>
 
           <Discussion boardId={id} />
           <Suggestions boardId={id} />

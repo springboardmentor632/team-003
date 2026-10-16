@@ -280,5 +280,21 @@ CREATE TABLE IF NOT EXISTS saved_decisions (
 CREATE INDEX IF NOT EXISTS idx_saved_decisions_user ON saved_decisions(user_id);
 CREATE INDEX IF NOT EXISTS idx_saved_decisions_decision ON saved_decisions(decision_id);
 
+-- 20. Decision Custom Criteria Table (Module 4: User-Defined Comparison Criteria)
+CREATE TABLE IF NOT EXISTS decision_custom_criteria (
+    decision_id BIGINT NOT NULL REFERENCES decisions(id) ON DELETE CASCADE,
+    criterion_name VARCHAR(255) NOT NULL,
+    PRIMARY KEY (decision_id, criterion_name)
+);
 
+CREATE INDEX IF NOT EXISTS idx_decision_custom_criteria_decision ON decision_custom_criteria(decision_id);
 
+-- 21. Option Custom Criteria Scores Table
+CREATE TABLE IF NOT EXISTS option_custom_scores (
+    option_id BIGINT NOT NULL REFERENCES options(id) ON DELETE CASCADE,
+    criterion_name VARCHAR(255) NOT NULL,
+    score INTEGER NOT NULL,
+    PRIMARY KEY (option_id, criterion_name)
+);
+
+CREATE INDEX IF NOT EXISTS idx_option_custom_scores_option ON option_custom_scores(option_id);
