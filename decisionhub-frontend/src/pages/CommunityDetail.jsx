@@ -38,8 +38,12 @@ export default function CommunityDetail() {
   if (!community) return <div className="state-block">Loading community…</div>;
   const boardUrl = `/boards/new?communityId=${community.id}&communityName=${encodeURIComponent(community.name)}`;
   return <div>
-    <div className="breadcrumb"><Link to="/communities" style={{ color: "inherit", textDecoration: "none" }}>Communities</Link><span> / </span><b>{community.name}</b></div>
     <TopBar
+      breadcrumbs={[
+        { label: "Workspace", to: "/dashboard" },
+        { label: "Communities", to: "/communities" },
+        { label: community.name }
+      ]}
       eyebrow="Community workspace"
       title={community.name}
       subtitle={community.description || "Make shared decisions with your community."}

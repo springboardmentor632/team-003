@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TipBar from "./TipBar";
-import { topTwo } from "../utils/decisionHelpers";
+import { topTwo, timeAgo, getInitials } from "../utils/decisionHelpers";
 import { saveDecision, unsaveDecision } from "../api/user";
 
 export default function DecisionCard({ decision, initialSaved = false, onToggleSave }) {
@@ -30,10 +30,23 @@ export default function DecisionCard({ decision, initialSaved = false, onToggleS
     }
   };
 
+  const authorName = decision.createdByName || decision.createdBy;
+
   return (
-    <div className="card" onClick={() => navigate(`/boards/${decision.id}`)}>
+    <div
+      className="card decision-proposal-card"
+      onClick={() => navigate(`/boards/${decision.id}`)}
+      role="article"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          navigate(`/boards/${decision.id}`);
+        }
+      }}
+    >
       <div className="card-top" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <span className="cat">{decision.category}</span>
           {decision.closed ? (
             <span className="status-pill closed">Decision reached</span>
@@ -43,35 +56,52 @@ export default function DecisionCard({ decision, initialSaved = false, onToggleS
             <span className="status-pill open">Voting open</span>
           )}
         </div>
+
         <button
           type="button"
           aria-label={saved ? "Remove bookmark" : "Save decision"}
-          title={saved ? "Remove bookmark" : "Bookmark this decision"}
+          title={saved ? "Remove bookmark" : "Save decision"}
           onClick={handleBookmark}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            fontSize: 16,
-            color: saved ? "var(--brass, #d4a373)" : "var(--ink-soft, #888)",
-            padding: 4,
-            transition: "transform 0.15s ease",
-          }}
+          className={`card-bookmark-btn ${saved ? "saved" : ""}`}
         >
           {saved ? "★" : "☆"}
         </button>
       </div>
-      <h3>{decision.title}</h3>
 
-      {a && b ? (
-        <TipBar optionA={a.title} pctA={pctA} optionB={b.title} pctB={pctB} />
-      ) : (
-        <div className="empty-note">No votes yet — be the first.</div>
+      <h3 className="proposal-title">{decision.title}</h3>
+
+      {decision.description && (
+        <p className="proposal-snippet">
+          {decision.description.length > 120
+            ? `${decision.description.slice(0, 118)}…`
+            : decision.description}
+        </p>
       )}
 
+      <div className="proposal-poll-track">
+        {a && b ? (
+          <TipBar optionA={a.title} pctA={pctA} optionB={b.title} pctB={pctB} />
+        ) : (
+          <div className="empty-note">No votes yet — be the first.</div>
+        )}
+      </div>
+
       <div className="card-foot">
-        <span>{decision.pollType?.replace("_", " ").toLowerCase()}</span>
-        <span>{decision.totalVotes} votes</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {authorName && (
+            <span className="author-tag" title={`Created by ${authorName}`}>
+              <span className="mini-avatar">{getInitials(authorName)}</span>
+              <span className="author-name">{authorName.split(" ")[0]}</span>
+            </span>
+          )}
+          <span>{decision.pollType?.replace("_", " ").toLowerCase()}</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {decision.createdAt && (
+            <time className="proposal-time">{timeAgo(decision.createdAt)}</time>
+          )}
+          <span className="vote-counter-pill">{decision.totalVotes} votes</span>
+        </div>
       </div>
     </div>
   );

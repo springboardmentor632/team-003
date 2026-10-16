@@ -28,3 +28,21 @@ export const updateReport = (id, status) => client.put(`/api/reports/${id}`, nul
 export const setCommentHidden = (decisionId, commentId, value) => client.put(`/api/decisions/${decisionId}/comments/${commentId}/hidden`, null, { params: { value } });
 export const listFeedback = () => client.get("/api/feedback");
 export const createFeedback = (payload) => client.post("/api/feedback", payload);
+
+export const listDiscussions = () => client.get("/api/discussions");
+export const getDiscussion = (id) => client.get(`/api/discussions/${id}`);
+export const createDiscussion = ({ title, content }) => {
+  const params = new URLSearchParams();
+  params.append("title", title);
+  params.append("content", content);
+  return client.post("/api/discussions", null, { params });
+};
+export const deleteDiscussion = (id) => client.delete(`/api/discussions/${id}`);
+export const listDiscussionComments = (discussionId) => client.get(`/api/discussions/${discussionId}/comments`);
+export const createDiscussionComment = (discussionId, { content, parentCommentId }) => {
+  const params = new URLSearchParams();
+  params.append("content", content);
+  if (parentCommentId) params.append("parentCommentId", parentCommentId);
+  return client.post(`/api/discussions/${discussionId}/comments`, null, { params });
+};
+export const deleteDiscussionComment = (discussionId, commentId) => client.delete(`/api/discussions/${discussionId}/comments/${commentId}`);

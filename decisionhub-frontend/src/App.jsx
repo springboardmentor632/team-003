@@ -21,6 +21,7 @@ import Feedback from "./pages/Feedback";
 import OAuth2Callback from "./pages/OAuth2Callback";
 import Settings from "./pages/Settings";
 import VotingHistory from "./pages/VotingHistory";
+import Discussions from "./pages/Discussions";
 
 /** Sends already-logged-in users straight to the dashboard instead of the landing/login/register pages. */
 function RedirectIfAuthed({ children }) {
@@ -47,6 +48,7 @@ export default function App() {
             <Route path="/boards/:id" element={<BoardDetail />} />
             <Route path="/communities" element={<Communities />} />
             <Route path="/communities/:id" element={<CommunityDetail />} />
+            <Route path="/discussions" element={<Discussions />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/feedback" element={<Feedback />} />

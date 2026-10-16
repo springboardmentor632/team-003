@@ -29,8 +29,16 @@ export default function Communities() {
     finally { setBusyId(null); }
   };
   const respond = async (invitation, accept) => { try { if (accept) await acceptInvitation(invitation.id); else await declineInvitation(invitation.id); setInvitations((items) => items.filter((item) => item.id !== invitation.id)); setSuccess(accept ? `You joined ${invitation.community?.name || "the community"}.` : "Invitation declined."); if (accept) load(); } catch (err) { setError(extractErrorMessage(err, "Couldn't update invitation")); } };
-  return <div>
-    <TopBar eyebrow="Collaborate" title="Communities" subtitle="Bring people together around decisions they care about." action={<button className="btn brass" onClick={() => setShowForm((value) => !value)}>+ New community</button>} />
+
+  return (
+    <div>
+      <TopBar
+        breadcrumbs={[{ label: "Workspace", to: "/dashboard" }, { label: "Communities" }]}
+        eyebrow="Collaborate"
+        title="Communities"
+        subtitle="Bring people together around decisions they care about."
+        action={<button className="btn brass" onClick={() => setShowForm((value) => !value)}>+ New community</button>}
+      />
     {error && <div className="error-banner">{error}</div>}
     {success && <div className="success-note">{success}</div>}
     {invitations.length > 0 && <section className="panel invitations"><div className="section-head"><div><span className="eyebrow">Pending invitations</span><h2>Join a community</h2></div><span>{invitations.length}</span></div>{invitations.map((invitation) => <div className="invitation-row" key={invitation.id}><div><h3>{invitation.community?.name || "Community invitation"}</h3><p>You’ve been invited to collaborate on decisions.</p></div><div className="detail-actions"><button className="btn ghost" onClick={() => respond(invitation, false)}>Decline</button><button className="btn brass" onClick={() => respond(invitation, true)}>Accept</button></div></div>)}</section>}
@@ -61,5 +69,6 @@ export default function Communities() {
         </div>
       </article>
     ))}</div>}
-  </div>;
+    </div>
+  );
 }
