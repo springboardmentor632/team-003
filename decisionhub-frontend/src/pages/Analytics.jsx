@@ -107,6 +107,18 @@ function Analytics() {
     return summary?.mostActive || [];
   }, [summary]);
 
+  const participationChartData = useMemo(() => {
+    return participation.slice(0, 8);
+  }, [participation]);
+
+  const optionPopularityChartData = useMemo(() => {
+    return optionPopularity.slice(0, 8);
+  }, [optionPopularity]);
+
+  const voteDistributionChartData = useMemo(() => {
+    return voteDistribution.slice(0, 8);
+  }, [voteDistribution]);
+
   const exportExcel = () => {
     const workbook = XLSX.utils.book_new();
 
@@ -447,106 +459,174 @@ function Analytics() {
       <div className="analytics-grid">
 
         <div className="analytics-panel">
-          <h2>Vote Distribution</h2>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
+            <h2 style={{ margin: 0 }}>Vote Distribution</h2>
+            {voteDistribution.length > 8 && (
+              <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 500 }}>
+                Top 8 options
+              </span>
+            )}
+          </div>
 
           <ResponsiveContainer
             width="100%"
             height={320}
           >
-            <BarChart data={voteDistribution}>
-
-              <CartesianGrid
-                strokeDasharray="3 3"
-              />
-
+            <BarChart data={voteDistributionChartData} margin={{ top: 10, right: 10, left: -10, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2ecea" vertical={false} />
               <XAxis
                 dataKey="optionName"
+                tickFormatter={(n) => (!n ? "" : n.length > 16 ? `${n.slice(0, 15)}…` : n)}
+                tick={{ fill: "#171B1E", fontSize: 11.5, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
+                axisLine={{ stroke: "#d1dedc" }}
+                tickLine={false}
+                angle={-15}
+                textAnchor="end"
+                height={50}
               />
-
-              <YAxis />
-
-              <Tooltip />
-
-              <Legend />
-
-              <Bar
-                dataKey="voteCount"
-                name="Votes"
+              <YAxis
+                allowDecimals={false}
+                tick={{ fill: "#4b5563", fontSize: 12, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}
+                axisLine={{ stroke: "#d1dedc" }}
+                tickLine={false}
               />
-
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="analytics-panel">
-          <h2>Option Popularity</h2>
-
-          <ResponsiveContainer
-            width="100%"
-            height={320}
-          >
-            <BarChart data={optionPopularity}>
-
-              <CartesianGrid
-                strokeDasharray="3 3"
+              <Tooltip
+                formatter={(value) => [`${value} votes`, "Votes"]}
+                contentStyle={{
+                  backgroundColor: "#ffffff",
+                  borderColor: "#d1dedc",
+                  borderRadius: "8px",
+                  boxShadow: "0 8px 24px rgba(23, 27, 30, 0.12)",
+                  fontSize: "12.5px",
+                  padding: "10px 14px",
+                  color: "#171B1E",
+                }}
               />
-
-              <XAxis
-                dataKey="optionName"
-              />
-
-              <YAxis />
-
-              <Tooltip />
-
-              <Legend />
-
+              <Legend verticalAlign="top" align="right" wrapperStyle={{ paddingBottom: 10, fontSize: 12 }} />
               <Bar
                 dataKey="voteCount"
                 name="Votes"
                 fill="#1F6F6B"
-                radius={[4, 4, 0, 0]}
-                maxBarSize={36}
+                radius={[6, 6, 0, 0]}
+                maxBarSize={38}
               />
-
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="analytics-panel">
-          <h2>Participation</h2>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
+            <h2 style={{ margin: 0 }}>Option Popularity</h2>
+            {optionPopularity.length > 8 && (
+              <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 500 }}>
+                Top 8 options
+              </span>
+            )}
+          </div>
 
           <ResponsiveContainer
             width="100%"
             height={320}
           >
-            <BarChart data={participation}>
-
-              <CartesianGrid
-                strokeDasharray="3 3"
-              />
-
+            <BarChart data={optionPopularityChartData} margin={{ top: 10, right: 10, left: -10, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2ecea" vertical={false} />
               <XAxis
-                dataKey="decisionTitle"
+                dataKey="optionName"
+                tickFormatter={(n) => (!n ? "" : n.length > 16 ? `${n.slice(0, 15)}…` : n)}
+                tick={{ fill: "#171B1E", fontSize: 11.5, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
+                axisLine={{ stroke: "#d1dedc" }}
+                tickLine={false}
                 angle={-15}
                 textAnchor="end"
-                height={70}
+                height={50}
               />
+              <YAxis
+                allowDecimals={false}
+                tick={{ fill: "#4b5563", fontSize: 12, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}
+                axisLine={{ stroke: "#d1dedc" }}
+                tickLine={false}
+              />
+              <Tooltip
+                formatter={(value) => [`${value} votes`, "Votes"]}
+                contentStyle={{
+                  backgroundColor: "#ffffff",
+                  borderColor: "#d1dedc",
+                  borderRadius: "8px",
+                  boxShadow: "0 8px 24px rgba(23, 27, 30, 0.12)",
+                  fontSize: "12.5px",
+                  padding: "10px 14px",
+                  color: "#171B1E",
+                }}
+              />
+              <Legend verticalAlign="top" align="right" wrapperStyle={{ paddingBottom: 10, fontSize: 12 }} />
+              <Bar
+                dataKey="voteCount"
+                name="Votes"
+                fill="#1F6F6B"
+                radius={[6, 6, 0, 0]}
+                maxBarSize={38}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
 
-              <YAxis />
+        <div className="analytics-panel">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
+            <h2 style={{ margin: 0 }}>Participation</h2>
+            {participation.length > 8 && (
+              <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 500 }}>
+                Top 8 decisions by turnout
+              </span>
+            )}
+          </div>
 
-              <Tooltip />
-
-              <Legend />
-
+          <ResponsiveContainer
+            width="100%"
+            height={320}
+          >
+            <BarChart data={participationChartData} margin={{ top: 10, right: 10, left: -10, bottom: 25 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2ecea" vertical={false} />
+              <XAxis
+                dataKey="decisionTitle"
+                tickFormatter={(title) => (!title ? "" : title.length > 18 ? `${title.slice(0, 17)}…` : title)}
+                tick={{ fill: "#171B1E", fontSize: 11.5, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
+                axisLine={{ stroke: "#d1dedc" }}
+                tickLine={false}
+                angle={-20}
+                textAnchor="end"
+                interval={0}
+                height={60}
+              />
+              <YAxis
+                allowDecimals={false}
+                tick={{ fill: "#4b5563", fontSize: 12, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}
+                axisLine={{ stroke: "#d1dedc" }}
+                tickLine={false}
+              />
+              <Tooltip
+                formatter={(value, name, item) => [
+                  `${value} votes (${item.payload.participationPercentage ?? 0}% turnout)`,
+                  "Turnout",
+                ]}
+                labelFormatter={(label) => `Decision: ${label}`}
+                contentStyle={{
+                  backgroundColor: "#ffffff",
+                  borderColor: "#d1dedc",
+                  borderRadius: "8px",
+                  boxShadow: "0 8px 24px rgba(23, 27, 30, 0.12)",
+                  fontSize: "12.5px",
+                  padding: "10px 14px",
+                  color: "#171B1E",
+                }}
+              />
+              <Legend verticalAlign="top" align="right" wrapperStyle={{ paddingBottom: 10, fontSize: 12 }} />
               <Bar
                 dataKey="totalVotes"
-                name="Votes"
-                fill="#B5862B"
-                radius={[4, 4, 0, 0]}
-                maxBarSize={36}
+                name="Total Votes"
+                fill="#1F6F6B"
+                radius={[6, 6, 0, 0]}
+                maxBarSize={38}
               />
-
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -558,22 +638,32 @@ function Analytics() {
             width="100%"
             height={320}
           >
-            <LineChart data={decisionTrends}>
-
-              <CartesianGrid
-                strokeDasharray="3 3"
-              />
-
+            <LineChart data={decisionTrends} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2ecea" />
               <XAxis
                 dataKey="date"
+                tick={{ fill: "#171B1E", fontSize: 11.5, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}
+                axisLine={{ stroke: "#d1dedc" }}
+                tickLine={false}
               />
-
-              <YAxis />
-
-              <Tooltip />
-
-              <Legend />
-
+              <YAxis
+                allowDecimals={false}
+                tick={{ fill: "#4b5563", fontSize: 12, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}
+                axisLine={{ stroke: "#d1dedc" }}
+                tickLine={false}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#ffffff",
+                  borderColor: "#d1dedc",
+                  borderRadius: "8px",
+                  boxShadow: "0 8px 24px rgba(23, 27, 30, 0.12)",
+                  fontSize: "12.5px",
+                  padding: "10px 14px",
+                  color: "#171B1E",
+                }}
+              />
+              <Legend verticalAlign="top" align="right" wrapperStyle={{ paddingBottom: 10, fontSize: 12 }} />
               <Line
                 type="monotone"
                 dataKey="decisionsCreated"
@@ -583,7 +673,6 @@ function Analytics() {
                 dot={{ fill: "#1F6F6B", r: 4 }}
                 activeDot={{ r: 6 }}
               />
-
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -673,38 +762,47 @@ function Analytics() {
           width="100%"
           height={350}
         >
-          <BarChart data={communityActivity}>
-
-            <CartesianGrid
-              strokeDasharray="3 3"
-            />
-
+          <BarChart data={communityActivity} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2ecea" vertical={false} />
             <XAxis
               dataKey="communityId"
+              tickFormatter={(id) => (!id || id === 0 ? "Global" : `Community #${id}`)}
+              tick={{ fill: "#171B1E", fontSize: 11.5, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
+              axisLine={{ stroke: "#d1dedc" }}
+              tickLine={false}
             />
-
-            <YAxis />
-
-            <Tooltip />
-
-            <Legend />
-
+            <YAxis
+              allowDecimals={false}
+              tick={{ fill: "#4b5563", fontSize: 12, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}
+              axisLine={{ stroke: "#d1dedc" }}
+              tickLine={false}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#ffffff",
+                borderColor: "#d1dedc",
+                borderRadius: "8px",
+                boxShadow: "0 8px 24px rgba(23, 27, 30, 0.12)",
+                fontSize: "12.5px",
+                padding: "10px 14px",
+                color: "#171B1E",
+              }}
+            />
+            <Legend verticalAlign="top" align="right" wrapperStyle={{ paddingBottom: 10, fontSize: 12 }} />
             <Bar
               dataKey="decisionCount"
               name="Decisions"
               fill="#1F6F6B"
-              radius={[4, 4, 0, 0]}
+              radius={[6, 6, 0, 0]}
               maxBarSize={32}
             />
-
             <Bar
               dataKey="voteCount"
               name="Votes"
-              fill="#B5862B"
-              radius={[4, 4, 0, 0]}
+              fill="#D95D39"
+              radius={[6, 6, 0, 0]}
               maxBarSize={32}
             />
-
           </BarChart>
         </ResponsiveContainer>
       </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../components/TopBar";
 import { getProfile, updateProfile, changePassword, updateUserInterests } from "../api/user";
 import { extractErrorMessage } from "../api/client";
@@ -31,6 +31,24 @@ const CATEGORY_ICONS = {
   General: "🌐",
 };
 
+function EyeIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function EyeOffIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  );
+}
+
 export default function Settings() {
   const { user, updateUserProfile } = useAuth();
 
@@ -60,48 +78,6 @@ export default function Settings() {
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [passwordError, setPasswordError] = useState("");
-
-  // Password Strength Evaluation
-  const strength = useMemo(() => {
-    const hasMinLength = newPassword.length >= 8;
-    const hasUpperLower = /[A-Z]/.test(newPassword) && /[a-z]/.test(newPassword);
-    const hasNumberOrSymbol = /[0-9!@#$%^&*(),.?":{}|<>]/.test(newPassword);
-    const matchesConfirm = Boolean(newPassword && confirmPassword && newPassword === confirmPassword);
-
-    let score = 0;
-    if (hasMinLength) score++;
-    if (hasUpperLower) score++;
-    if (hasNumberOrSymbol) score++;
-    if (newPassword.length >= 12 || (score === 3 && matchesConfirm)) score++;
-
-    let label = "Enter password";
-    let badgeClass = "weak";
-    if (newPassword.length > 0) {
-      if (score <= 1) {
-        label = "Weak";
-        badgeClass = "weak";
-      } else if (score === 2) {
-        label = "Fair";
-        badgeClass = "fair";
-      } else if (score === 3) {
-        label = "Good";
-        badgeClass = "good";
-      } else {
-        label = "Strong";
-        badgeClass = "strong";
-      }
-    }
-
-    return {
-      score,
-      label,
-      badgeClass,
-      hasMinLength,
-      hasUpperLower,
-      hasNumberOrSymbol,
-      matchesConfirm,
-    };
-  }, [newPassword, confirmPassword]);
 
   useEffect(() => {
     let active = true;
@@ -495,18 +471,23 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Change Password Card */}
+        {/* Professional Account Security Card */}
         <div className="settings-card">
           <div className="settings-card-head">
             <div className="settings-card-head-left">
-              <div className="settings-card-icon coral-icon">🛡️</div>
+              <div className="settings-card-icon" style={{ background: "rgba(31, 111, 107, 0.1)", color: "var(--teal)" }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </div>
               <div>
                 <h2>Account Security</h2>
                 <p>Update your account password. Choose a strong password with at least 8 characters.</p>
               </div>
             </div>
-            <span style={{ fontSize: 11.5, color: "#059669", background: "#d1fae5", padding: "3px 10px", borderRadius: 12, fontWeight: 600 }}>
-              🔒 256-Bit Encrypted
+            <span style={{ fontSize: 11.5, color: "#059669", background: "#d1fae5", padding: "4px 12px", borderRadius: 12, fontWeight: 600 }}>
+              End-to-End Encrypted
             </span>
           </div>
 
@@ -534,35 +515,35 @@ export default function Settings() {
               </div>
             )}
 
-            <div className="security-grid">
-              {/* Left Column: Form */}
-              <form onSubmit={handlePasswordSubmit}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 22 }}>
-                  <div>
-                    <label htmlFor="currentPassword" style={{ display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 6, color: "var(--ink)" }}>
-                      Current Password
-                    </label>
-                    <div className="password-input-wrap">
-                      <input
-                        id="currentPassword"
-                        type={showCurrent ? "text" : "password"}
-                        required
-                        className="input"
-                        placeholder="Enter current password"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                      />
-                      <button
-                        type="button"
-                        className="password-toggle-btn"
-                        onClick={() => setShowCurrent(!showCurrent)}
-                        aria-label={showCurrent ? "Hide current password" : "Show current password"}
-                      >
-                        {showCurrent ? "🙈" : "👁️"}
-                      </button>
-                    </div>
+            <form onSubmit={handlePasswordSubmit} style={{ maxWidth: 620 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 18, marginBottom: 20 }}>
+                <div>
+                  <label htmlFor="currentPassword" style={{ display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 6, color: "var(--ink)" }}>
+                    Current Password
+                  </label>
+                  <div className="password-input-wrap">
+                    <input
+                      id="currentPassword"
+                      type={showCurrent ? "text" : "password"}
+                      required
+                      className="input"
+                      placeholder="Enter current password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle-btn"
+                      onClick={() => setShowCurrent(!showCurrent)}
+                      aria-label={showCurrent ? "Hide current password" : "Show current password"}
+                      title={showCurrent ? "Hide password" : "Show password"}
+                    >
+                      {showCurrent ? <EyeOffIcon /> : <EyeIcon />}
+                    </button>
                   </div>
+                </div>
 
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                   <div>
                     <label htmlFor="newPassword" style={{ display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 6, color: "var(--ink)" }}>
                       New Password
@@ -583,8 +564,9 @@ export default function Settings() {
                         className="password-toggle-btn"
                         onClick={() => setShowNew(!showNew)}
                         aria-label={showNew ? "Hide new password" : "Show new password"}
+                        title={showNew ? "Hide password" : "Show password"}
                       >
-                        {showNew ? "🙈" : "👁️"}
+                        {showNew ? <EyeOffIcon /> : <EyeIcon />}
                       </button>
                     </div>
                   </div>
@@ -609,67 +591,25 @@ export default function Settings() {
                         className="password-toggle-btn"
                         onClick={() => setShowConfirm(!showConfirm)}
                         aria-label={showConfirm ? "Hide confirmation password" : "Show confirmation password"}
+                        title={showConfirm ? "Hide password" : "Show password"}
                       >
-                        {showConfirm ? "🙈" : "👁️"}
+                        {showConfirm ? <EyeOffIcon /> : <EyeIcon />}
                       </button>
                     </div>
                   </div>
                 </div>
 
-                <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                  <button type="submit" disabled={passwordSaving} className="btn brass">
-                    {passwordSaving ? "Updating Password…" : "Change Password"}
-                  </button>
-                </div>
-              </form>
-
-              {/* Right Column: Password Strength & Security Advice */}
-              <div className="strength-card">
-                <div className="strength-card-title">
-                  <span>Security Strength</span>
-                  {newPassword && (
-                    <span className={`strength-badge ${strength.badgeClass}`}>
-                      {strength.label}
-                    </span>
-                  )}
-                </div>
-
-                <div className="strength-bars-track">
-                  {[1, 2, 3, 4].map((seg) => {
-                    const isActive = strength.score >= seg && newPassword.length > 0;
-                    return (
-                      <div
-                        key={seg}
-                        className={`strength-bar-seg ${isActive ? `active-${strength.badgeClass}` : ""}`}
-                      />
-                    );
-                  })}
-                </div>
-
-                <div className="strength-checklist">
-                  <div className={`strength-check-item ${strength.hasMinLength ? "met" : ""}`}>
-                    <span className="strength-check-dot">{strength.hasMinLength ? "✓" : "•"}</span>
-                    <span>At least 8 characters long</span>
-                  </div>
-                  <div className={`strength-check-item ${strength.hasUpperLower ? "met" : ""}`}>
-                    <span className="strength-check-dot">{strength.hasUpperLower ? "✓" : "•"}</span>
-                    <span>Uppercase & lowercase letters</span>
-                  </div>
-                  <div className={`strength-check-item ${strength.hasNumberOrSymbol ? "met" : ""}`}>
-                    <span className="strength-check-dot">{strength.hasNumberOrSymbol ? "✓" : "•"}</span>
-                    <span>Numbers or special characters</span>
-                  </div>
-                  <div className={`strength-check-item ${strength.matchesConfirm ? "met" : ""}`}>
-                    <span className="strength-check-dot">{strength.matchesConfirm ? "✓" : "•"}</span>
-                    <span>Passwords match each other</span>
-                  </div>
-                </div>
-
-                <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px dashed var(--line)", fontSize: 11.5, color: "var(--ink-soft)", lineHeight: 1.5 }}>
-                  💡 <strong>Security tip:</strong> Never reuse passwords across services. Antigravity hashing ensures your plaintext password is never stored or transmitted in the clear.
-                </div>
+                <p style={{ margin: 0, fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.5 }}>
+                  Choose a unique password with at least 8 characters. We recommend combining letters, numbers, and symbols.
+                </p>
               </div>
-            </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: 16, borderTop: "1px solid var(--line)" }}>
+                <button type="submit" disabled={passwordSaving} className="btn brass">
+                  {passwordSaving ? "Updating Password…" : "Change Password"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
