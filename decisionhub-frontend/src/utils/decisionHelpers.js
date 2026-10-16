@@ -70,26 +70,38 @@ export const CURATED_AVATARS = {
   "Harish": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
   "Maya Patel": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
   "Arjun Mehta": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+  "Priya Sharma": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+  "Priya": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
   "Priya Nair": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
   "Rohan Shah": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80",
   "Sarah Chen": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80",
   "Devon Vance": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
+  "Marcus Vance": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
 };
 
 export function getAvatarUrl(name = "", customAvatar = "") {
   if (customAvatar && String(customAvatar).trim()) {
     return customAvatar.trim();
   }
-  const cleanName = String(name || "").trim();
+  const cleanName = String(name || "").trim().toLowerCase();
   if (!cleanName) return "";
 
+  // 1. Direct or substring match
   for (const [key, url] of Object.entries(CURATED_AVATARS)) {
-    if (
-      cleanName.toLowerCase() === key.toLowerCase() ||
-      cleanName.toLowerCase().startsWith(key.toLowerCase()) ||
-      key.toLowerCase().startsWith(cleanName.toLowerCase())
-    ) {
+    const k = key.toLowerCase();
+    if (cleanName === k || cleanName.includes(k) || k.includes(cleanName)) {
       return url;
+    }
+  }
+
+  // 2. First name match (e.g. 'priya' from 'priya@...' or 'Priya S')
+  const firstName = cleanName.split(/[\s@._-]+/)[0];
+  if (firstName && firstName.length >= 3) {
+    for (const [key, url] of Object.entries(CURATED_AVATARS)) {
+      const kFirst = key.toLowerCase().split(/\s+/)[0];
+      if (firstName === kFirst) {
+        return url;
+      }
     }
   }
 

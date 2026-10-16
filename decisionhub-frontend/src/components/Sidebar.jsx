@@ -286,21 +286,21 @@ export default function Sidebar() {
                 />
               ) : null}
               <span style={{ position: "absolute", zIndex: 0 }}>
-                {(user?.fullName || user?.name || user?.email || "H").charAt(0).toUpperCase()}
+                {getInitials(user?.fullName || user?.name || user?.email || "DH")}
               </span>
             </div>
             <div className="sidebar-user-info">
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span className="sidebar-user-name" title={user?.fullName || user?.name || "Member"}>
-                  {user?.fullName || user?.name || "Member"}
-                </span>
-                <span className="sidebar-role-badge">
+              <span className="sidebar-user-name" title={user?.fullName || user?.name || "Member"}>
+                {user?.fullName || user?.name || "Member"}
+              </span>
+              <div className="sidebar-user-sub">
+                <span className={`sidebar-role-badge role-${(user?.role || "MEMBER").toLowerCase()}`}>
                   {user?.role === "ADMIN" ? "Admin" : user?.role === "MODERATOR" ? "Mod" : "Member"}
                 </span>
+                <span className="sidebar-user-email" title={user?.email || ""}>
+                  {user?.email || "user@decisionhub.org"}
+                </span>
               </div>
-              <span className="sidebar-user-email" title={user?.email || ""}>
-                {user?.email || "user@decisionhub.org"}
-              </span>
             </div>
           </Link>
           <div className="sidebar-user-actions">

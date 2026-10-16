@@ -43,14 +43,14 @@ a { color: inherit; }
 .mono { font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.01em; }
 
 /* ---- Shell ---- */
-.shell { display: grid; grid-template-columns: 240px 1fr; height: 100vh; overflow: hidden; }
+.shell { display: grid; grid-template-columns: 248px 1fr; height: 100vh; overflow: hidden; }
 
 /* ---- Sidebar ---- */
 .sidebar {
   background: var(--ink); color: #EDEEE9;
-  padding: 24px 18px; display: flex; flex-direction: column; gap: 20px;
+  padding: 24px 16px; display: flex; flex-direction: column; gap: 20px;
   height: 100vh; position: sticky; top: 0; overflow: visible; flex-shrink: 0;
-  width: 240px;
+  width: 248px;
 }
 .brand { display: flex; align-items: center; gap: 10px; }
 .notification-bell { margin-left: auto; position: relative; }
@@ -95,16 +95,17 @@ a { color: inherit; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: background 0.15s ease, border-color 0.15s ease;
+  min-width: 0;
 }
 .sidebar-user-widget:hover {
   background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.14);
 }
 .sidebar-user-profile {
   display: flex;
@@ -115,44 +116,92 @@ a { color: inherit; }
   text-decoration: none;
   color: inherit;
   cursor: pointer;
+  overflow: hidden;
 }
 .sidebar-user-avatar {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #008080; /* Teal background matching screenshot */
+  background: #008080;
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   flex-shrink: 0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  position: relative;
 }
 .sidebar-user-info {
   display: flex;
   flex-direction: column;
   min-width: 0;
   flex: 1;
+  gap: 3px;
+  overflow: hidden;
 }
 .sidebar-user-name {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
   color: #ffffff;
   line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+.sidebar-user-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+}
+.sidebar-role-badge {
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.1;
+  padding: 1.5px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #c5cbc9;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.sidebar-role-badge.role-admin {
+  background: rgba(124, 58, 237, 0.16);
+  border-color: rgba(124, 58, 237, 0.3);
+  color: #c084fc;
+}
+.sidebar-role-badge.role-moderator {
+  background: rgba(2, 132, 199, 0.16);
+  border-color: rgba(2, 132, 199, 0.3);
+  color: #38bdf8;
+}
+.sidebar-role-badge.role-owner {
+  background: rgba(217, 119, 6, 0.16);
+  border-color: rgba(217, 119, 6, 0.3);
+  color: #fbbf24;
+}
+.sidebar-role-badge.role-member {
+  background: rgba(0, 163, 163, 0.14);
+  border-color: rgba(0, 163, 163, 0.25);
+  color: #2dd4bf;
 }
 .sidebar-user-email {
-  font-size: 11.5px;
+  font-size: 11px;
   color: #8A908E;
-  line-height: 1.25;
-  margin-top: 2px;
+  line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
 }
 .sidebar-user-actions {
   display: flex;
@@ -162,8 +211,8 @@ a { color: inherit; }
 }
 .sidebar-gear-btn,
 .sidebar-user-logout-btn {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -177,7 +226,7 @@ a { color: inherit; }
 }
 .sidebar-gear-btn:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
 }
 .sidebar-user-logout-btn:hover {
   color: var(--coral);
@@ -2274,22 +2323,7 @@ h1 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-s
   border-color: var(--line);
 }
 
-/* Sidebar Role Badge */
-.sidebar-role-badge {
-  font-size: 9.5px;
-  font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 10px;
-  background: var(--paper-raised);
-  border: 1px solid var(--line);
-  color: var(--teal);
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-[data-theme="dark"] .sidebar-role-badge {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
-}
+
 
 /* Demo Role UI Enhancements */
 .demo-role-badge-pill {
