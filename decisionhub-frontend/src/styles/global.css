@@ -1698,7 +1698,7 @@ h1 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-s
 .threads-controls {
   padding: 16px;
   border-bottom: 1px solid var(--line);
-  background: #fff;
+  background: var(--paper-raised);
 }
 .thread-cards {
   display: flex;
@@ -1711,7 +1711,7 @@ h1 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-s
   padding: 14px 16px;
   border-bottom: 1px solid var(--line);
   cursor: pointer;
-  background: #fff;
+  background: var(--paper-raised);
   transition: background 0.15s ease;
 }
 .thread-row-card:hover {
@@ -1722,8 +1722,8 @@ h1 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-s
   border-left: 3px solid var(--teal);
 }
 .thread-avatar {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--brass-dim);
   color: #72531c;
@@ -1762,9 +1762,20 @@ h1 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-s
 .thread-meta {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
   font-size: 11px;
   color: var(--ink-soft);
+}
+.topic-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  background: var(--teal-dim);
+  color: var(--teal);
 }
 .disc-delete-btn {
   background: none;
@@ -1791,7 +1802,7 @@ h1 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-s
 }
 .thread-header-card {
   padding: 24px;
-  background: #fff;
+  background: var(--paper-raised);
   border-bottom: 1px solid var(--line);
 }
 .thread-header-card h2 {
@@ -1839,7 +1850,7 @@ h1 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-s
   margin-bottom: 20px;
 }
 .comment-bubble-card {
-  background: #fff;
+  background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 14px 16px;
@@ -1853,8 +1864,8 @@ h1 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-s
   font-size: 12.5px;
 }
 .mini-avatar {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: var(--brass-dim);
   color: #72531c;
@@ -1863,6 +1874,7 @@ h1 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-s
   justify-content: center;
   font-size: 10px;
   font-weight: 600;
+  flex-shrink: 0;
 }
 .comment-time {
   font-size: 11px;
@@ -1880,6 +1892,7 @@ h1 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-s
   font-size: 13px;
   line-height: 1.5;
   color: var(--ink);
+  white-space: pre-line;
 }
 .comment-footer {
   margin-top: 8px;
@@ -1895,7 +1908,7 @@ h1 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-s
   cursor: pointer;
 }
 .comment-composer-box {
-  background: #fff;
+  background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 16px;

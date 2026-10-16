@@ -107,13 +107,13 @@ export default function DecisionCard({ decision, initialSaved = false, onToggleS
           {authorName && (
             <span className="author-tag" title={`Created by ${authorName}`}>
               <span className="mini-avatar" style={{ overflow: "hidden", position: "relative" }}>
+                <span style={{ position: "absolute", zIndex: 0 }}>{getInitials(authorName)}</span>
                 <img
                   src={decision.author?.avatarUrl || getAvatarUrl(authorName)}
                   alt={authorName}
-                  style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
+                  style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover", position: "relative", zIndex: 1 }}
                   onError={(e) => { e.currentTarget.style.display = "none"; }}
                 />
-                <span style={{ position: "absolute" }}>{getInitials(authorName)}</span>
               </span>
               <span className="author-name">{authorName.split(" ")[0]}</span>
             </span>

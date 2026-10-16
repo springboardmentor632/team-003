@@ -5,6 +5,8 @@ import com.decisionhub.model.Community;
 import com.decisionhub.model.CommunityInvitation;
 import com.decisionhub.model.CommunityMembership;
 import com.decisionhub.model.Decision;
+import com.decisionhub.model.Discussion;
+import com.decisionhub.model.DiscussionComment;
 import com.decisionhub.model.Feedback;
 import com.decisionhub.model.Notification;
 import com.decisionhub.model.NotificationType;
@@ -19,6 +21,8 @@ import com.decisionhub.repository.CommunityInvitationRepository;
 import com.decisionhub.repository.CommunityMembershipRepository;
 import com.decisionhub.repository.CommunityRepository;
 import com.decisionhub.repository.DecisionRepository;
+import com.decisionhub.repository.DiscussionCommentRepository;
+import com.decisionhub.repository.DiscussionRepository;
 import com.decisionhub.repository.FeedbackRepository;
 import com.decisionhub.repository.NotificationRepository;
 import com.decisionhub.repository.OptionRepository;
@@ -41,7 +45,8 @@ public class DemoContentConfig {
             CommunityMembershipRepository memberships, CommunityInvitationRepository invitations,
             DecisionRepository decisions, CommentRepository comments, SuggestionRepository suggestions,
             FeedbackRepository feedback, VoteRepository votes, NotificationRepository notifications,
-            ReportRepository reports, OptionRepository options) {
+            ReportRepository reports, OptionRepository options, DiscussionRepository discussions,
+            DiscussionCommentRepository discussionComments) {
         return args -> {
             User admin = user(users, "admin@decisionhub.local");
             User harish = user(users, "harish@decisionhub.local");
@@ -184,7 +189,136 @@ public class DemoContentConfig {
                     "Please verify Q4 customer survey sample size before closing this roadmap poll.");
             seedReportIfMissing(reports, rohan, engBoard,
                     "Benchmark numbers in the comment thread need updated latency figures.");
+
+            // Seed Authentic Collaborative Deliberation Discussions & Comments
+            seedDiscussions(discussions, discussionComments, admin, harish, maya, arjun, priya, rohan);
         };
+    }
+
+    private void seedDiscussions(DiscussionRepository discussionsRepo, DiscussionCommentRepository commentsRepo,
+            User admin, User harish, User maya, User arjun, User priya, User rohan) {
+        if (!discussionsRepo.findAll().isEmpty()) {
+            return;
+        }
+
+        // Thread 1: Architecture RFC by Arjun Mehta
+        Discussion d1 = discussionsRepo.save(new Discussion(
+                "RFC: Apache Kafka vs AWS SQS/SNS for Event-Driven Microservices",
+                "Evaluating our event streaming backbone for DecisionHub's async deliberation notifications, live vote tallies, and audit logs.\n\n"
+                + "• Option A: Apache Kafka (Managed Strimzi / Confluent Cloud)\n"
+                + "  - Strictly ordered partitioned event streams per decision board\n"
+                + "  - Guaranteed message replay capability for disaster recovery and compliance audit trails\n"
+                + "  - High write throughput (up to 150k events/sec) with sub-15ms latency\n\n"
+                + "• Option B: AWS SQS FIFO + SNS Fanout\n"
+                + "  - Zero operational overhead, serverless auto-scaling\n"
+                + "  - Native integration with AWS Lambda and CloudWatch\n"
+                + "  - Higher cost at continuous burst scale; partition throughput capped at 3,000 msg/sec with batching\n\n"
+                + "Please share your operational feedback before we create a formal decision board next Monday.",
+                arjun
+        ));
+
+        DiscussionComment c1 = commentsRepo.save(new DiscussionComment(
+                "From a client-side perspective, Kafka's partitioned changelogs make syncing WebSocket updates much simpler because we can key by boardId.",
+                d1, maya, null
+        ));
+        commentsRepo.save(new DiscussionComment(
+                "@Maya Exactly, and it eliminates race conditions on concurrent ballot casting across multi-region edge nodes.",
+                d1, arjun, c1
+        ));
+        commentsRepo.save(new DiscussionComment(
+                "What is the on-call burden for our SRE rotation if a Kafka broker drops out during a weekend deliberation spike?",
+                d1, priya, null
+        ));
+        commentsRepo.save(new DiscussionComment(
+                "With Strimzi on EKS and automated rebalancing, broker recovery is hands-off. In our stress tests, recovery completed in under 45 seconds.",
+                d1, admin, null
+        ));
+
+        // Thread 2: Product Strategy by Maya Patel
+        Discussion d2 = discussionsRepo.save(new Discussion(
+                "Q4 Product Strategy: In-App Collaborative Canvas vs Native Chat Deliberation",
+                "As we plan our Q4 roadmap for scaling DecisionHub across enterprise teams, we have two primary product directions to drive user engagement:\n\n"
+                + "1. Live Collaborative Deliberation Canvas: Real-time visual mapping of trade-off matrices, drag-and-drop pros/cons, and live radar chart animations.\n"
+                + "2. Native Slack & Microsoft Teams Apps: Bring instant single-click polling, thread deliberation summaries, and vote receipts directly into existing enterprise daily chat channels.\n\n"
+                + "Which of these workflows would accelerate your team's decision speed more effectively?",
+                maya
+        ));
+
+        DiscussionComment c2_1 = commentsRepo.save(new DiscussionComment(
+                "The Slack app integration would solve our biggest adoption hurdle — team members don't need to open a new tab just to cast their ballot on time.",
+                d2, harish, null
+        ));
+        commentsRepo.save(new DiscussionComment(
+                "@Harish Agreed. We can always build the real-time canvas on web as phase 2 once daily deliberation habits are established in Slack.",
+                d2, arjun, c2_1
+        ));
+        commentsRepo.save(new DiscussionComment(
+                "Enterprise clients consistently request Teams approval workflows in their security reviews. That should give Slack/Teams high priority.",
+                d2, admin, null
+        ));
+
+        // Thread 3: Culture & Workplace by Priya Sharma
+        Discussion d3 = discussionsRepo.save(new Discussion(
+                "Remote-First Work Policy & Asynchronous Deliberation Guidelines",
+                "We are reviewing our hybrid/remote team collaboration norms for the upcoming fiscal year. Our proposed guidelines:\n\n"
+                + "• Core async collaboration window: 10:00 AM – 2:00 PM UTC for team syncs\n"
+                + "• All architectural RFCs and strategic roadmap decisions must have a mandatory 72-hour async deliberation period before voting closes\n"
+                + "• Focus Wednesdays: Meeting-free days across all engineering and design circles\n\n"
+                + "Looking for thoughts on whether 72 hours provides adequate deliberation time across multiple time zones.",
+                priya
+        ));
+
+        DiscussionComment c3_1 = commentsRepo.save(new DiscussionComment(
+                "72 hours is ideal. It allows team members in APAC and EMEA to review proposals during their normal working hours without feeling pressured.",
+                d3, rohan, null
+        ));
+        commentsRepo.save(new DiscussionComment(
+                "Meeting-free Wednesdays have been great for deep focus work. Full support for making this an official company-wide standard.",
+                d3, harish, c3_1
+        ));
+        commentsRepo.save(new DiscussionComment(
+                "Should we also add an exception rule for emergency P0 hotfixes to bypass the 72h window?",
+                d3, arjun, null
+        ));
+
+        // Thread 4: Growth Stipend by Harish
+        Discussion d4 = discussionsRepo.save(new Discussion(
+                "Annual Professional Growth & Home Lab Stipend Allocation Model",
+                "Reviewing how we can best utilize the $2,500 annual professional development stipend:\n\n"
+                + "• Cloud certifications (AWS Solutions Architect, CKA, Terraform) + sandbox accounts\n"
+                + "• Physical workstation ergonomics (standing desk converters, Herman Miller chairs)\n"
+                + "• Executive technical communication and leadership workshops\n\n"
+                + "What has delivered the highest career dividend for folks here?",
+                harish
+        ));
+
+        commentsRepo.save(new DiscussionComment(
+                "The CKA and AWS certifications were instrumental for our infrastructure modernization. Hands-on sandbox vouchers are well worth it.",
+                d4, arjun, null
+        ));
+        commentsRepo.save(new DiscussionComment(
+                "You can also combine educational courses with physical books under our existing learning policy reimbursement.",
+                d4, priya, null
+        ));
+
+        // Thread 5: AI & Security by System Admin
+        Discussion d5 = discussionsRepo.save(new Discussion(
+                "Zero Data Retention (ZDR) Guarantees for AI Deliberation Synthesizer",
+                "Before deploying our AI consensus summarizer and deliberation copilot to production boards, we must mandate strict corporate data security controls:\n\n"
+                + "• Enforcing Enterprise ZDR agreements with API providers so customer votes are never retained or trained on\n"
+                + "• Exploring self-hosted quantized Llama 3 models in our private AWS VPC for sensitive financial boards\n\n"
+                + "Please review the security and latency trade-offs.",
+                admin
+        ));
+
+        commentsRepo.save(new DiscussionComment(
+                "Self-hosting Llama 3 on g5.2xlarge instances gives us complete perimeter containment with under 200ms TTFT.",
+                d5, arjun, null
+        ));
+        commentsRepo.save(new DiscussionComment(
+                "Enterprise customers in healthcare and fintech will require signed ZDR terms before adopting. Let's make this our default tier policy.",
+                d5, maya, null
+        ));
     }
 
     private User user(UserRepository users, String email) { return users.findByEmail(email).orElseThrow(); }

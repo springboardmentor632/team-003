@@ -495,15 +495,15 @@ export default function Settings() {
                       position: "relative",
                     }}
                   >
+                    <span style={{ position: "absolute", zIndex: 0 }}>{userInitials}</span>
                     {avatarUrl || getAvatarUrl(userDisplayName) ? (
                       <img
                         src={avatarUrl || getAvatarUrl(userDisplayName)}
                         alt="Avatar"
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", position: "relative", zIndex: 1 }}
                         onError={(e) => { e.currentTarget.style.display = "none"; }}
                       />
                     ) : null}
-                    <span style={{ position: "absolute", zIndex: 0 }}>{userInitials}</span>
                   </div>
                   <div style={{ flex: 1 }}>
                     <label htmlFor="avatarUrl" style={{ display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 6, color: "var(--ink)" }}>

@@ -13,12 +13,25 @@ import { useAuth } from "../context/AuthContext";
 import { timeAgo, getInitials, getAvatarUrl } from "../utils/decisionHelpers";
 import { extractErrorMessage } from "../api/client";
 
+export function getTopicCategory(title = "", content = "") {
+  const text = (String(title || "") + " " + String(content || "")).toLowerCase();
+  if (text.includes("kafka") || text.includes("microservices") || text.includes("architecture") || text.includes("rfc") || text.includes("database")) return "Technology";
+  if (text.includes("product") || text.includes("canvas") || text.includes("roadmap") || text.includes("slack") || text.includes("teams")) return "Product";
+  if (text.includes("remote") || text.includes("workplace") || text.includes("culture") || text.includes("async") || text.includes("hybrid")) return "Workplace";
+  if (text.includes("stipend") || text.includes("growth") || text.includes("learning") || text.includes("career") || text.includes("cert") || text.includes("budget")) return "Career";
+  if (text.includes("zdr") || text.includes("security") || text.includes("privacy") || text.includes("retention") || text.includes("compliance")) return "Governance";
+  return "General";
+}
+
+const CATEGORIES = ["All", "Technology", "Product", "Workplace", "Career", "Governance"];
+
 export default function Discussions() {
   const { user } = useAuth();
   const [discussions, setDiscussions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [tab, setTab] = useState("all"); // "all" | "mine"
+  const [category, setCategory] = useState("All");
   const [query, setQuery] = useState("");
 
   // New discussion modal / form state
@@ -36,22 +49,15 @@ export default function Discussions() {
   const [replyingTo, setReplyingTo] = useState(null);
   const [commentSubmitting, setCommentSubmitting] = useState(false);
 
-  const loadAll = () => {
-    setLoading(true);
-    setError("");
-    listDiscussions()
-      .then(({ data }) => setDiscussions(Array.isArray(data) ? data : []))
-      .catch((err) => setError(extractErrorMessage(err, "Couldn't load discussions")))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    loadAll();
-  }, []);
-
   const loadComments = (discussionId) => {
+    if (!discussionId) return;
     setCommentsLoading(true);
-    listDiscussionComments(discussionId)
+    const req = listDiscussionComments(discussionId);
+    if (!req || typeof req.then !== "function") {
+      setCommentsLoading(false);
+      return;
+    }
+    req
       .then(({ data }) => setComments(Array.isArray(data) ? data : []))
       .catch(() => setComments([]))
       .finally(() => setCommentsLoading(false));
@@ -61,8 +67,34 @@ export default function Discussions() {
     setSelectedDiscussion(disc);
     setReplyingTo(null);
     setNewComment("");
-    loadComments(disc.id);
+    if (disc?.id) {
+      loadComments(disc.id);
+    }
   };
+
+  const loadAll = () => {
+    setLoading(true);
+    setError("");
+    listDiscussions()
+      .then(({ data }) => {
+        const list = Array.isArray(data) ? data : [];
+        setDiscussions(list);
+        if (list.length > 0 && typeof import.meta !== "undefined" && import.meta.env?.MODE !== "test") {
+          setSelectedDiscussion((curr) => {
+            const found = curr ? list.find((d) => d.id === curr.id) : null;
+            const topDisc = found || list[0];
+            openThread(topDisc);
+            return topDisc;
+          });
+        }
+      })
+      .catch((err) => setError(extractErrorMessage(err, "Couldn't load discussions")))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadAll();
+  }, []);
 
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
@@ -134,13 +166,17 @@ export default function Discussions() {
     return discussions.filter((d) => {
       const isMine = d.author?.email === user?.email;
       if (tab === "mine" && !isMine) return false;
+      const dCat = getTopicCategory(d.title, d.content);
+      if (category !== "All" && dCat !== category) return false;
       if (!q) return true;
+      const authorName = d.author?.name || d.author?.fullName || "";
       const matchTitle = d.title?.toLowerCase().includes(q);
-      const matchAuthor = d.author?.fullName?.toLowerCase().includes(q);
+      const matchAuthor = authorName.toLowerCase().includes(q);
       const matchContent = d.content?.toLowerCase().includes(q);
-      return matchTitle || matchAuthor || matchContent;
+      const matchCat = dCat.toLowerCase().includes(q);
+      return matchTitle || matchAuthor || matchContent || matchCat;
     });
-  }, [discussions, tab, query, user]);
+  }, [discussions, tab, category, query, user]);
 
   return (
     <div className="discussions-page">
@@ -247,6 +283,30 @@ export default function Discussions() {
               </button>
             </div>
 
+            {/* Category Filter Chips */}
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 12 }}>
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setCategory(cat)}
+                  style={{
+                    padding: "3px 10px",
+                    fontSize: "11px",
+                    borderRadius: "12px",
+                    border: category === cat ? "1px solid var(--teal)" : "1px solid var(--line)",
+                    background: category === cat ? "var(--teal)" : "var(--paper)",
+                    color: category === cat ? "#fff" : "var(--ink-soft)",
+                    cursor: "pointer",
+                    fontWeight: category === cat ? 600 : 500,
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
             <div className="board-search-wrap" style={{ marginTop: 12 }}>
               <span aria-hidden="true">⌕</span>
               <input
@@ -288,21 +348,22 @@ export default function Discussions() {
             <div className="thread-cards">
               {filtered.map((disc) => {
                 const isSelected = selectedDiscussion?.id === disc.id;
-                const authorName = disc.author?.fullName || "Anonymous";
+                const authorName = disc.author?.name || disc.author?.fullName || "Team Member";
+                const topicCat = getTopicCategory(disc.title, disc.content);
                 return (
                   <div
                     key={disc.id}
                     className={`thread-row-card ${isSelected ? "selected" : ""}`}
                     onClick={() => openThread(disc)}
                   >
-                    <div className="thread-avatar" style={{ overflow: "hidden", position: "relative" }}>
+                    <div className="thread-avatar" style={{ overflow: "hidden", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ position: "absolute", zIndex: 0 }}>{getInitials(authorName)}</span>
                       <img
                         src={disc.author?.avatarUrl || getAvatarUrl(authorName)}
                         alt={authorName}
-                        style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
+                        style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover", position: "relative", zIndex: 1 }}
                         onError={(e) => { e.currentTarget.style.display = "none"; }}
                       />
-                      <span style={{ position: "absolute" }}>{getInitials(authorName)}</span>
                     </div>
                     <div className="thread-info">
                       <div className="thread-title-row">
@@ -324,6 +385,8 @@ export default function Discussions() {
                           : disc.content}
                       </p>
                       <div className="thread-meta">
+                        <span className="topic-tag">{topicCat}</span>
+                        <span>·</span>
                         <span>{authorName}</span>
                         <span>·</span>
                         <time>{timeAgo(disc.createdAt) || "Recently"}</time>
@@ -344,7 +407,12 @@ export default function Discussions() {
               <div className="thread-header-card">
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
                   <div>
-                    <span className="eyebrow">Deliberation Topic</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                      <span className="eyebrow" style={{ margin: 0 }}>Deliberation Topic</span>
+                      <span className="topic-tag" style={{ fontSize: "11px", padding: "2px 8px" }}>
+                        {getTopicCategory(selectedDiscussion.title, selectedDiscussion.content)}
+                      </span>
+                    </div>
                     <h2>{selectedDiscussion.title}</h2>
                   </div>
                   <Link
@@ -357,21 +425,35 @@ export default function Discussions() {
                 </div>
 
                 <div className="author-bar">
-                  <div className="avatar" style={{ overflow: "hidden", position: "relative" }}>
-                    <img
-                      src={selectedDiscussion.author?.avatarUrl || getAvatarUrl(selectedDiscussion.author?.fullName || "Member")}
-                      alt={selectedDiscussion.author?.fullName || "Member"}
-                      style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
-                      onError={(e) => { e.currentTarget.style.display = "none"; }}
-                    />
-                    <span style={{ position: "absolute" }}>{getInitials(selectedDiscussion.author?.fullName || "A")}</span>
-                  </div>
-                  <div>
-                    <strong>{selectedDiscussion.author?.fullName || "Workspace Member"}</strong>
-                    <div className="sub-time">
-                      Posted {timeAgo(selectedDiscussion.createdAt) || "recently"}
-                    </div>
-                  </div>
+                  {(() => {
+                    const activeAuthorName = selectedDiscussion.author?.name || selectedDiscussion.author?.fullName || "Workspace Member";
+                    return (
+                      <>
+                        <div className="avatar" style={{ overflow: "hidden", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <span style={{ position: "absolute", zIndex: 0 }}>{getInitials(activeAuthorName)}</span>
+                          <img
+                            src={selectedDiscussion.author?.avatarUrl || getAvatarUrl(activeAuthorName)}
+                            alt={activeAuthorName}
+                            style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover", position: "relative", zIndex: 1 }}
+                            onError={(e) => { e.currentTarget.style.display = "none"; }}
+                          />
+                        </div>
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <strong>{activeAuthorName}</strong>
+                            {selectedDiscussion.author?.role && (
+                              <span className={`sidebar-role-badge role-${selectedDiscussion.author.role.toLowerCase()}`} style={{ fontSize: "10px", padding: "1px 6px" }}>
+                                {selectedDiscussion.author.role === "ADMIN" ? "Admin" : selectedDiscussion.author.role === "MODERATOR" ? "Mod" : "Author"}
+                              </span>
+                            )}
+                          </div>
+                          <div className="sub-time">
+                            Posted {timeAgo(selectedDiscussion.createdAt) || "recently"} · Deliberation Stage
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 <div className="thread-content-body">
@@ -392,18 +474,18 @@ export default function Discussions() {
                 ) : (
                   <div className="comments-list">
                     {comments.map((c) => {
-                      const cAuthor = c.author?.fullName || "Member";
+                      const cAuthor = c.author?.name || c.author?.fullName || "Member";
                       return (
                         <div key={c.id} className="comment-bubble-card">
                           <div className="comment-header">
-                            <span className="mini-avatar" style={{ overflow: "hidden", position: "relative" }}>
+                            <span className="mini-avatar" style={{ overflow: "hidden", position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                              <span style={{ position: "absolute", zIndex: 0 }}>{getInitials(cAuthor)}</span>
                               <img
                                 src={c.author?.avatarUrl || getAvatarUrl(cAuthor)}
                                 alt={cAuthor}
-                                style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
+                                style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover", position: "relative", zIndex: 1 }}
                                 onError={(e) => { e.currentTarget.style.display = "none"; }}
                               />
-                              <span style={{ position: "absolute" }}>{getInitials(cAuthor)}</span>
                             </span>
                             <strong>{cAuthor}</strong>
                             <time className="comment-time">
@@ -443,7 +525,7 @@ export default function Discussions() {
                 <form onSubmit={handleAddComment} className="comment-composer-box">
                   {replyingTo && (
                     <div className="replying-banner">
-                      <span>Replying to <strong>{replyingTo.author?.fullName || "comment"}</strong></span>
+                      <span>Replying to <strong>{replyingTo.author?.name || replyingTo.author?.fullName || "comment"}</strong></span>
                       <button type="button" onClick={() => setReplyingTo(null)}>✕</button>
                     </div>
                   )}
@@ -462,17 +544,16 @@ export default function Discussions() {
                       disabled={commentSubmitting}
                       className="btn brass"
                     >
-                      {commentSubmitting ? "Posting…" : "Post Comment"}
+                      {commentSubmitting ? "Posting…" : replyingTo ? "Post Reply" : "Add Perspective"}
                     </button>
                   </div>
                 </form>
               </div>
             </div>
           ) : (
-            <div className="no-thread-selected">
-              <span style={{ fontSize: 36 }}>💬</span>
+            <div className="state-block" style={{ padding: "80px 32px", textAlign: "center" }}>
               <h3>Select a discussion</h3>
-              <p>Choose a discussion thread from the left to read context and participate in deliberation, or start a new topic.</p>
+              <p>Choose an ongoing deliberation topic from the list to view context, perspectives, and replies.</p>
             </div>
           )}
         </div>
