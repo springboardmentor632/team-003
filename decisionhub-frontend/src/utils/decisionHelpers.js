@@ -65,18 +65,44 @@ export function notificationInitials(item) {
   return typeMap[item.type] || getInitials(msg);
 }
 
+export const CARTOON_STYLES = [
+  { id: "avataaars", name: "People", emoji: "🧑‍💼" },
+  { id: "bottts", name: "Robots", emoji: "🤖" },
+  { id: "adventurer", name: "Adventurer", emoji: "🏹" },
+  { id: "lorelei", name: "Artistic", emoji: "🎨" },
+  { id: "micah", name: "Modern", emoji: "✨" },
+  { id: "open-peeps", name: "Sketches", emoji: "👥" },
+  { id: "fun-emoji", name: "Emoji", emoji: "😃" },
+];
+
+export const CARTOON_BG_COLORS = [
+  "b6e3f4", "c0aede", "d1d4f9", "ffd5dc", "ffdfbf", "c7f9cc", "ffccd5", "fef08a"
+];
+
+export function generateRandomCartoonAvatar(chosenStyle) {
+  const styleObj = chosenStyle
+    ? CARTOON_STYLES.find((s) => s.id === chosenStyle) || { id: chosenStyle }
+    : CARTOON_STYLES[Math.floor(Math.random() * CARTOON_STYLES.length)];
+  const style = styleObj.id;
+  const randomSeed = Math.random().toString(36).substring(2, 9);
+  const randomBg = CARTOON_BG_COLORS[Math.floor(Math.random() * CARTOON_BG_COLORS.length)];
+  return `https://api.dicebear.com/7.x/${style}/svg?seed=${randomSeed}&backgroundColor=${randomBg}`;
+}
+
 export const CURATED_AVATARS = {
-  "System Admin": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-  "Harish": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-  "Maya Patel": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-  "Arjun Mehta": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-  "Priya Sharma": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
-  "Priya": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
-  "Priya Nair": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
-  "Rohan Shah": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80",
-  "Sarah Chen": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80",
-  "Devon Vance": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
-  "Marcus Vance": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+  "Cyber Admin": "https://api.dicebear.com/7.x/bottts/svg?seed=AdminBot&backgroundColor=b6e3f4",
+  "System Admin": "https://api.dicebear.com/7.x/bottts/svg?seed=AdminBot&backgroundColor=b6e3f4",
+  "Harish": "https://api.dicebear.com/7.x/avataaars/svg?seed=HarishDev&backgroundColor=c0aede",
+  "Maya Patel": "https://api.dicebear.com/7.x/avataaars/svg?seed=MayaLeader&backgroundColor=ffd5dc",
+  "Arjun Mehta": "https://api.dicebear.com/7.x/avataaars/svg?seed=ArjunMod&backgroundColor=d1d4f9",
+  "Priya Sharma": "https://api.dicebear.com/7.x/micah/svg?seed=PriyaDesigner&backgroundColor=ffdfbf",
+  "Priya": "https://api.dicebear.com/7.x/micah/svg?seed=PriyaDesigner&backgroundColor=ffdfbf",
+  "Priya Nair": "https://api.dicebear.com/7.x/micah/svg?seed=PriyaDesigner&backgroundColor=ffdfbf",
+  "Rohan Shah": "https://api.dicebear.com/7.x/adventurer/svg?seed=RohanArchitect&backgroundColor=c7f9cc",
+  "Sarah Chen": "https://api.dicebear.com/7.x/lorelei/svg?seed=SarahAnalyst&backgroundColor=d1d4f9",
+  "Devon Vance": "https://api.dicebear.com/7.x/open-peeps/svg?seed=DevonVance&backgroundColor=ffccd5",
+  "Marcus Vance": "https://api.dicebear.com/7.x/avataaars/svg?seed=MarcusVance&backgroundColor=b6e3f4",
+  "Sparky": "https://api.dicebear.com/7.x/fun-emoji/svg?seed=SparkySmile&backgroundColor=fef08a",
 };
 
 export function getAvatarUrl(name = "", customAvatar = "") {
@@ -105,5 +131,5 @@ export function getAvatarUrl(name = "", customAvatar = "") {
     }
   }
 
-  return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(cleanName)}&backgroundColor=00897b,0284c7,7c3aed,d97706`;
+  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(cleanName)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
 }

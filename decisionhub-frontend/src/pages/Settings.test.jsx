@@ -146,4 +146,37 @@ describe("Settings Page", () => {
     fireEvent.click(darkModeBtn);
     expect(screen.getByText(/Dark Theme Active/i)).toBeTruthy();
   });
+
+  it("generates random cartoon avatars and supports removing avatar", async () => {
+    render(
+      <BrowserRouter>
+        <Settings />
+      </BrowserRouter>
+    );
+
+    expect(await screen.findByDisplayValue("Sarah Connor")).toBeTruthy();
+
+    // Check random cartoon button exists
+    const randomBtn = screen.getByRole("button", { name: /Random Cartoon/i });
+    expect(randomBtn).toBeTruthy();
+
+    fireEvent.click(randomBtn);
+    expect(await screen.findByText(/Generated/i)).toBeTruthy();
+
+    // Check remove avatar button exists and removes avatar
+    const removeBtn = screen.getByRole("button", { name: /Remove Avatar/i });
+    expect(removeBtn).toBeTruthy();
+
+    fireEvent.click(removeBtn);
+    expect(await screen.findByText(/Avatar removed/i)).toBeTruthy();
+
+    // Save profile with removed avatar
+    fireEvent.click(screen.getByRole("button", { name: "Save Profile" }));
+
+    await waitFor(() => {
+      expect(mockUpdateProfile).toHaveBeenCalledWith(
+        expect.objectContaining({ avatarUrl: "" })
+      );
+    });
+  });
 });

@@ -3,7 +3,7 @@ import TopBar from "../components/TopBar";
 import { getProfile, updateProfile, changePassword, updateUserInterests } from "../api/user";
 import { extractErrorMessage } from "../api/client";
 import { useAuth } from "../context/AuthContext";
-import { getInitials, getAvatarUrl, CURATED_AVATARS } from "../utils/decisionHelpers";
+import { getInitials, getAvatarUrl, CURATED_AVATARS, CARTOON_STYLES, generateRandomCartoonAvatar } from "../utils/decisionHelpers";
 
 const AVAILABLE_CATEGORIES = [
   "Technology",
@@ -133,6 +133,8 @@ export default function Settings() {
   const [email, setEmail] = useState(user?.email || "");
   const [bio, setBio] = useState(user?.bio || "");
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || "");
+  const [avatarImgFailed, setAvatarImgFailed] = useState(false);
+  const [avatarGeneratedNotice, setAvatarGeneratedNotice] = useState("");
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState("");
@@ -287,14 +289,15 @@ export default function Settings() {
         <aside className="settings-nav-sidebar">
           <div className="settings-user-brief">
             <div className="settings-user-brief-avatar" style={{ overflow: "hidden", position: "relative" }}>
-              {avatarUrl || getAvatarUrl(userDisplayName) ? (
+              {avatarUrl && !avatarImgFailed ? (
                 <img
-                  src={avatarUrl || getAvatarUrl(userDisplayName)}
+                  src={avatarUrl}
                   alt={userDisplayName}
-                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                  onError={() => setAvatarImgFailed(true)}
                 />
-              ) : null}
-              <span style={{ position: "absolute" }}>{userInitials}</span>
+              ) : (
+                <span>{userInitials}</span>
+              )}
             </div>
             <div className="settings-user-brief-info">
               <strong>{userDisplayName}</strong>
@@ -475,7 +478,7 @@ export default function Settings() {
               <div className="state-block" style={{ padding: "30px 20px" }}>Loading profile details…</div>
             ) : (
               <form onSubmit={handleProfileSubmit}>
-                <div style={{ display: "flex", gap: 20, alignItems: "center", marginBottom: 20 }}>
+                <div style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 24, padding: "16px", background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--radius)" }}>
                   <div
                     className="avatar"
                     style={{
@@ -495,40 +498,151 @@ export default function Settings() {
                       position: "relative",
                     }}
                   >
-                    <span style={{ position: "absolute", zIndex: 0 }}>{userInitials}</span>
-                    {avatarUrl || getAvatarUrl(userDisplayName) ? (
+                    {avatarUrl && !avatarImgFailed ? (
                       <img
-                        src={avatarUrl || getAvatarUrl(userDisplayName)}
+                        src={avatarUrl}
                         alt="Avatar"
-                        style={{ width: "100%", height: "100%", objectFit: "cover", position: "relative", zIndex: 1 }}
-                        onError={(e) => { e.currentTarget.style.display = "none"; }}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                        onError={() => setAvatarImgFailed(true)}
                       />
-                    ) : null}
+                    ) : (
+                      <span>{userInitials}</span>
+                    )}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label htmlFor="avatarUrl" style={{ display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 6, color: "var(--ink)" }}>
-                      Avatar Image URL
-                    </label>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <label htmlFor="avatarUrl" style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink)", margin: 0 }}>
+                        Avatar Image URL
+                      </label>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newAvatar = generateRandomCartoonAvatar();
+                            setAvatarUrl(newAvatar);
+                            setAvatarImgFailed(false);
+                            setAvatarGeneratedNotice("Generated random cartoon avatar!");
+                            setTimeout(() => setAvatarGeneratedNotice(""), 3000);
+                          }}
+                          style={{
+                            fontSize: 11.5,
+                            fontWeight: 600,
+                            padding: "4px 10px",
+                            borderRadius: 6,
+                            border: "1px solid var(--teal)",
+                            background: "rgba(0,137,123,0.08)",
+                            color: "var(--teal)",
+                            cursor: "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                          }}
+                          title="Generate a brand new random cartoon avatar"
+                        >
+                          <span>🎲</span> Random Cartoon
+                        </button>
+                        {avatarUrl && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAvatarUrl("");
+                              setAvatarImgFailed(false);
+                              setAvatarGeneratedNotice("Avatar removed. Initial avatar restored.");
+                              setTimeout(() => setAvatarGeneratedNotice(""), 3000);
+                            }}
+                            style={{
+                              fontSize: 11.5,
+                              fontWeight: 600,
+                              padding: "4px 10px",
+                              borderRadius: 6,
+                              border: "1px solid #ef4444",
+                              background: "rgba(239,68,68,0.08)",
+                              color: "#ef4444",
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 4,
+                            }}
+                            title="Remove avatar and revert to initials"
+                          >
+                            <span>✕</span> Remove Avatar
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
                     <input
                       id="avatarUrl"
                       type="url"
                       className="input"
-                      placeholder="https://example.com/avatar.png"
+                      placeholder="https://api.dicebear.com/7.x/avataaars/svg?seed=Harish"
                       value={avatarUrl}
-                      onChange={(e) => setAvatarUrl(e.target.value)}
+                      onChange={(e) => {
+                        setAvatarUrl(e.target.value);
+                        setAvatarImgFailed(false);
+                      }}
                     />
+
+                    {avatarGeneratedNotice && (
+                      <div style={{ fontSize: 11, color: "var(--teal)", marginTop: 4, fontWeight: 500 }}>
+                        ✓ {avatarGeneratedNotice}
+                      </div>
+                    )}
+
+                    {/* Quick Cartoon Style Generators */}
                     <div style={{ marginTop: 10 }}>
+                      <span style={{ fontSize: 11, color: "var(--ink-soft)", display: "block", marginBottom: 5 }}>
+                        Generate cartoon style:
+                      </span>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                        {CARTOON_STYLES.map((st) => (
+                          <button
+                            type="button"
+                            key={st.id}
+                            onClick={() => {
+                              const newAvatar = generateRandomCartoonAvatar(st.id);
+                              setAvatarUrl(newAvatar);
+                              setAvatarImgFailed(false);
+                              setAvatarGeneratedNotice(`Generated ${st.name} avatar!`);
+                              setTimeout(() => setAvatarGeneratedNotice(""), 3000);
+                            }}
+                            style={{
+                              fontSize: 11,
+                              padding: "3px 8px",
+                              borderRadius: 12,
+                              border: "1px solid var(--line)",
+                              background: "var(--surface)",
+                              color: "var(--ink-soft)",
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 4,
+                            }}
+                            title={`Generate a random ${st.name} cartoon avatar`}
+                          >
+                            <span>{st.emoji}</span> {st.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Curated Cartoon Personas */}
+                    <div style={{ marginTop: 12 }}>
                       <span style={{ fontSize: 11, color: "var(--ink-soft)", display: "block", marginBottom: 6 }}>
-                        Or choose from curated personas:
+                        Or choose from curated cartoon personas:
                       </span>
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                         {Object.entries(CURATED_AVATARS).map(([key, url]) => (
                           <button
                             type="button"
                             key={key}
-                            onClick={() => setAvatarUrl(url)}
+                            onClick={() => {
+                              setAvatarUrl(url);
+                              setAvatarImgFailed(false);
+                            }}
                             style={{
                               border: avatarUrl === url ? "2px solid var(--brass)" : "2px solid transparent",
+                              boxShadow: avatarUrl === url ? "0 0 0 2px var(--brass-dim)" : "none",
                               padding: 2,
                               borderRadius: "50%",
                               background: "none",
@@ -536,32 +650,15 @@ export default function Settings() {
                               display: "flex",
                               transition: "transform 0.15s ease",
                             }}
-                            title={`Choose ${key} avatar`}
+                            title={`Choose ${key} cartoon avatar`}
                           >
                             <img
                               src={url}
                               alt={key}
-                              style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }}
+                              style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", display: "block" }}
                             />
                           </button>
                         ))}
-                        {avatarUrl && (
-                          <button
-                            type="button"
-                            onClick={() => setAvatarUrl("")}
-                            style={{
-                              fontSize: 11,
-                              color: "var(--ink-soft)",
-                              background: "none",
-                              border: "1px dashed var(--line)",
-                              borderRadius: 12,
-                              padding: "4px 8px",
-                              cursor: "pointer",
-                            }}
-                          >
-                            Reset
-                          </button>
-                        )}
                       </div>
                     </div>
                   </div>

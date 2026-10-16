@@ -32,7 +32,7 @@ const DEMO_SEEDS = [
   {
     id: 9001,
     authorName: "Sarah Chen",
-    authorAvatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    authorAvatarUrl: "https://api.dicebear.com/7.x/lorelei/svg?seed=SarahAnalyst&backgroundColor=d1d4f9",
     body: "The weighted comparison criteria align well with our quarterly goals. Latency and operational risk benchmarks look dependable.",
     createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
     reactionCount: 4,
@@ -41,7 +41,7 @@ const DEMO_SEEDS = [
   {
     id: 9002,
     authorName: "Devon Vance",
-    authorAvatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+    authorAvatarUrl: "https://api.dicebear.com/7.x/open-peeps/svg?seed=DevonVance&backgroundColor=ffccd5",
     body: "@Sarah Agreed. The pilot validation confirms our scalability estimates.",
     createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
     reactionCount: 2,
@@ -50,7 +50,7 @@ const DEMO_SEEDS = [
   {
     id: 9003,
     authorName: "Arjun Mehta",
-    authorAvatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+    authorAvatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=ArjunMod&backgroundColor=d1d4f9",
     body: "Reminder to all circle members: please submit your final votes before the consensus deadline this Friday.",
     createdAt: new Date(Date.now() - 3600000 * 1).toISOString(),
     reactionCount: 3,

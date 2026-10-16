@@ -12,7 +12,7 @@ export const ROLE_PROFILES = {
     roleTag: "Global Admin",
     badge: "🛡️ Global Admin",
     badgeColor: "#7c3aed",
-    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=AdminBot&backgroundColor=b6e3f4",
     subtitle: "Organization-wide governance, cloud infrastructure resilience, platform security compliance, and moderation override.",
     capabilities: [
       "Full administrative override across all decision boards (force finalize, close, reopen, or delete)",
@@ -91,7 +91,7 @@ export const ROLE_PROFILES = {
     roleTag: "Community Moderator",
     badge: "⚙️ Community Moderator",
     badgeColor: "#0284c7",
-    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=ArjunMod&backgroundColor=d1d4f9",
     subtitle: "Lead engineering RFC deliberations, technical consensus discovery, and maintain civil discussion quality.",
     capabilities: [
       "Moderate engineering circle discussions, hide policy-violating comments, and resolve flags",
@@ -168,7 +168,7 @@ export const ROLE_PROFILES = {
     roleTag: "Community Owner",
     badge: "👑 Community Owner",
     badgeColor: "#d97706",
-    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=MayaLeader&backgroundColor=ffd5dc",
     subtitle: "Direct product roadmap strategy, manage community member rosters, promote moderators, and finalize consensus.",
     capabilities: [
       "Full community lifecycle ownership: manage member rosters, invitations, and permissions",
@@ -245,7 +245,7 @@ export const ROLE_PROFILES = {
     roleTag: "Community Member",
     badge: "👤 Community Member",
     badgeColor: "#00897b",
-    avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=HarishDev&backgroundColor=c0aede",
     subtitle: "Deliberate on individual growth pathways, collaborate on team workcations, and submit verified ballots.",
     capabilities: [
       "Cast weighted, multiple-choice, and rating ballots with optional anonymity",
@@ -664,11 +664,11 @@ function ModerationDemo({ profile, mode = "admin" }) {
 
 function CommunityRosterDemo({ profile }) {
   const [members, setMembers] = useState([
-    { id: 1, name: "Maya Patel", email: "maya@decisionhub.org", role: "OWNER", joined: "Jan 12, 2026", avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80" },
-    { id: 2, name: "Arjun Mehta", email: "arjun@decisionhub.org", role: "MODERATOR", joined: "Feb 04, 2026", avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" },
-    { id: 3, name: "Harish", email: "harish@decisionhub.org", role: "MEMBER", joined: "Mar 10, 2026", avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80" },
-    { id: 4, name: "Priya Sharma", email: "priya@decisionhub.org", role: "MEMBER", joined: "Apr 02, 2026", avatarUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80" },
-    { id: 5, name: "Marcus Vance", email: "marcus@decisionhub.org", role: "MEMBER", joined: "May 18, 2026", avatarUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80" },
+    { id: 1, name: "Maya Patel", email: "maya@decisionhub.org", role: "OWNER", joined: "Jan 12, 2026", avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=MayaLeader&backgroundColor=ffd5dc" },
+    { id: 2, name: "Arjun Mehta", email: "arjun@decisionhub.org", role: "MODERATOR", joined: "Feb 04, 2026", avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=ArjunMod&backgroundColor=d1d4f9" },
+    { id: 3, name: "Harish", email: "harish@decisionhub.org", role: "MEMBER", joined: "Mar 10, 2026", avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=HarishDev&backgroundColor=c0aede" },
+    { id: 4, name: "Priya Sharma", email: "priya@decisionhub.org", role: "MEMBER", joined: "Apr 02, 2026", avatarUrl: "https://api.dicebear.com/7.x/micah/svg?seed=PriyaDesigner&backgroundColor=ffdfbf" },
+    { id: 5, name: "Marcus Vance", email: "marcus@decisionhub.org", role: "MEMBER", joined: "May 18, 2026", avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=MarcusVance&backgroundColor=b6e3f4" },
   ]);
 
   const [inviteEmail, setInviteEmail] = useState("");

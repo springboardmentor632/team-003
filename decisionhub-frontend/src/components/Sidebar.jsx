@@ -311,17 +311,18 @@ export default function Sidebar() {
             onClick={() => setMobileOpen(false)}
           >
             <div className="sidebar-user-avatar" style={{ overflow: "hidden", position: "relative" }}>
-              {user?.avatarUrl || getAvatarUrl(user?.fullName || user?.name || user?.email) ? (
+              {user?.avatarUrl ? (
                 <img
-                  src={user?.avatarUrl || getAvatarUrl(user?.fullName || user?.name || user?.email)}
+                  src={user.avatarUrl}
                   alt={user?.fullName || user?.name || "User"}
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", position: "relative", zIndex: 1 }}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                   onError={(e) => { e.currentTarget.style.display = "none"; }}
                 />
-              ) : null}
-              <span style={{ position: "absolute", zIndex: 0 }}>
-                {getInitials(user?.fullName || user?.name || user?.email || "DH")}
-              </span>
+              ) : (
+                <span>
+                  {getInitials(user?.fullName || user?.name || user?.email || "DH")}
+                </span>
+              )}
             </div>
             <div className="sidebar-user-info">
               <span className="sidebar-user-name" title={user?.fullName || user?.name || "Member"}>

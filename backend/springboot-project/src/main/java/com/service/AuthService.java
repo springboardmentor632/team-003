@@ -66,7 +66,7 @@ public class AuthService {
 
         user.setRole("USER");
         if (user.getAvatarUrl() == null || user.getAvatarUrl().isBlank()) {
-            user.setAvatarUrl("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80");
+            user.setAvatarUrl("https://api.dicebear.com/7.x/avataaars/svg?seed=DecisionMaker&backgroundColor=b6e3f4");
         }
 
         return userRepository.save(user);
@@ -128,7 +128,7 @@ public class AuthService {
         User user = userRepository.findByEmail(normalizedEmail).orElseGet(() -> {
             String displayName = (name != null && !name.isBlank()) ? name.trim() : normalizedEmail.split("@")[0];
             User newUser = new User(displayName, normalizedEmail, passwordEncoder.encode(java.util.UUID.randomUUID().toString()), "USER");
-            newUser.setAvatarUrl("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80");
+            newUser.setAvatarUrl("https://api.dicebear.com/7.x/avataaars/svg?seed=DecisionMaker&backgroundColor=b6e3f4");
             return userRepository.save(newUser);
         });
 
