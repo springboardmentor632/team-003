@@ -85,6 +85,45 @@ function MonitorIcon() {
   );
 }
 
+function IconPalette() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+      <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+      <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+      <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+    </svg>
+  );
+}
+
+function IconUser() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
+function IconTarget() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
+    </svg>
+  );
+}
+
+function IconShield() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  );
+}
+
 export default function Settings() {
   const { user, updateUserProfile } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -243,39 +282,59 @@ export default function Settings() {
         subtitle="Manage your interface appearance, personal profile, topic interests, and credentials."
       />
 
-      <div className="settings-container">
-        {/* Profile Hero Overview */}
-        <div className="settings-profile-hero">
-          <div className="settings-profile-hero-left">
-            <div className="settings-hero-avatar">
+      <div className="settings-full-layout">
+        {/* Sticky Minimalist Sub-Nav Sidebar */}
+        <aside className="settings-nav-sidebar">
+          <div className="settings-user-brief">
+            <div className="settings-user-brief-avatar">
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
                   alt={userDisplayName}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   onError={(e) => { e.currentTarget.style.display = "none"; }}
                 />
               ) : (
                 userInitials
               )}
             </div>
-            <div className="settings-hero-details">
-              <h2>{userDisplayName}</h2>
-              <p>{email || user?.email || "Signed-in Member"}</p>
-              <div className="settings-hero-badges">
-                <span className="settings-pill-badge active-dot">Active Account</span>
-                <span className="settings-pill-badge">✨ {selectedInterests.length} Topics Followed</span>
-              </div>
+            <div className="settings-user-brief-info">
+              <strong>{userDisplayName}</strong>
+              <span>{email || user?.email || "Member"}</span>
             </div>
           </div>
-          <div style={{ fontSize: 12, opacity: 0.8, textAlign: "right" }}>
-            <span>DecisionHub Member</span>
-            <div style={{ marginTop: 4, fontFamily: "monospace", fontSize: 11 }}>Encrypted & Secured</div>
-          </div>
-        </div>
 
-        {/* Appearance & Theme (Light / Dark Mode) */}
-        <div className="settings-card" id="theme-preferences">
+          <nav className="settings-sub-nav" aria-label="Settings navigation">
+            <a href="#appearance" className="settings-nav-item">
+              <IconPalette />
+              <span>Appearance</span>
+            </a>
+            <a href="#profile" className="settings-nav-item">
+              <IconUser />
+              <span>Identity & Bio</span>
+            </a>
+            <a href="#interests" className="settings-nav-item">
+              <IconTarget />
+              <span>Topic Feed</span>
+            </a>
+            <a href="#security" className="settings-nav-item">
+              <IconShield />
+              <span>Credentials</span>
+            </a>
+          </nav>
+
+          <div className="settings-nav-footer-card">
+            <div className="settings-status-pill">
+              <span className="status-dot-pulse" />
+              <span>Active Account</span>
+            </div>
+            <p>End-to-end encrypted session with verified credentials.</p>
+          </div>
+        </aside>
+
+        {/* Full-Scale Settings Content Area */}
+        <div className="settings-main-content">
+          {/* Appearance & Theme (Light / Dark Mode) */}
+          <div className="settings-card settings-section-anchor" id="appearance">
           <div className="settings-card-head">
             <div className="settings-card-head-left">
               <div className="settings-card-icon" style={{ background: "rgba(185, 134, 47, 0.12)", color: "var(--brass)" }}>
@@ -375,7 +434,7 @@ export default function Settings() {
         </div>
 
         {/* Public Profile Card */}
-        <div className="settings-card">
+        <div className="settings-card settings-section-anchor" id="profile">
           <div className="settings-card-head">
             <div className="settings-card-head-left">
               <div className="settings-card-icon">👤</div>
@@ -384,8 +443,8 @@ export default function Settings() {
                 <p>This information is shown to fellow decision makers and community members.</p>
               </div>
             </div>
-            <span style={{ fontSize: 11.5, color: "var(--ink-soft)", fontWeight: 500 }}>
-              Module 2 • User Profile
+            <span style={{ fontSize: 11.5, color: "var(--teal)", background: "var(--teal-dim)", padding: "3px 10px", borderRadius: 12, fontWeight: 600 }}>
+              Personal Identity
             </span>
           </div>
 
@@ -516,7 +575,7 @@ export default function Settings() {
         </div>
 
         {/* User Interests Card */}
-        <div className="settings-card">
+        <div className="settings-card settings-section-anchor" id="interests">
           <div className="settings-card-head">
             <div className="settings-card-head-left">
               <div className="settings-card-icon brass-icon">🎯</div>
@@ -613,7 +672,7 @@ export default function Settings() {
         </div>
 
         {/* Professional Account Security Card */}
-        <div className="settings-card">
+        <div className="settings-card settings-section-anchor" id="security">
           <div className="settings-card-head">
             <div className="settings-card-head-left">
               <div className="settings-card-icon" style={{ background: "rgba(31, 111, 107, 0.1)", color: "var(--teal)" }}>
@@ -752,6 +811,7 @@ export default function Settings() {
               </div>
             </form>
           </div>
+        </div>
         </div>
       </div>
     </div>
