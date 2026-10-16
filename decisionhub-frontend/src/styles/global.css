@@ -99,7 +99,6 @@ main {
 .topbar-logout-btn:hover { border-color: var(--coral); color: var(--coral); }
 .notification-avatar { width: 32px; height: 32px; font-size: 11px; background: var(--brass-dim); color: #72531C; border: 1px solid #E3D2B2; }
 .invitation-user { display: flex; align-items: center; gap: 12px; }
-.notification-row { grid-template-columns: 10px 32px minmax(0, 1fr) 16px; }
 .notification-bell { position: relative; }
 .icon-button { width: 36px; height: 36px; position: relative; border: 1px solid var(--line); border-radius: 50%; background: var(--paper-raised); color: var(--ink); cursor: pointer; font-size: 20px; line-height: 1; }
 .icon-button:hover, .icon-button[aria-expanded="true"] { border-color: var(--teal); color: var(--teal); }
@@ -330,6 +329,101 @@ h1 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-s
 .recent-meta { display: flex; flex-direction: column; text-align: right; gap: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; }
 .recent-arrow { color: var(--teal); font-size: 16px; }
 
+/* ---- Notification Rows (Notifications Page & Feed) ---- */
+.notification-row,
+.recent-board-row.notification-row {
+  display: grid !important;
+  grid-template-columns: 8px 36px minmax(0, 1fr) 20px !important;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper-raised);
+  transition: background .15s ease;
+}
+
+.notification-row:last-child,
+.recent-board-row.notification-row:last-child {
+  border-bottom: none;
+}
+
+.notification-row:hover,
+.recent-board-row.notification-row:hover {
+  background: #F0F1EC;
+}
+
+.notification-row .recent-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  justify-self: center;
+}
+
+.notification-row .notification-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--brass-dim);
+  color: #72531C;
+  border: 1px solid #E3D2B2;
+}
+
+.notification-row .recent-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notification-row .recent-main h3 {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--ink);
+  margin: 0;
+  word-break: break-word;
+}
+
+.notification-row.unread .recent-main h3,
+.notification-row:not(.read) .recent-main h3 {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.notification-row.read .recent-main h3 {
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+
+.notification-row .recent-main p {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.notification-row .recent-arrow {
+  color: var(--teal);
+  font-size: 16px;
+  justify-self: end;
+  transition: transform .15s ease;
+}
+
+.notification-row:hover .recent-arrow {
+  transform: translateX(3px);
+}
+
 /* ---- Boards directory ---- */
 .boards-breadcrumb { display: flex; gap: 7px; align-items: center; margin-bottom: 20px; }
 .boards-breadcrumb a { color: var(--ink-soft); text-decoration: none; }
@@ -544,6 +638,12 @@ h1 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-s
   .sort-select { justify-content: space-between; }
   .recent-board-row { grid-template-columns: 10px minmax(0, 1fr) 16px; }
   .recent-meta { display: none; }
+  .notification-row,
+  .recent-board-row.notification-row {
+    grid-template-columns: 8px 36px minmax(0, 1fr) 20px !important;
+    gap: 14px;
+    padding: 14px 16px;
+  }
 }
 
 @media (max-width: 560px) {
@@ -566,4 +666,15 @@ h1 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-s
   .detail-actions { width: 100%; }
   .detail-actions .btn { flex: 1; justify-content: center; }
   .suggestion-form { grid-template-columns: 1fr; }
+  .notification-row,
+  .recent-board-row.notification-row {
+    grid-template-columns: 8px 32px minmax(0, 1fr) 16px !important;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  .notification-row .notification-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 11px;
+  }
 }

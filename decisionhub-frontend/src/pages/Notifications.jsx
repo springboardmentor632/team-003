@@ -261,7 +261,7 @@ export default function Notifications() {
               {items.map((item) => (
                 <Link
                   key={item.id}
-                  className="recent-board-row notification-row"
+                  className={`notification-row recent-board-row ${item.read ? "read" : "unread"}`}
                   to={item.decisionId ? `/boards/${item.decisionId}` : "/dashboard"}
                   onClick={() => read(item)}
                 >
