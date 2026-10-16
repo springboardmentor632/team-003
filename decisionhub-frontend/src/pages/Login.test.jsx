@@ -58,9 +58,8 @@ describe("Login Screen", () => {
     });
   });
 
-  it("renders Google OAuth options and triggers demo Google login", async () => {
-    const mockDemoGoogle = vi.fn().mockResolvedValue({ success: true, user: { name: "Google Demo" } });
-    vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({ login: vi.fn(), loginWithDemoGoogle: mockDemoGoogle });
+  it("renders Google OAuth options", async () => {
+    vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({ login: vi.fn() });
 
     render(
       <BrowserRouter>
@@ -69,12 +68,5 @@ describe("Login Screen", () => {
     );
 
     expect(screen.getByRole("button", { name: /Sign in with Google/i })).toBeTruthy();
-    const demoGoogleBtn = screen.getByRole("button", { name: /One-Click Google Demo Sign-in/i });
-    expect(demoGoogleBtn).toBeTruthy();
-
-    fireEvent.click(demoGoogleBtn);
-    await waitFor(() => {
-      expect(mockDemoGoogle).toHaveBeenCalled();
-    });
   });
 });
