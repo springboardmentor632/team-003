@@ -276,7 +276,7 @@ export default function Sidebar() {
             title="Account Settings & Profile"
             onClick={() => setMobileOpen(false)}
           >
-            <div className="sidebar-user-avatar" style={{ overflow: "hidden", position: "relative" }}>
+            <div className="sidebar-user-avatar">
               {user?.avatarUrl ? (
                 <img
                   src={user.avatarUrl}
@@ -294,36 +294,20 @@ export default function Sidebar() {
               <span className="sidebar-user-name" title={user?.fullName || user?.name || "Member"}>
                 {user?.fullName || user?.name || "Member"}
               </span>
-              <div className="sidebar-user-sub">
-                <span className={`sidebar-role-badge role-${(user?.role || "MEMBER").toLowerCase()}`}>
-                  {user?.role === "ADMIN" ? "Admin" : user?.role === "MODERATOR" ? "Mod" : "Member"}
-                </span>
-                <span className="sidebar-user-email" title={user?.email || ""}>
-                  {user?.email || "user@decisionhub.org"}
-                </span>
-              </div>
+              <span className="sidebar-user-role">
+                {user?.role === "ADMIN" ? "Global Admin" : user?.role === "MODERATOR" ? "Moderator" : "Member"}
+              </span>
             </div>
           </Link>
-          <div className="sidebar-user-actions">
-            <Link
-              to="/settings"
-              className="sidebar-gear-btn"
-              title="Settings"
-              aria-label="Settings"
-              onClick={() => setMobileOpen(false)}
-            >
-              <IconGearSolid />
-            </Link>
-            <button
-              type="button"
-              className="sidebar-user-logout-btn"
-              onClick={logout}
-              title="Log out"
-              aria-label="Log out"
-            >
-              <IconLogout />
-            </button>
-          </div>
+          <button
+            type="button"
+            className="sidebar-user-logout-btn"
+            onClick={logout}
+            title="Log out"
+            aria-label="Log out"
+          >
+            <IconLogout />
+          </button>
         </div>
       </div>
     </>
