@@ -19,6 +19,19 @@ import jsPDF from "jspdf";
 import * as XLSX from "xlsx";
 import client from "../api/client";
 
+const CHART_COLORS = [
+  "#1F6F6B", // Brand Teal
+  "#B5862B", // Brand Brass
+  "#D95D39", // Brand Coral
+  "#2563EB", // Blue
+  "#7C3AED", // Purple
+  "#059669", // Emerald
+  "#EA580C", // Orange
+  "#0891B2", // Cyan
+  "#4F46E5", // Indigo
+  "#65A30D", // Lime
+];
+
 function Analytics() {
   const [summary, setSummary] = useState(null);
   const [voteDistribution, setVoteDistribution] = useState([]);
@@ -491,6 +504,9 @@ function Analytics() {
               <Bar
                 dataKey="voteCount"
                 name="Votes"
+                fill="#1F6F6B"
+                radius={[4, 4, 0, 0]}
+                maxBarSize={36}
               />
 
             </BarChart>
@@ -526,6 +542,9 @@ function Analytics() {
               <Bar
                 dataKey="totalVotes"
                 name="Votes"
+                fill="#B5862B"
+                radius={[4, 4, 0, 0]}
+                maxBarSize={36}
               />
 
             </BarChart>
@@ -559,6 +578,10 @@ function Analytics() {
                 type="monotone"
                 dataKey="decisionsCreated"
                 name="Decisions Created"
+                stroke="#1F6F6B"
+                strokeWidth={2.5}
+                dot={{ fill: "#1F6F6B", r: 4 }}
+                activeDot={{ r: 6 }}
               />
 
             </LineChart>
@@ -588,6 +611,7 @@ function Analytics() {
                   (entry, index) => (
                     <Cell
                       key={index}
+                      fill={CHART_COLORS[index % CHART_COLORS.length]}
                     />
                   )
                 )}
@@ -625,6 +649,7 @@ function Analytics() {
                   (entry, index) => (
                     <Cell
                       key={index}
+                      fill={CHART_COLORS[(index + 3) % CHART_COLORS.length]}
                     />
                   )
                 )}
@@ -667,11 +692,17 @@ function Analytics() {
             <Bar
               dataKey="decisionCount"
               name="Decisions"
+              fill="#1F6F6B"
+              radius={[4, 4, 0, 0]}
+              maxBarSize={32}
             />
 
             <Bar
               dataKey="voteCount"
               name="Votes"
+              fill="#B5862B"
+              radius={[4, 4, 0, 0]}
+              maxBarSize={32}
             />
 
           </BarChart>
@@ -683,38 +714,77 @@ function Analytics() {
 
         <ResponsiveContainer
           width="100%"
-          height={350}
+          height={360}
         >
           <BarChart
             data={mostActiveData}
             layout="vertical"
             margin={{
-              left: 30,
+              left: 20,
               right: 30,
+              top: 10,
+              bottom: 10,
             }}
           >
-
             <CartesianGrid
               strokeDasharray="3 3"
+              stroke="#e2ecea"
+              horizontal={false}
             />
 
             <XAxis
               type="number"
+              allowDecimals={false}
+              tick={{
+                fill: "#4b5563",
+                fontSize: 12,
+                fontWeight: 500,
+                fontFamily: "'Inter', sans-serif",
+              }}
+              axisLine={{ stroke: "#d1dedc" }}
+              tickLine={false}
             />
 
             <YAxis
               type="category"
               dataKey="title"
-              width={180}
+              width={200}
+              tick={{
+                fill: "#171B1E",
+                fontSize: 12.5,
+                fontWeight: 600,
+                fontFamily: "'Inter', sans-serif",
+              }}
+              axisLine={{ stroke: "#d1dedc" }}
+              tickLine={false}
+              tickFormatter={(title) => {
+                if (!title) return "";
+                return title.length > 22 ? `${title.slice(0, 21)}…` : title;
+              }}
             />
 
-            <Tooltip />
+            <Tooltip
+              formatter={(value) => [`${value} votes`, "Total Votes"]}
+              labelFormatter={(label) => `Decision: ${label}`}
+              contentStyle={{
+                backgroundColor: "#ffffff",
+                borderColor: "#d1dedc",
+                borderRadius: "8px",
+                boxShadow: "0 8px 24px rgba(23, 27, 30, 0.12)",
+                fontSize: "12.5px",
+                padding: "10px 14px",
+                color: "#171B1E",
+              }}
+            />
 
-            <Legend />
+            <Legend wrapperStyle={{ paddingTop: 10, fontSize: 12 }} />
 
             <Bar
               dataKey="totalVotes"
               name="Total Votes"
+              fill="#1F6F6B"
+              radius={[0, 6, 6, 0]}
+              maxBarSize={28}
             />
 
           </BarChart>
