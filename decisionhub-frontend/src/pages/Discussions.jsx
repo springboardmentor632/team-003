@@ -10,7 +10,7 @@ import {
   deleteDiscussionComment,
 } from "../api/collaboration";
 import { useAuth } from "../context/AuthContext";
-import { timeAgo, getInitials } from "../utils/decisionHelpers";
+import { timeAgo, getInitials, getAvatarUrl } from "../utils/decisionHelpers";
 import { extractErrorMessage } from "../api/client";
 
 export default function Discussions() {
@@ -295,8 +295,14 @@ export default function Discussions() {
                     className={`thread-row-card ${isSelected ? "selected" : ""}`}
                     onClick={() => openThread(disc)}
                   >
-                    <div className="thread-avatar">
-                      {getInitials(authorName)}
+                    <div className="thread-avatar" style={{ overflow: "hidden", position: "relative" }}>
+                      <img
+                        src={disc.author?.avatarUrl || getAvatarUrl(authorName)}
+                        alt={authorName}
+                        style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
+                        onError={(e) => { e.currentTarget.style.display = "none"; }}
+                      />
+                      <span style={{ position: "absolute" }}>{getInitials(authorName)}</span>
                     </div>
                     <div className="thread-info">
                       <div className="thread-title-row">
@@ -351,8 +357,14 @@ export default function Discussions() {
                 </div>
 
                 <div className="author-bar">
-                  <div className="avatar">
-                    {getInitials(selectedDiscussion.author?.fullName || "A")}
+                  <div className="avatar" style={{ overflow: "hidden", position: "relative" }}>
+                    <img
+                      src={selectedDiscussion.author?.avatarUrl || getAvatarUrl(selectedDiscussion.author?.fullName || "Member")}
+                      alt={selectedDiscussion.author?.fullName || "Member"}
+                      style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
+                      onError={(e) => { e.currentTarget.style.display = "none"; }}
+                    />
+                    <span style={{ position: "absolute" }}>{getInitials(selectedDiscussion.author?.fullName || "A")}</span>
                   </div>
                   <div>
                     <strong>{selectedDiscussion.author?.fullName || "Workspace Member"}</strong>
@@ -384,8 +396,14 @@ export default function Discussions() {
                       return (
                         <div key={c.id} className="comment-bubble-card">
                           <div className="comment-header">
-                            <span className="mini-avatar">
-                              {getInitials(cAuthor)}
+                            <span className="mini-avatar" style={{ overflow: "hidden", position: "relative" }}>
+                              <img
+                                src={c.author?.avatarUrl || getAvatarUrl(cAuthor)}
+                                alt={cAuthor}
+                                style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
+                                onError={(e) => { e.currentTarget.style.display = "none"; }}
+                              />
+                              <span style={{ position: "absolute" }}>{getInitials(cAuthor)}</span>
                             </span>
                             <strong>{cAuthor}</strong>
                             <time className="comment-time">

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TipBar from "./TipBar";
-import { topTwo, timeAgo, getInitials } from "../utils/decisionHelpers";
+import { topTwo, timeAgo, getInitials, getAvatarUrl } from "../utils/decisionHelpers";
 import { saveDecision, unsaveDecision } from "../api/user";
 import ShareModal from "./ShareModal";
 
@@ -106,7 +106,15 @@ export default function DecisionCard({ decision, initialSaved = false, onToggleS
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {authorName && (
             <span className="author-tag" title={`Created by ${authorName}`}>
-              <span className="mini-avatar">{getInitials(authorName)}</span>
+              <span className="mini-avatar" style={{ overflow: "hidden", position: "relative" }}>
+                <img
+                  src={decision.author?.avatarUrl || getAvatarUrl(authorName)}
+                  alt={authorName}
+                  style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+                <span style={{ position: "absolute" }}>{getInitials(authorName)}</span>
+              </span>
               <span className="author-name">{authorName.split(" ")[0]}</span>
             </span>
           )}

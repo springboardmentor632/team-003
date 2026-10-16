@@ -64,3 +64,34 @@ export function notificationInitials(item) {
   };
   return typeMap[item.type] || getInitials(msg);
 }
+
+export const CURATED_AVATARS = {
+  "System Admin": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+  "Harish": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+  "Maya Patel": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+  "Arjun Mehta": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+  "Priya Nair": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+  "Rohan Shah": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80",
+  "Sarah Chen": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80",
+  "Devon Vance": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
+};
+
+export function getAvatarUrl(name = "", customAvatar = "") {
+  if (customAvatar && String(customAvatar).trim()) {
+    return customAvatar.trim();
+  }
+  const cleanName = String(name || "").trim();
+  if (!cleanName) return "";
+
+  for (const [key, url] of Object.entries(CURATED_AVATARS)) {
+    if (
+      cleanName.toLowerCase() === key.toLowerCase() ||
+      cleanName.toLowerCase().startsWith(key.toLowerCase()) ||
+      key.toLowerCase().startsWith(cleanName.toLowerCase())
+    ) {
+      return url;
+    }
+  }
+
+  return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(cleanName)}&backgroundColor=00897b,0284c7,7c3aed,d97706`;
+}

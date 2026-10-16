@@ -17,6 +17,7 @@ export function AuthProvider({ children }) {
       fullName: authResponse.fullName || authResponse.name,
       email: authResponse.email,
       role: authResponse.role || "USER",
+      avatarUrl: authResponse.avatarUrl || authResponse.avatar || null,
     };
     localStorage.setItem("decisionhub_user", JSON.stringify(userInfo));
     setUser(userInfo);
@@ -50,6 +51,7 @@ export function AuthProvider({ children }) {
         fullName: data.name || data.fullName,
         email: data.email,
         role: data.role || "USER",
+        avatarUrl: data.avatarUrl || data.avatar || null,
       };
       localStorage.setItem("decisionhub_user", JSON.stringify(userInfo));
       setUser(userInfo);

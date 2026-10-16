@@ -12,6 +12,7 @@ export const ROLE_PROFILES = {
     roleTag: "Global Admin",
     badge: "🛡️ Global Admin",
     badgeColor: "#7c3aed",
+    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
     subtitle: "Organization-wide governance, cloud infrastructure resilience, platform security compliance, and moderation override.",
     capabilities: [
       "Full administrative override across all decision boards (force finalize, close, reopen, or delete)",
@@ -90,6 +91,7 @@ export const ROLE_PROFILES = {
     roleTag: "Community Moderator",
     badge: "⚙️ Community Moderator",
     badgeColor: "#0284c7",
+    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
     subtitle: "Lead engineering RFC deliberations, technical consensus discovery, and maintain civil discussion quality.",
     capabilities: [
       "Moderate engineering circle discussions, hide policy-violating comments, and resolve flags",
@@ -166,6 +168,7 @@ export const ROLE_PROFILES = {
     roleTag: "Community Owner",
     badge: "👑 Community Owner",
     badgeColor: "#d97706",
+    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
     subtitle: "Direct product roadmap strategy, manage community member rosters, promote moderators, and finalize consensus.",
     capabilities: [
       "Full community lifecycle ownership: manage member rosters, invitations, and permissions",
@@ -242,6 +245,7 @@ export const ROLE_PROFILES = {
     roleTag: "Community Member",
     badge: "👤 Community Member",
     badgeColor: "#00897b",
+    avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
     subtitle: "Deliberate on individual growth pathways, collaborate on team workcations, and submit verified ballots.",
     capabilities: [
       "Cast weighted, multiple-choice, and rating ballots with optional anonymity",
@@ -365,8 +369,23 @@ function DemoNav({ active, setView, roleKey, onSelectRole }) {
       <nav className="nav">
         <div className="nav-label">Switch Role Persona</div>
         {Object.values(ROLE_PROFILES).map((r) => (
-          <button key={r.id} className={roleKey === r.id ? "active" : ""} onClick={() => onSelectRole(r.id)}>
-            ● <span>{r.badge} ({r.name.split(" ")[0]})</span>
+          <button
+            key={r.id}
+            className={roleKey === r.id ? "active" : ""}
+            onClick={() => onSelectRole(r.id)}
+            style={{ display: "flex", alignItems: "center", gap: 10 }}
+          >
+            {r.avatarUrl ? (
+              <img
+                src={r.avatarUrl}
+                alt={r.name}
+                style={{ width: 22, height: 22, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+                onError={(e) => { e.currentTarget.style.display = "none"; }}
+              />
+            ) : (
+              <span>●</span>
+            )}
+            <span>{r.badge} ({r.name.split(" ")[0]})</span>
           </button>
         ))}
 
@@ -381,12 +400,22 @@ function DemoNav({ active, setView, roleKey, onSelectRole }) {
           </button>
         ))}
       </nav>
-      <div className="demo-side-note">
-        Viewing as <b>{profile.name}</b><br />
-        <span style={{ fontSize: 10.5, color: profile.badgeColor, fontWeight: 600 }}>{profile.badge}</span><br />
-        <Link to="/login" style={{ color: "var(--brass)", marginTop: 6, display: "inline-block" }}>
-          Sign in to live account →
-        </Link>
+      <div className="demo-side-note" style={{ display: "flex", gap: 12, alignItems: "center" }}>
+        {profile.avatarUrl && (
+          <img
+            src={profile.avatarUrl}
+            alt={profile.name}
+            style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "2px solid var(--border)" }}
+            onError={(e) => { e.currentTarget.style.display = "none"; }}
+          />
+        )}
+        <div>
+          Viewing as <b>{profile.name}</b><br />
+          <span style={{ fontSize: 10.5, color: profile.badgeColor, fontWeight: 600 }}>{profile.badge}</span><br />
+          <Link to="/login" style={{ color: "var(--brass)", marginTop: 4, display: "inline-block", fontSize: 11.5 }}>
+            Sign in to live account →
+          </Link>
+        </div>
       </div>
     </aside>
   );
@@ -407,8 +436,18 @@ function DashboardDemo({ profile, openBoard, setView }) {
         action={<button className="btn brass" onClick={() => setView("boards")}>Explore {profile.name.split(" ")[0]}'s boards</button>}
       />
 
-      <div className="demo-banner">
-        <span>{profile.badge}</span> Showing tailored workspace, role permissions, and decision boards for <b>{profile.name}</b>.
+      <div className="demo-banner" style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        {profile.avatarUrl && (
+          <img
+            src={profile.avatarUrl}
+            alt={profile.name}
+            style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "2px solid rgba(255,255,255,0.3)" }}
+            onError={(e) => { e.currentTarget.style.display = "none"; }}
+          />
+        )}
+        <div>
+          <span>{profile.badge}</span> Showing tailored workspace, role permissions, and decision boards for <b>{profile.name}</b>.
+        </div>
       </div>
 
       <div className="demo-capabilities-card">
@@ -621,11 +660,11 @@ function ModerationDemo({ profile, mode = "admin" }) {
 
 function CommunityRosterDemo({ profile }) {
   const [members, setMembers] = useState([
-    { id: 1, name: "Maya Patel", email: "maya@decisionhub.org", role: "OWNER", joined: "Jan 12, 2026" },
-    { id: 2, name: "Arjun Mehta", email: "arjun@decisionhub.org", role: "MODERATOR", joined: "Feb 04, 2026" },
-    { id: 3, name: "Harish", email: "harish@decisionhub.org", role: "MEMBER", joined: "Mar 10, 2026" },
-    { id: 4, name: "Priya Sharma", email: "priya@decisionhub.org", role: "MEMBER", joined: "Apr 02, 2026" },
-    { id: 5, name: "Marcus Vance", email: "marcus@decisionhub.org", role: "MEMBER", joined: "May 18, 2026" },
+    { id: 1, name: "Maya Patel", email: "maya@decisionhub.org", role: "OWNER", joined: "Jan 12, 2026", avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80" },
+    { id: 2, name: "Arjun Mehta", email: "arjun@decisionhub.org", role: "MODERATOR", joined: "Feb 04, 2026", avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" },
+    { id: 3, name: "Harish", email: "harish@decisionhub.org", role: "MEMBER", joined: "Mar 10, 2026", avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80" },
+    { id: 4, name: "Priya Sharma", email: "priya@decisionhub.org", role: "MEMBER", joined: "Apr 02, 2026", avatarUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80" },
+    { id: 5, name: "Marcus Vance", email: "marcus@decisionhub.org", role: "MEMBER", joined: "May 18, 2026", avatarUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80" },
   ]);
 
   const [inviteEmail, setInviteEmail] = useState("");
@@ -643,12 +682,15 @@ function CommunityRosterDemo({ profile }) {
   const handleInvite = (e) => {
     e.preventDefault();
     if (!inviteEmail) return;
+    const rawName = inviteEmail.split("@")[0];
+    const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
     const newMember = {
       id: Date.now(),
-      name: inviteEmail.split("@")[0],
+      name: formattedName,
       email: inviteEmail,
       role: inviteRole,
       joined: "Just now",
+      avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(formattedName)}`,
     };
     setMembers((prev) => [...prev, newMember]);
     setToast(`Sent invitation to ${inviteEmail} as ${inviteRole}.`);
@@ -698,7 +740,17 @@ function CommunityRosterDemo({ profile }) {
           <tbody>
             {members.map((m) => (
               <tr key={m.id}>
-                <td><b>{m.name}</b></td>
+                <td>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <img
+                      src={m.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(m.name)}`}
+                      alt={m.name}
+                      style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+                      onError={(e) => { e.currentTarget.style.display = "none"; }}
+                    />
+                    <b>{m.name}</b>
+                  </div>
+                </td>
                 <td style={{ color: "var(--ink-soft)" }}>{m.email}</td>
                 <td style={{ color: "var(--ink-soft)" }}>{m.joined}</td>
                 <td>

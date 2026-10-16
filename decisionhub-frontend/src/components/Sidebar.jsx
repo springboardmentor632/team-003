@@ -4,7 +4,7 @@ import BrandMark from "./BrandMark";
 import { useAuth } from "../context/AuthContext";
 import { listCommunities, notificationSummary } from "../api/collaboration";
 import NotificationBell from "./NotificationBell";
-import { getInitials } from "../utils/decisionHelpers";
+import { getInitials, getAvatarUrl } from "../utils/decisionHelpers";
 
 function IconDashboard() {
   return (
@@ -276,8 +276,18 @@ export default function Sidebar() {
             title="Account Settings & Profile"
             onClick={() => setMobileOpen(false)}
           >
-            <div className="sidebar-user-avatar">
-              {(user?.fullName || user?.name || user?.email || "H").charAt(0).toUpperCase()}
+            <div className="sidebar-user-avatar" style={{ overflow: "hidden", position: "relative" }}>
+              {user?.avatarUrl || getAvatarUrl(user?.fullName || user?.name || user?.email) ? (
+                <img
+                  src={user?.avatarUrl || getAvatarUrl(user?.fullName || user?.name || user?.email)}
+                  alt={user?.fullName || user?.name || "User"}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", position: "relative", zIndex: 1 }}
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+              ) : null}
+              <span style={{ position: "absolute", zIndex: 0 }}>
+                {(user?.fullName || user?.name || user?.email || "H").charAt(0).toUpperCase()}
+              </span>
             </div>
             <div className="sidebar-user-info">
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>

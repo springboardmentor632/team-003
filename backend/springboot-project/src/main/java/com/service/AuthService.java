@@ -65,6 +65,9 @@ public class AuthService {
         );
 
         user.setRole("USER");
+        if (user.getAvatarUrl() == null || user.getAvatarUrl().isBlank()) {
+            user.setAvatarUrl("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80");
+        }
 
         return userRepository.save(user);
     }
@@ -105,13 +108,14 @@ public class AuthService {
                 token,
                 user.getName(),
                 user.getEmail(),
-                user.getRole()
+                user.getRole(),
+                user.getAvatarUrl()
         );
     }
 
     public LoginResponse registerAndLogin(RegisterRequest request) {
         User user = registerUser(request);
-        return new LoginResponse(jwtService.generateToken(user.getEmail()), user.getName(), user.getEmail(), user.getRole());
+        return new LoginResponse(jwtService.generateToken(user.getEmail()), user.getName(), user.getEmail(), user.getRole(), user.getAvatarUrl());
     }
 
     @Transactional
@@ -124,6 +128,7 @@ public class AuthService {
         User user = userRepository.findByEmail(normalizedEmail).orElseGet(() -> {
             String displayName = (name != null && !name.isBlank()) ? name.trim() : normalizedEmail.split("@")[0];
             User newUser = new User(displayName, normalizedEmail, passwordEncoder.encode(java.util.UUID.randomUUID().toString()), "USER");
+            newUser.setAvatarUrl("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80");
             return userRepository.save(newUser);
         });
 
@@ -132,7 +137,8 @@ public class AuthService {
                 token,
                 user.getName(),
                 user.getEmail(),
-                user.getRole()
+                user.getRole(),
+                user.getAvatarUrl()
         );
     }
 

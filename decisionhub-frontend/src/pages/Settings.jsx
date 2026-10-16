@@ -3,7 +3,7 @@ import TopBar from "../components/TopBar";
 import { getProfile, updateProfile, changePassword, updateUserInterests } from "../api/user";
 import { extractErrorMessage } from "../api/client";
 import { useAuth } from "../context/AuthContext";
-import { getInitials } from "../utils/decisionHelpers";
+import { getInitials, getAvatarUrl, CURATED_AVATARS } from "../utils/decisionHelpers";
 
 const AVAILABLE_CATEGORIES = [
   "Technology",
@@ -129,10 +129,10 @@ export default function Settings() {
   const { theme, setTheme } = useTheme();
 
   // Profile Form State
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [bio, setBio] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState("");
+  const [name, setName] = useState(user?.fullName || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [bio, setBio] = useState(user?.bio || "");
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || "");
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState("");
@@ -286,16 +286,15 @@ export default function Settings() {
         {/* Sticky Minimalist Sub-Nav Sidebar */}
         <aside className="settings-nav-sidebar">
           <div className="settings-user-brief">
-            <div className="settings-user-brief-avatar">
-              {avatarUrl ? (
+            <div className="settings-user-brief-avatar" style={{ overflow: "hidden", position: "relative" }}>
+              {avatarUrl || getAvatarUrl(userDisplayName) ? (
                 <img
-                  src={avatarUrl}
+                  src={avatarUrl || getAvatarUrl(userDisplayName)}
                   alt={userDisplayName}
                   onError={(e) => { e.currentTarget.style.display = "none"; }}
                 />
-              ) : (
-                userInitials
-              )}
+              ) : null}
+              <span style={{ position: "absolute" }}>{userInitials}</span>
             </div>
             <div className="settings-user-brief-info">
               <strong>{userDisplayName}</strong>
@@ -493,18 +492,18 @@ export default function Settings() {
                       fontWeight: 600,
                       border: "2px solid var(--line)",
                       flexShrink: 0,
+                      position: "relative",
                     }}
                   >
-                    {avatarUrl ? (
+                    {avatarUrl || getAvatarUrl(userDisplayName) ? (
                       <img
-                        src={avatarUrl}
+                        src={avatarUrl || getAvatarUrl(userDisplayName)}
                         alt="Avatar"
                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         onError={(e) => { e.currentTarget.style.display = "none"; }}
                       />
-                    ) : (
-                      userInitials
-                    )}
+                    ) : null}
+                    <span style={{ position: "absolute", zIndex: 0 }}>{userInitials}</span>
                   </div>
                   <div style={{ flex: 1 }}>
                     <label htmlFor="avatarUrl" style={{ display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 6, color: "var(--ink)" }}>
@@ -518,6 +517,53 @@ export default function Settings() {
                       value={avatarUrl}
                       onChange={(e) => setAvatarUrl(e.target.value)}
                     />
+                    <div style={{ marginTop: 10 }}>
+                      <span style={{ fontSize: 11, color: "var(--ink-soft)", display: "block", marginBottom: 6 }}>
+                        Or choose from curated personas:
+                      </span>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                        {Object.entries(CURATED_AVATARS).map(([key, url]) => (
+                          <button
+                            type="button"
+                            key={key}
+                            onClick={() => setAvatarUrl(url)}
+                            style={{
+                              border: avatarUrl === url ? "2px solid var(--brass)" : "2px solid transparent",
+                              padding: 2,
+                              borderRadius: "50%",
+                              background: "none",
+                              cursor: "pointer",
+                              display: "flex",
+                              transition: "transform 0.15s ease",
+                            }}
+                            title={`Choose ${key} avatar`}
+                          >
+                            <img
+                              src={url}
+                              alt={key}
+                              style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }}
+                            />
+                          </button>
+                        ))}
+                        {avatarUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setAvatarUrl("")}
+                            style={{
+                              fontSize: 11,
+                              color: "var(--ink-soft)",
+                              background: "none",
+                              border: "1px dashed var(--line)",
+                              borderRadius: 12,
+                              padding: "4px 8px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Reset
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
