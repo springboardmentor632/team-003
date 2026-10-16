@@ -100,6 +100,49 @@ export default function Login() {
             ⚡ One-Click Google Demo Sign-in
           </button>
 
+          <div className="demo-persona-chips" style={{ marginTop: "14px", paddingTop: "12px", borderTop: "1px dashed var(--line)" }}>
+            <div style={{ fontSize: "11px", fontWeight: 600, color: "var(--ink-soft)", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span>Demo Personas</span>
+              <Link to="/demo" style={{ color: "var(--teal)", textDecoration: "none", textTransform: "none", fontWeight: 500, fontSize: "11px" }}>
+                Interactive preview →
+              </Link>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+              <button
+                type="button"
+                className="btn ghost"
+                style={{ fontSize: "11px", padding: "5px 8px", textAlign: "left", justifyContent: "flex-start" }}
+                onClick={() => { setEmail("admin@decisionhub.local"); setPassword("demo123"); }}
+              >
+                🛡️ Admin
+              </button>
+              <button
+                type="button"
+                className="btn ghost"
+                style={{ fontSize: "11px", padding: "5px 8px", textAlign: "left", justifyContent: "flex-start" }}
+                onClick={() => { setEmail("arjun@decisionhub.local"); setPassword("demo123"); }}
+              >
+                ⚙️ Moderator
+              </button>
+              <button
+                type="button"
+                className="btn ghost"
+                style={{ fontSize: "11px", padding: "5px 8px", textAlign: "left", justifyContent: "flex-start" }}
+                onClick={() => { setEmail("maya@decisionhub.local"); setPassword("demo123"); }}
+              >
+                👑 Owner
+              </button>
+              <button
+                type="button"
+                className="btn ghost"
+                style={{ fontSize: "11px", padding: "5px 8px", textAlign: "left", justifyContent: "flex-start" }}
+                onClick={() => { setEmail("harish@decisionhub.local"); setPassword("demo123"); }}
+              >
+                👤 Member
+              </button>
+            </div>
+          </div>
+
           <div className="auth-switch">
             Don't have an account? <Link to="/register">Sign up</Link>
           </div>

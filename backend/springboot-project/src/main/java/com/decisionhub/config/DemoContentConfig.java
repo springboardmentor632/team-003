@@ -113,25 +113,19 @@ public class DemoContentConfig {
 
             for (Decision decision : all) {
                 String title = decision.getTitle() == null ? "" : decision.getTitle();
-                if (title.startsWith("Admin: Team onboarding")) {
-                    decision.setCommunity(workplace);
-                } else if (title.startsWith("Admin:")) {
+                if (title.contains("Cloud") || title.contains("Identity") || title.contains("Sovereign") || title.contains("Admin:")) {
                     decision.setCommunity(governance);
-                } else if (title.startsWith("Arjun: On-call")) {
+                } else if (title.contains("Incident") || title.contains("On-Call") || title.contains("On-call")) {
                     decision.setCommunity(aiGuild);
-                } else if (title.startsWith("Arjun:")) {
+                } else if (title.contains("Ingress") || title.contains("Inference") || title.contains("Gateway") || title.contains("Arjun:")) {
                     decision.setCommunity(engineering);
-                } else if (title.startsWith("Maya: Annual team retreat")) {
+                } else if (title.contains("Retreat") || title.contains("Workcation") || title.contains("Travel") || title.contains("Weekend")) {
                     decision.setCommunity(travel);
-                } else if (title.startsWith("Maya:")) {
+                } else if (title.contains("Product Strategy") || title.contains("SaaS Pricing") || title.contains("Roadmap") || title.contains("Maya:")) {
                     decision.setCommunity(product);
-                } else if (title.startsWith("Harish: Career switch")) {
+                } else if (title.contains("Career") || title.contains("Hybrid") || title.contains("Onboarding") || title.contains("Harish: Career")) {
                     decision.setCommunity(workplace);
-                } else if (title.startsWith("Harish: Travel plan")) {
-                    decision.setCommunity(travel);
-                } else if (title.startsWith("Priya:")) {
-                    decision.setCommunity(workplace);
-                } else if (title.startsWith("Rohan:")) {
+                } else if (title.contains("Sustainability") || title.contains("Solar") || title.contains("Green") || title.contains("Rohan:")) {
                     decision.setCommunity(sustainability);
                 }
                 decisions.save(decision);
@@ -145,47 +139,47 @@ public class DemoContentConfig {
             notifyIfMissing(notifications, admin, NotificationType.SYSTEM,
                     "Governance alert: 2 community moderation reports are awaiting review.", all.get(0));
             notifyIfMissing(notifications, admin, NotificationType.VOTE,
-                    "Arjun Mehta and Maya Patel voted on Admin: Cloud migration.", all.get(0));
+                    "Arjun Mehta and Maya Patel voted on Enterprise Cloud Hosting & Multi-Region Resiliency.", all.get(0));
 
             notifyIfMissing(notifications, arjun, NotificationType.COMMENT,
-                    "Maya commented on your API gateway & service mesh architecture board.",
-                    findByPrefix(all, "Arjun: API gateway", all.get(0)));
+                    "Maya commented on your Microservices Ingress Gateway & Service Mesh Architecture board.",
+                    findByKeyword(all, "Ingress", all.get(0)));
             notifyIfMissing(notifications, arjun, NotificationType.COMMUNITY_INVITATION,
                     "Rohan Shah invited you to join Sustainable Choices.",
-                    findByPrefix(all, "Rohan:", all.get(0)));
+                    findByKeyword(all, "Solar", all.get(0)));
 
             notifyIfMissing(notifications, maya, NotificationType.GENERAL,
                     "Welcome to DecisionHub. Your Product Builders community has 3 active discussions.",
-                    findByPrefix(all, "Maya: Q4", all.get(0)));
+                    findByKeyword(all, "Product Strategy", all.get(0)));
             notifyIfMissing(notifications, maya, NotificationType.VOTE,
-                    "New votes were cast on Q4 product roadmap focus.",
-                    findByPrefix(all, "Maya: Q4", all.get(0)));
+                    "New votes were cast on Q4 Product Strategy: Real-Time Deliberation vs Native Chat Bots.",
+                    findByKeyword(all, "Product Strategy", all.get(0)));
 
             notifyIfMissing(notifications, harish, NotificationType.COMMENT,
-                    "Priya Nair shared career transition advice on Harish: Career switch.",
-                    findByPrefix(all, "Harish: Career", all.get(0)));
+                    "Priya Nair shared career transition advice on Career Trajectory: Staff Technical Lead vs Engineering Management.",
+                    findByKeyword(all, "Career", all.get(0)));
             notifyIfMissing(notifications, harish, NotificationType.COMMUNITY_INVITATION,
                     "Arjun Mehta invited you to collaborate in Engineering Circle.",
-                    findByPrefix(all, "Arjun: API gateway", all.get(0)));
+                    findByKeyword(all, "Ingress", all.get(0)));
 
             notifyIfMissing(notifications, priya, NotificationType.VOTE,
                     "A community decision has new votes. Review the latest result when you have a moment.",
-                    findByPrefix(all, "Priya:", all.get(0)));
+                    findByKeyword(all, "Hybrid", all.get(0)));
 
             // Role-specific Feedback Entries
             seedFeedbackIfMissing(feedback, harish,
-                    "Love how the criteria dots make comparing Career Switch options visual and objective!",
-                    findByPrefix(all, "Harish: Career", all.get(0)), "OPEN");
+                    "Love how the criteria dots make comparing career trajectory options visual and objective!",
+                    findByKeyword(all, "Career", all.get(0)), "OPEN");
             seedFeedbackIfMissing(feedback, maya,
                     "Can we export Product Builders poll results directly to our quarterly roadmap deck?",
-                    findByPrefix(all, "Maya: Q4", all.get(0)), "REVIEWED");
+                    findByKeyword(all, "Product Strategy", all.get(0)), "REVIEWED");
             seedFeedbackIfMissing(feedback, arjun,
                     "Community-scoped moderation queue works great for Engineering Circle.",
-                    findByPrefix(all, "Arjun: API gateway", all.get(0)), "RESOLVED");
+                    findByKeyword(all, "Ingress", all.get(0)), "RESOLVED");
 
             // Role-specific Moderation Reports (so Admin, Arjun, and Maya each see relevant moderation items)
-            Decision productBoard = findByPrefix(all, "Maya: Q4", all.get(0));
-            Decision engBoard = findByPrefix(all, "Arjun: API gateway", all.get(0));
+            Decision productBoard = findByKeyword(all, "Product Strategy", all.get(0));
+            Decision engBoard = findByKeyword(all, "Ingress", all.get(0));
             seedReportIfMissing(reports, priya, productBoard,
                     "Please verify Q4 customer survey sample size before closing this roadmap poll.");
             seedReportIfMissing(reports, rohan, engBoard,
@@ -209,6 +203,12 @@ public class DemoContentConfig {
         if (!alreadyPending) {
             repo.save(new CommunityInvitation(community, invitee, inviter));
         }
+    }
+    private Decision findByKeyword(List<Decision> decisions, String keyword, Decision fallback) {
+        return decisions.stream()
+                .filter(d -> d.getTitle() != null && d.getTitle().toLowerCase().contains(keyword.toLowerCase()))
+                .findFirst()
+                .orElse(fallback);
     }
     private Decision findByPrefix(List<Decision> decisions, String prefix, Decision fallback) {
         return decisions.stream()
