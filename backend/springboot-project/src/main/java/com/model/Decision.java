@@ -110,7 +110,14 @@ public class Decision {
 
     public String getCreatedByName() { return createdBy; }
     public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category == null || category.isBlank() ? "General" : category; }
+    public void setCategory(String category) {
+        if (category == null || category.isBlank()) {
+            this.category = "General";
+        } else {
+            String trimmed = category.trim();
+            this.category = Character.toUpperCase(trimmed.charAt(0)) + trimmed.substring(1).toLowerCase();
+        }
+    }
     public String getVisibility() { return visibility; }
     public void setVisibility(String visibility) { this.visibility = visibility == null ? "PUBLIC" : visibility.toUpperCase(); }
     public String getPollType() { return pollType; }

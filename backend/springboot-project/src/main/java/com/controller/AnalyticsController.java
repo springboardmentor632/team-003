@@ -49,13 +49,15 @@ public class AnalyticsController {
         Map<String, Long> pollTypes = new LinkedHashMap<>();
 
         for (Decision decision : visible) {
+            String rawCat = safe(decision.getCategory(), "General").trim();
+            String cat = rawCat.isEmpty() ? "General" : Character.toUpperCase(rawCat.charAt(0)) + rawCat.substring(1).toLowerCase();
             categoryVotes.merge(
-                    safe(decision.getCategory(), "General"),
+                    cat,
                     decision.getTotalVotes(),
                     Long::sum);
 
             pollTypes.merge(
-                    safe(decision.getPollType(), "UNKNOWN"),
+                    safe(decision.getPollType(), "UNKNOWN").toUpperCase(),
                     1L,
                     Long::sum);
         }
